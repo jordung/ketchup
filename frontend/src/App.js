@@ -1,24 +1,31 @@
-import logo from './logo.svg';
-import './App.css';
+import { Routes, Route } from "react-router-dom";
+import { createContext, useState } from "react";
+
+// Components
+import Navbar from "./components/Navbar";
+
+// Pages
+import Landing from "./pages/Landing";
+import Signup from "./pages/Signup";
+import Login from "./pages/Login";
+
+export const LoadingContext = createContext();
 
 function App() {
+  const [loading, setLoading] = useState(true);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <LoadingContext.Provider value={{ loading, setLoading }}>
+      <Routes>
+        <Route element={<Navbar />}>
+          {/* Routes with Navbar */}
+          <Route path="/" element={<Landing />} />
+        </Route>
+
+        {/* Routes without Navbar */}
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
+      </Routes>
+    </LoadingContext.Provider>
   );
 }
 
