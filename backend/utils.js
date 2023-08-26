@@ -11,7 +11,7 @@ function generateInviteCode(length) {
   return code;
 }
 
-const numberOfCodesToGenerate = 1;
+const numberOfCodesToGenerate = 3;
 const inviteCodes = [];
 
 for (let i = 0; i < numberOfCodesToGenerate; i++) {
