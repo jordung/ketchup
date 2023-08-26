@@ -25,7 +25,7 @@ module.exports = {
         last_name: "Willow",
         email: "emma@test.com",
         password:
-          "$2y$10$2i1kXfilmyw5jl25e9kaXOsUsSZsqzFah9R1xS7F/9TN1pwg64f9u",
+          "$2y$10$gOC74MAgknDnNM5Z23JVduoRvd72oKjHaPGPSBdTvSER4Yhgqmt4q",
         profile_picture:
           "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2488&q=80",
         email_verified: true,
@@ -41,7 +41,7 @@ module.exports = {
         last_name: "Swift",
         email: "john@test.com",
         password:
-          "$2y$10$2i1kXfilmyw5jl25e9kaXOsUsSZsqzFah9R1xS7F/9TN1pwg64f9u",
+          "$2y$10$nB1BQE2IPJVliG9HrbarmuhrSd/EvhriuaaY61pZHBut9aokuOKNS",
         profile_picture:
           "https://images.unsplash.com/photo-1516914943479-89db7d9ae7f2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2732&q=80",
         email_verified: true,
