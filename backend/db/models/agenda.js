@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsTo(models.ticket);
       this.belongsTo(models.document);
       this.belongsTo(models.flag);
-      this.belongsTo(models.ketchup_agenda, { foreignKey: "agenda_id" });
+      this.hasOne(models.ketchup_agenda, { foreignKey: "agenda_id" });
     }
   }
   Agenda.init(

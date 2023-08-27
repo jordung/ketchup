@@ -5,15 +5,30 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       this.belongsTo(models.organisation);
 
-      this.belongsTo(models.organisation_admin, { foreignKey: "user_id" });
+      this.hasOne(models.organisation_admin, { foreignKey: "user_id" });
 
       this.hasMany(models.post);
-      this.hasMany(models.agenda, { as: "creator", foreignKey: "user_id" });
-      this.hasMany(models.update, { as: "creator", foreignKey: "user_id" });
-      this.hasMany(models.ketchup, { as: "creator", foreignKey: "user_id" });
-      this.hasMany(models.document, { as: "creator", foreignKey: "user_id" });
+      this.hasMany(models.agenda, {
+        as: "agenda_creator",
+        foreignKey: "user_id",
+      });
+      this.hasMany(models.update, {
+        as: "update_creator",
+        foreignKey: "user_id",
+      });
+      this.hasMany(models.ketchup, {
+        as: "ketchup_creator",
+        foreignKey: "user_id",
+      });
+      this.hasMany(models.document, {
+        as: "document_creator",
+        foreignKey: "user_id",
+      });
 
-      this.hasMany(models.ticket, { as: "creator", foreignKey: "creator_id" });
+      this.hasMany(models.ticket, {
+        as: "ticket_creator",
+        foreignKey: "creator_id",
+      });
       this.hasMany(models.ticket, {
         as: "assignee",
         foreignKey: "assignee_id",
