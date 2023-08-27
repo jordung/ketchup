@@ -4,7 +4,7 @@ class BaseController {
   }
   // all controllers that extend this BASE controller will have access to the below function
 
-  async getAllUsers(req, res) {
+  getAllUsers = async (req, res) => {
     try {
       let result = await this.model.findAll();
       return res.status(200).json({
@@ -18,7 +18,7 @@ class BaseController {
         msg: "Error: unable to retrieve data for all users.",
       });
     }
-  }
+  };
 }
 
 module.exports = BaseController;

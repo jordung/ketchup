@@ -20,3 +20,5 @@ for (let i = 0; i < numberOfCodesToGenerate; i++) {
 }
 
 console.log("Generated Invite Codes:", inviteCodes);
+
+module.exports = generateInviteCode;

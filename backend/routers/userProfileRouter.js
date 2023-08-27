@@ -2,11 +2,13 @@ const express = require("express");
 const router = express.Router();
 
 class UserProfileRouter {
-  constructor(controller) {
+  constructor(controller, jwtAuth) {
     this.controller = controller;
+    this.jwtAuth = jwtAuth;
   }
   routes() {
-    router.get("/all", this.controller.getAllUsers.bind(this.controller));
+    router.get("/all", this.jwtAuth, this.controller.getAllUsers);
+    router.get("/", this.controller.getOneUser);
 
     return router;
   }
