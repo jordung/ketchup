@@ -2,6 +2,7 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
+    // ===== 1: USERS ===== //
     await queryInterface.bulkInsert("users", [
       {
         organisation_id: 1,
@@ -53,6 +54,7 @@ module.exports = {
       },
     ]);
 
+    // ===== 2: INVITATIONS ===== //
     await queryInterface.bulkInsert("invitations", [
       {
         organisation_id: 1,
@@ -80,6 +82,7 @@ module.exports = {
       },
     ]);
 
+    // ===== 3: TAGS ===== //
     await queryInterface.bulkInsert("tags", [
       {
         organisation_id: 1,

@@ -11,7 +11,7 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       organisation_id: {
-        allowNull: true, //nullable!
+        allowNull: true, //nullable
         type: Sequelize.INTEGER,
         references: {
           model: "organisations",
@@ -27,7 +27,7 @@ module.exports = {
         type: Sequelize.STRING,
       },
       email: {
-        allowNull: false, // TODO: unique
+        allowNull: false, //unique
         type: Sequelize.STRING,
       },
       password: {
@@ -35,7 +35,7 @@ module.exports = {
         type: Sequelize.STRING,
       },
       profile_picture: {
-        allowNull: false, //ketchup's default pic
+        allowNull: false,
         type: Sequelize.TEXT,
       },
       email_verified: {
@@ -83,11 +83,11 @@ module.exports = {
       },
       invite_code: {
         allowNull: false,
-        type: Sequelize.STRING, //TODO: unique
+        type: Sequelize.STRING, //unique
       },
       invitee_email: {
         allowNull: false,
-        type: Sequelize.STRING, //TODO: unique?? hmm
+        type: Sequelize.STRING, //unique
       },
       is_confirmed: {
         allowNull: false,

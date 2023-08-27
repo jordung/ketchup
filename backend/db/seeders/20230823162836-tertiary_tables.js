@@ -84,8 +84,7 @@ module.exports = {
     // ===== 4: DOCUMENTS ===== //
     await queryInterface.bulkInsert("documents", [
       {
-        creator_id: 3,
-        ticket_id: 5,
+        user_id: 3,
         tag_id: 2,
         name: "User Profile API Documentation",
         created_at: new Date().toISOString(),
@@ -93,7 +92,23 @@ module.exports = {
       },
     ]);
 
-    // ===== 5: WATCHERS ===== //
+    // ===== 5: DOCUMENT_TICKETS ===== //
+    await queryInterface.bulkInsert("document_tickets", [
+      {
+        ticket_id: 2,
+        document_id: 1,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        ticket_id: 5,
+        document_id: 1,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    ]);
+
+    // ===== 6: WATCHERS ===== //
     await queryInterface.bulkInsert("watchers", [
       {
         user_id: 1,
@@ -169,7 +184,7 @@ module.exports = {
       },
     ]);
 
-    // ===== 6: POSTS ===== //
+    // ===== 7: POSTS ===== //
     await queryInterface.bulkInsert("posts", [
       {
         organisation_id: 1,
@@ -196,7 +211,7 @@ module.exports = {
       },
     ]);
 
-    // ===== 7: KETCHUPS ===== //
+    // ===== 8: KETCHUPS ===== //
     await queryInterface.bulkInsert("ketchups", [
       {
         organisation_id: 1,
@@ -221,7 +236,7 @@ module.exports = {
       },
     ]);
 
-    // ===== 8: KETCHUP_REACTIONS ===== //
+    // ===== 9: KETCHUP_REACTIONS ===== //
     await queryInterface.bulkInsert("ketchup_reactions", [
       {
         user_id: 2,
@@ -267,7 +282,7 @@ module.exports = {
       },
     ]);
 
-    // ===== 9: POST_REACTIONS ===== //
+    // ===== 10: POST_REACTIONS ===== //
     await queryInterface.bulkInsert("post_reactions", [
       {
         user_id: 2,
@@ -313,7 +328,7 @@ module.exports = {
       },
     ]);
 
-    // ===== 10: AGENDAS ===== //
+    // ===== 11: AGENDAS ===== //
     await queryInterface.bulkInsert("agendas", [
       {
         user_id: 1,
@@ -350,7 +365,7 @@ module.exports = {
       },
     ]);
 
-    // ===== 11: KETCHUP_AGENDAS ===== //
+    // ===== 12: KETCHUP_AGENDAS ===== //
     await queryInterface.bulkInsert("ketchup_agendas", [
       {
         ketchup_id: 1,
@@ -378,7 +393,7 @@ module.exports = {
       },
     ]);
 
-    // ===== 12: UPDATES ===== //
+    // ===== 13: UPDATES ===== //
     await queryInterface.bulkInsert("updates", [
       {
         user_id: 1,
@@ -408,7 +423,7 @@ module.exports = {
       },
     ]);
 
-    // ===== 13: KETCHUP_UPDATES ===== //
+    // ===== 14: KETCHUP_UPDATES ===== //
     await queryInterface.bulkInsert("ketchup_updates", [
       {
         ketchup_id: 1,
@@ -423,21 +438,21 @@ module.exports = {
         updated_at: new Date().toISOString(),
       },
       {
-        ketchup_id: 2,
+        ketchup_id: 3,
         update_id: 3,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
     ]);
 
-    // ===== 14: NOTIFICATIONS ===== //
+    // ===== 15: NOTIFICATIONS ===== //
     await queryInterface.bulkInsert("notifications", [
       {
         organisation_id: 1,
         user_id: 1,
         ticket_id: 2,
         type: "ticket",
-        message: "An update has been added to a ticket you're following.",
+        message: "An update has been added to a ticket you're following!",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
@@ -446,7 +461,7 @@ module.exports = {
         user_id: 2,
         document_id: 1,
         type: "document",
-        message: "An update has been added to a document you're following.",
+        message: "An update has been added to a document you're following!",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
@@ -455,7 +470,7 @@ module.exports = {
         user_id: 3,
         ketchup_id: 2,
         type: "ketchup",
-        message: "An update has been added to a ketchup you're following.",
+        message: "An update has been added to a ketchup you're following!",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
@@ -473,6 +488,7 @@ module.exports = {
     await queryInterface.bulkDelete("ketchups");
     await queryInterface.bulkDelete("posts");
     await queryInterface.bulkDelete("watchers");
+    await queryInterface.bulkDelete("document_tickets");
     await queryInterface.bulkDelete("documents");
     await queryInterface.bulkDelete("ticket_dependencies");
     await queryInterface.bulkDelete("tickets");

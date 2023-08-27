@@ -174,15 +174,7 @@ module.exports = {
         allowNull: false,
         type: Sequelize.INTEGER,
         references: {
-          model: "users",
-          key: "id",
-        },
-      },
-      ticket_id: {
-        allowNull: true, //nullable
-        type: Sequelize.INTEGER,
-        references: {
-          model: "tickets",
+          model: "users", //alias = creator
           key: "id",
         },
       },
@@ -201,6 +193,40 @@ module.exports = {
       body: {
         allowNull: true, //nullable
         type: Sequelize.TEXT,
+      },
+      created_at: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+      updated_at: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+    });
+
+    // TERTIARY TABLE FOR DOCUMENT_TICKETS
+    await queryInterface.createTable("document_tickets", {
+      id: {
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+        type: Sequelize.INTEGER,
+      },
+      ticket_id: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        references: {
+          model: "tickets",
+          key: "id",
+        },
+      },
+      document_id: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        references: {
+          model: "documents",
+          key: "id",
+        },
       },
       created_at: {
         allowNull: false,
@@ -320,7 +346,7 @@ module.exports = {
         allowNull: false,
         type: Sequelize.INTEGER,
         references: {
-          model: "users", //TODO: models, use alias "creator"
+          model: "users", //alias = creator
           key: "id",
         },
       },
@@ -438,12 +464,12 @@ module.exports = {
         allowNull: false,
         type: Sequelize.INTEGER,
         references: {
-          model: "users", //TODO: alias "creator"
+          model: "users", //alias = creator
           key: "id",
         },
       },
       ticket_id: {
-        allowNull: true,
+        allowNull: true, //nullable
         type: Sequelize.INTEGER,
         references: {
           model: "tickets",
@@ -451,7 +477,7 @@ module.exports = {
         },
       },
       document_id: {
-        allowNull: true,
+        allowNull: true, //nullable
         type: Sequelize.INTEGER,
         references: {
           model: "documents",
@@ -527,12 +553,12 @@ module.exports = {
         allowNull: false,
         type: Sequelize.INTEGER,
         references: {
-          model: "users", //TODO: alias "creator"
+          model: "users", //alias = creator
           key: "id",
         },
       },
       ticket_id: {
-        allowNull: true,
+        allowNull: true, //nullable
         type: Sequelize.INTEGER,
         references: {
           model: "tickets",
@@ -540,7 +566,7 @@ module.exports = {
         },
       },
       document_id: {
-        allowNull: true,
+        allowNull: true, //nullable
         type: Sequelize.INTEGER,
         references: {
           model: "documents",
@@ -690,6 +716,7 @@ module.exports = {
     await queryInterface.dropTable("ketchups");
     await queryInterface.dropTable("posts");
     await queryInterface.dropTable("watchers");
+    await queryInterface.dropTable("document_tickets");
     await queryInterface.dropTable("documents");
     await queryInterface.dropTable("ticket_dependencies");
     await queryInterface.dropTable("tickets");

@@ -2,6 +2,7 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
+    // ===== 1: ORGANISATIONS ===== //
     await queryInterface.bulkInsert("organisations", [
       {
         name: "Handshake",
@@ -11,6 +12,7 @@ module.exports = {
       },
     ]);
 
+    // ===== 2: PRIORITIES ===== //
     await queryInterface.bulkInsert("priorities", [
       {
         name: "low",
@@ -29,6 +31,7 @@ module.exports = {
       },
     ]);
 
+    // ===== 3: FLAGS ===== //
     await queryInterface.bulkInsert("flags", [
       {
         name: "help",
@@ -51,6 +54,8 @@ module.exports = {
         updated_at: new Date().toISOString(),
       },
     ]);
+
+    // ===== 4: REACTIONS ===== //
     await queryInterface.bulkInsert("reactions", [
       {
         icon: "\u{1F606}",
