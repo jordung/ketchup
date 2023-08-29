@@ -12,4 +12,4 @@ const generateAuthToken = (payload, refreshToken = false) => {
   return jwt.sign(payload, secretKey, { expiresIn });
 };
 
-module.exports = { generateAuthToken };
+module.exports = generateAuthToken;

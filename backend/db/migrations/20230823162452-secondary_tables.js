@@ -43,6 +43,10 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
       },
+      verification_token: {
+        allowNull: true, //nullable
+        type: Sequelize.TEXT,
+      },
       refresh_token: {
         allowNull: true, //nullable
         type: Sequelize.TEXT,

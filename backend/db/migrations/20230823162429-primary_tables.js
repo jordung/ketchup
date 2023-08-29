@@ -93,9 +93,32 @@ module.exports = {
         type: Sequelize.DATE,
       },
     });
+
+    // PRIMARY TABLE FOR STATUSES
+    await queryInterface.createTable("statuses", {
+      id: {
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+        type: Sequelize.INTEGER,
+      },
+      name: {
+        allowNull: false,
+        type: Sequelize.STRING,
+      },
+      created_at: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+      updated_at: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+    });
   },
 
   async down(queryInterface, Sequelize) {
+    await queryInterface.dropTable("statuses");
     await queryInterface.dropTable("reactions");
     await queryInterface.dropTable("flags");
     await queryInterface.dropTable("priorities");

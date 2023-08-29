@@ -7,8 +7,8 @@ class UserProfileRouter {
     this.jwtAuth = jwtAuth;
   }
   routes() {
-    router.get("/all", this.jwtAuth, this.controller.getAllUsers);
-    router.get("/", this.controller.getOneUser);
+    router.get("/all", this.controller.getAllUsers);
+    router.get("/:userId", this.controller.getOneUser);
 
     return router;
   }

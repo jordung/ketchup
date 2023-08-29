@@ -9,7 +9,7 @@ const jwtAuth = (req, res, next) => {
     if (!accessToken) {
       return res.status(401).json({
         error: true,
-        msg: "Error: missing access token.",
+        msg: "Error: missing or invalid access token.",
       });
     }
 

@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
 
       this.belongsTo(models.tag);
       this.belongsTo(models.priority);
+      this.belongsTo(models.status);
 
       this.hasMany(models.post);
       this.hasMany(models.agenda);
@@ -44,6 +45,7 @@ module.exports = (sequelize, DataTypes) => {
       assigneeId: DataTypes.INTEGER,
       tagId: DataTypes.INTEGER,
       priorityId: DataTypes.INTEGER,
+      statusId: DataTypes.INTEGER,
       name: DataTypes.STRING,
       body: DataTypes.TEXT,
       dueDate: DataTypes.DATE,

@@ -76,6 +76,14 @@ module.exports = {
           key: "id",
         },
       },
+      status_id: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        references: {
+          model: "statuses",
+          key: "id",
+        },
+      },
       name: {
         allowNull: false,
         type: Sequelize.STRING,

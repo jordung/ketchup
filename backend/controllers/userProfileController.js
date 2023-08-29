@@ -12,7 +12,7 @@ class UserProfileController extends BaseController {
 
   // ====== Update Profile Picture ====== //
   getOneUser = async (req, res) => {
-    const { userId } = req.body;
+    const { userId } = req.params;
 
     try {
       // display user information + watching list

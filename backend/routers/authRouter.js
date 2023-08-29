@@ -8,11 +8,15 @@ class AuthRouter {
   routes() {
     // use POST when there's change of state (e.g. from authenticated to unauthenticated)
     router.post("/signup", this.controller.signUp);
+    router.get("/verify", this.controller.verifyEmail);
     router.post("/organisation", this.controller.joinOrCreateOrganisation);
 
     router.post("/login", this.controller.login);
     router.post("/logout", this.controller.logout);
-    router.post("/refresh", this.controller.renewAccessToken);
+    router.post("/renew", this.controller.renewAccessToken);
+    router.post("/refresh", this.controller.validateRefreshToken);
+
+    router.delete("/:userId", this.controller.deleteOneUser);
 
     return router;
   }

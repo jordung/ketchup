@@ -15,17 +15,17 @@ module.exports = {
     // ===== 2: PRIORITIES ===== //
     await queryInterface.bulkInsert("priorities", [
       {
-        name: "low",
+        name: "Low",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
       {
-        name: "medium",
+        name: "Medium",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
       {
-        name: "high",
+        name: "High",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
@@ -103,9 +103,29 @@ module.exports = {
         updated_at: new Date().toISOString(),
       },
     ]);
+
+    // ===== 5: STATUSES ===== //
+    await queryInterface.bulkInsert("statuses", [
+      {
+        name: "Not Started",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        name: "In Progress",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        name: "Completed",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    ]);
   },
 
   async down(queryInterface, Sequelize) {
+    await queryInterface.bulkDelete("statuses");
     await queryInterface.bulkDelete("reactions");
     await queryInterface.bulkDelete("flags");
     await queryInterface.bulkDelete("priorities");
