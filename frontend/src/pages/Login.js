@@ -1,11 +1,16 @@
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import logo from "../assets/ketchup-logo.png";
 import { useContext, useEffect } from "react";
-import { LoadingContext } from "../App";
+import { LoadingContext, LoggedInContext, UserContext } from "../App";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function Login() {
   const { setLoading } = useContext(LoadingContext);
+  const { setUser } = useContext(UserContext);
+  const { setIsLoggedIn } = useContext(LoggedInContext);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,11 +44,36 @@ function Login() {
             setTimeout(() => {
               // alert(JSON.stringify(values, null, 2));
               setLoading(true);
-              console.log(values);
-              // TODO: send this value to backend
-              // TODO: navigate to "/home" after
-              setSubmitting(false);
-              setLoading(false);
+              const LoginUser = async () => {
+                try {
+                  const response = await axios.post(
+                    `${process.env.REACT_APP_DB_API}/login`,
+                    {
+                      email: values.email,
+                      password: values.password,
+                    }
+                  );
+                  localStorage.setItem(
+                    "accessToken",
+                    response.data.data.accessToken
+                  );
+                  localStorage.setItem(
+                    "refreshToken",
+                    response.data.data.currentUser.refreshToken
+                  );
+                  setUser(response.data.data.currentUser);
+                  setIsLoggedIn(true);
+                  navigate("/home");
+                } catch (error) {
+                  toast.error(`${error.response.data.msg}`, {
+                    position: toast.POSITION.TOP_RIGHT,
+                  });
+                } finally {
+                  setSubmitting(false);
+                  setLoading(false);
+                }
+              };
+              LoginUser();
             }, 400);
           }}
         >
