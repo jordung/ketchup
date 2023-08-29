@@ -62,6 +62,7 @@ function SetOrganisation() {
             </motion.h2>
             {isOpen === 1 && (
               <Formik
+                key="create"
                 initialValues={{ organisationname: "" }}
                 validate={(values) => {
                   const errors = {};
@@ -156,6 +157,7 @@ function SetOrganisation() {
             </motion.h2>
             {isOpen === 2 && (
               <Formik
+                key="join"
                 initialValues={{ invitecode: "" }}
                 validate={(values) => {
                   const errors = {};

@@ -10,35 +10,7 @@ import {
 import MarkdownEditor from "./MarkdownEditor";
 import Creatable from "react-select/creatable";
 import TicketSelector from "./TicketSelector";
-
-export const tagDefaultOptions = [
-  { value: "frontend", label: "Frontend" },
-  { value: "backend", label: "Backend" },
-  { value: "bugfix", label: "Bugfix" },
-  { value: "feature", label: "Feature" },
-];
-
-export const colourStyles = {
-  control: (styles) => ({
-    ...styles,
-    backgroundColor: "white",
-    borderRadius: "0.5rem",
-    cursor: "pointer",
-    boxShadow: "none",
-    borderColor: "#E0DFE1",
-    "&:hover": {
-      borderColor: "#E0DFE1",
-    },
-  }),
-  option: (styles, { data, isDisabled, isFocused, isSelected }) => {
-    return {
-      ...styles,
-      backgroundColor: isFocused ? "#F6F6F6" : "white",
-      color: isDisabled ? "#E0DFE1" : "#353535",
-      cursor: isDisabled ? "" : "pointer",
-    };
-  },
-};
+import { tagDefaultOptions, colourStyles } from "../utils/selectSettings";
 
 function AddDocumentCard(props) {
   //TODO: render out tickets dynamically (including a default N.A null option)
