@@ -10,7 +10,7 @@ class UserProfileController extends BaseController {
     this.watcher = watcher;
   }
 
-  // ====== Update Profile Picture ====== //
+  // ====== Get User Profile ====== //
   getOneUser = async (req, res) => {
     const { userId } = req.params;
 
@@ -48,7 +48,7 @@ class UserProfileController extends BaseController {
     }
   };
 
-  // ====== Update Profile Picture ====== //
+  // ====== Update User Profile ====== //
   updateProfilePicture = async (req, res) => {
     const { userId } = req.params;
     const {

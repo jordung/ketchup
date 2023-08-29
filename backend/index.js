@@ -25,8 +25,8 @@ const {
   invitation,
   organisation_admin,
   // priority,
-  // flag,
-  // reaction,
+  flag,
+  reaction,
   // tag,
   ticket,
   // ticket_dependency,
@@ -35,8 +35,8 @@ const {
   watcher,
   // post,
   // post_reaction,
-  // ketchup,
-  // ketchup_reaction,
+  ketchup,
+  ketchup_reaction,
   // agenda,
   // ketchup_agenda,
   // update,
@@ -67,6 +67,17 @@ const invitationController = new InvitationController({
   organisation_admin,
 });
 
+const ketchupController = new KetchupController({
+  user,
+  organisation,
+  flag,
+  reaction,
+  ticket,
+  document,
+  ketchup,
+  ketchup_reaction,
+});
+
 // initialising routers
 //TODO: rmb to pass jwtAuth in protected routes
 const userProfileRouter = new UserProfileRouter(
@@ -76,6 +87,7 @@ const userProfileRouter = new UserProfileRouter(
 
 const authRouter = new AuthRouter(authController).routes();
 const invitationRouter = new InvitationRouter(invitationController).routes();
+const ketchupRouter = new KetchupRouter(ketchupController).routes();
 
 const PORT = process.env.PORT;
 const app = express();
@@ -90,6 +102,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/users", userProfileRouter);
 app.use("/auth", authRouter);
 app.use("/invite", invitationRouter);
+app.use("/ketchup", ketchupRouter);
 
 app.listen(PORT, () => {
   console.log(`Express app listening on port ${PORT}!`);
