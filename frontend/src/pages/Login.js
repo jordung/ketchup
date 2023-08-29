@@ -44,7 +44,7 @@ function Login() {
             setTimeout(() => {
               // alert(JSON.stringify(values, null, 2));
               setLoading(true);
-              const LoginUser = async () => {
+              const loginUser = async () => {
                 try {
                   const response = await axios.post(
                     `${process.env.REACT_APP_DB_API}/login`,
@@ -62,18 +62,17 @@ function Login() {
                     response.data.data.currentUser.refreshToken
                   );
                   setUser(response.data.data.currentUser);
+                  toast.success("Success!");
                   setIsLoggedIn(true);
                   navigate("/home");
                 } catch (error) {
-                  toast.error(`${error.response.data.msg}`, {
-                    position: toast.POSITION.TOP_RIGHT,
-                  });
+                  toast.error(`${error.response.data.msg}`);
                 } finally {
                   setSubmitting(false);
                   setLoading(false);
                 }
               };
-              LoginUser();
+              loginUser();
             }, 400);
           }}
         >
