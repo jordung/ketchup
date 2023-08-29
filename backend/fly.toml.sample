@@ -1,0 +1,35 @@
+# fly.toml app configuration file generated for ketchup on 2023-08-27T15:32:05+08:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 
+primary_region = 
+
+[build]
+
+[deploy]
+  release_command = 
+
+[http_service]
+  internal_port = 
+  force_https = 
+  auto_stop_machines = 
+  auto_start_machines = 
+  min_machines_running = 
+  processes = ["app"]
+
+[env]
+  NODE_ENV = 
+  PORT = 
+
+  DB_USERNAME=
+  DB_NAME=
+  DB_HOST=
+  DB_DIALECT=
+  
+  NODEMAILER_HOST=
+  NODEMAILER_PORT=
+  NODEMAILER_EMAIL=
+  NODEMAILER_PASSWORD=
+  APP_URL=
