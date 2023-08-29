@@ -65,7 +65,10 @@ function App() {
           navigate("/setorganisation");
         }
       } catch (error) {
+        console.log(error);
         navigate("/login");
+      } finally {
+        setLoading(false);
       }
     };
     checkTokenValidity();
@@ -85,7 +88,7 @@ function App() {
       <UserContext.Provider value={{ user, setUser }}>
         <LoggedInContext.Provider value={{ isLoggedIn, setIsLoggedIn }}>
           {loading && <Spinner />}
-          <ToastContainer />
+          <ToastContainer position="bottom-right" />
           {/* {location.pathname === "/home" &&
           ((user !== null && user.emailVerified === false) ||
             user === null) && <VerifyEmailOverlay />} */}
