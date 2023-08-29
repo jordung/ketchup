@@ -20,7 +20,14 @@ class AuthController extends BaseController {
     this.organisation_admin = organisation_admin;
   }
 
-  // ====== Signup through Ketchup & Invite? ====== //
+  // Signup Through Ketchup Flow:
+  // 1. Sign up as new user (organisation id = null)
+  // 2. User to join or create new organisation
+  // 2A. If join organisation: user to provide invite code
+  // 2B. If create new organisation: assign user as the admin user
+  // 3. Verify Email
+
+  // ====== Signup through Ketchup ====== //
   signUp = async (req, res) => {
     const {
       organisationId,
@@ -34,12 +41,12 @@ class AuthController extends BaseController {
     if (!firstName || !lastName || !email || !password || !profilePicture) {
       return res.status(400).json({
         error: true,
-        msg: "Error: missing information in the request.",
+        msg: "Error: Please fill in all required fields and try again.",
       });
     }
 
     try {
-      // check if email exists = existing user
+      // check if user exists
       const existingUser = await this.model.findOne({
         where: { email: email },
       });
@@ -47,7 +54,7 @@ class AuthController extends BaseController {
       if (existingUser) {
         return res.status(400).json({
           error: true,
-          msg: "Error: user already exists.",
+          msg: "Error: An account with this email address already exists.",
         });
       }
 
@@ -84,6 +91,7 @@ class AuthController extends BaseController {
       );
 
       const user = await this.model.findByPk(newUser.id);
+
       // step 6: send verification email after user record has been inserted to database
       const emailSent = await this.sendVerificationEmail(user);
 
@@ -91,22 +99,135 @@ class AuthController extends BaseController {
         return res.status(200).json({
           success: true,
           data: { user, accessToken },
-          msg: "Success: user registered successfully and verification email has been sent to the new user!",
+          msg: "Success: Thank you for joining Ketchup! Your account has been created successfully.",
         });
       } else {
         return res.status(500).json({
           error: true,
-          msg: "Error: unable to send verification email.",
+          msg: "Error: Oops! We encountered a problem while sending the verification email. Please refresh the page and try again.",
         });
       }
     } catch (error) {
       return res.status(400).json({
         error: true,
-        msg: "Error: unable to register user.",
+        msg: "Error: Oops! We stumbled upon an issue while setting up your account. Please refresh the page and try again.",
       });
     }
   };
 
+  // ====== Signup through Invite ====== //
+  signUpThroughInvite = async (req, res) => {
+    const {
+      organisationId,
+      firstName,
+      lastName,
+      email,
+      password,
+      profilePicture,
+      inviteCode,
+    } = req.body;
+
+    if (
+      !organisationId ||
+      !firstName ||
+      !lastName ||
+      !email ||
+      !password ||
+      !profilePicture
+    ) {
+      return res.status(400).json({
+        error: true,
+        msg: "Error: Please fill in all required fields and try again.",
+      });
+    }
+
+    try {
+      // check if user exists
+      const existingUser = await this.model.findOne({
+        where: { email: email },
+      });
+
+      if (existingUser) {
+        return res.status(400).json({
+          error: true,
+          msg: "Error: An account with this email address already exists.",
+        });
+      }
+
+      // validate both invite code and email address before creating a new account
+      const validateInviteCode = await this.invitation.findOne({
+        where: { inviteCode: inviteCode, inviteeEmail: email },
+      });
+
+      if (!validateInviteCode) {
+        return res.status(400).json({
+          error: true,
+          msg: "Error: Incorrect invitation code or email address",
+        });
+      } else {
+        // update is_confirmed in invitation table to true
+        await this.invitation.update({ isConfirmed: true });
+
+        // create new account
+        // step 1: hash password
+        const hashPassword = await bcrypt.hash(password, saltRounds);
+
+        // step 2: create new user
+        const newUser = await this.model.create({
+          organisationId: organisationId,
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          password: hashPassword,
+          profilePicture: profilePicture,
+        });
+
+        // step 3: create a payload for jwt
+        const payload = {
+          id: newUser.id,
+          email: newUser.email,
+        };
+
+        // step 4: create tokens
+        const accessToken = generateAuthToken(payload);
+        const refreshToken = generateAuthToken(payload, true);
+        const verificationToken = generateEmailToken();
+        // step 5: update user info to include refresh token
+        await this.model.update(
+          {
+            refreshToken: refreshToken,
+            verificationToken: verificationToken,
+          },
+          { where: { id: newUser.id } }
+        );
+
+        const user = await this.model.findByPk(newUser.id);
+
+        // step 6: send verification email after user record has been inserted to database
+        const emailSent = await this.sendVerificationEmail(user);
+
+        if (emailSent) {
+          return res.status(200).json({
+            success: true,
+            data: { user, accessToken },
+            msg: "Success: Thank you for joining Ketchup! Your account has been created successfully.",
+          });
+        } else {
+          return res.status(500).json({
+            error: true,
+            msg: "Error: Oops! We encountered a problem while sending the verification email. Please refresh the page and try again.",
+          });
+        }
+      }
+    } catch (error) {
+      return res.status(400).json({
+        error: true,
+        msg: "Error: Oops! We stumbled upon an issue while setting up your account. Please refresh the page and try again.",
+      });
+    }
+  };
+
+  // ====== Verify Email ====== //
   verifyEmail = async (req, res) => {
     // receive token from query parameter in the URL
     const { token } = req.query;
@@ -114,7 +235,7 @@ class AuthController extends BaseController {
     if (!token) {
       return res.status(400).json({
         error: true,
-        msg: "Error: missing verification token.",
+        msg: "Error: Please provide the verification code.",
       });
     }
 
@@ -127,7 +248,7 @@ class AuthController extends BaseController {
       if (!user) {
         return res.status(404).json({
           error: true,
-          msg: "Error: user not found or invalid verification token.",
+          msg: "Error: Invalid verification code",
         });
       } else {
         // update email verified to true
@@ -151,13 +272,13 @@ class AuthController extends BaseController {
         return res.status(200).json({
           success: true,
           data: { verifiedUser },
-          msg: "Success: email verified!",
+          msg: "Success: Your email address has been successfully verified!",
         });
       }
     } catch (error) {
       return res.status(400).json({
         error: true,
-        msg: "Error: unable to verify email.",
+        msg: "Error: Your email address could not be verified. Please try again.",
       });
     }
   };
@@ -169,28 +290,28 @@ class AuthController extends BaseController {
     if (!email || !password) {
       return res.status(400).json({
         error: true,
-        msg: "Error: missing email or password.",
+        msg: "Error: Please fill in all required fields and try again.",
       });
     }
 
     try {
-      // step 1: check if user email exists
+      // step 1: check if user exists
       const user = await this.model.findOne({ where: { email } });
 
       if (!user) {
         return res.status(404).json({
           error: true,
-          msg: "Error: user email not found.",
+          msg: "Error: Account not found",
         });
       } else {
-        // note: bcrypt compare returns BOOLEAN
+        // note: bcrypt compare returns boolean
         const compare = await bcrypt.compare(password, user.password);
 
         // step 2: compare input password with the password store in database
         if (!compare) {
           return res.status(400).json({
             error: true,
-            msg: "Error: incorrect password.",
+            msg: "Error: Incorrect password",
           });
         }
 
@@ -229,21 +350,20 @@ class AuthController extends BaseController {
         return res.status(200).json({
           success: true,
           data: { currentUser, is_admin: isAdmin, accessToken },
-          msg: "Success: user has logged in successfully!",
+          msg: "Success: You are now logged into your account.",
         });
       }
     } catch (error) {
       return res.status(400).json({
         error: true,
-        msg: "Error: login unsuccessful.",
+        msg: "Error: Please try again with the correct email and password.",
       });
     }
   };
 
   // ====== Logout ====== //
   logout = async (req, res) => {
-    // step 1: retrieve id from jwt payload
-    const { userId } = req.user.id;
+    const { userId } = req.body;
     try {
       // step 2: remove user's refreshToken from database
       await this.model.update(
@@ -253,12 +373,12 @@ class AuthController extends BaseController {
 
       return res.status(200).json({
         success: true,
-        msg: "Success: user logged out successfully!",
+        msg: "Success: You've been successfully logged out!",
       });
     } catch (error) {
       return res.status(400).json({
         error: true,
-        msg: "Error: logout unsuccessful.",
+        msg: "Error: We encountered a problem while attempting to log you out. Please refresh the page and try again.",
       });
     }
   };
@@ -271,7 +391,7 @@ class AuthController extends BaseController {
     if (!refreshToken) {
       return res.status(401).json({
         error: true,
-        msg: "Error: missing refresh token.",
+        msg: "Error: We are unable to proceed with your request. Please try again later or contact our support team for further assistance.",
       });
     }
     try {
@@ -292,19 +412,20 @@ class AuthController extends BaseController {
       if (!user) {
         return res.status(404).json({
           success: true,
-          msg: "Error: user not found.",
+          msg: "Error: Account not found",
         });
       }
-      // step 5: pass access token in res for FE to retrieve
+
+      // step 5: pass user information in res for FE to retrieve
       return res.status(200).json({
         success: true,
         data: user,
-        msg: "Success: user is authenticated!",
+        msg: "Success: You are now logged into your account.",
       });
     } catch (error) {
       return res.status(400).json({
         error: true,
-        msg: "Error: unable to authenticate user.",
+        msg: "Error: We encountered an issue while attempting to log you in. Please refresh the page and try again.",
       });
     }
   };
@@ -317,7 +438,7 @@ class AuthController extends BaseController {
     if (!refreshToken) {
       return res.status(401).json({
         error: true,
-        msg: "Error: missing refresh token.",
+        msg: "Error: We are unable to proceed with your request. Please try again later or contact our support team for further assistance.",
       });
     }
     try {
@@ -338,7 +459,7 @@ class AuthController extends BaseController {
       if (!user) {
         return res.status(404).json({
           success: true,
-          msg: "Error: user not found.",
+          msg: "Error: Account not found",
         });
       }
 
@@ -352,19 +473,19 @@ class AuthController extends BaseController {
       return res.status(200).json({
         success: true,
         data: { user, accessToken },
-        msg: "Success: access token renewed successfully!",
+        msg: "Success: You are now logged into your account.",
       });
     } catch (error) {
       return res.status(400).json({
         error: true,
-        msg: "Error: unable to renew access token.",
+        msg: "Error: We encountered an issue while attempting to log you in. Please refresh the page and try again.",
       });
     }
   };
 
   // ====== Join or Create Organisation ====== //
   joinOrCreateOrganisation = async (req, res) => {
-    const { control, organisationName, inviteCode, userId } = req.body;
+    const { control, organisationName, inviteCode, userId, email } = req.body;
 
     try {
       let user;
@@ -392,10 +513,11 @@ class AuthController extends BaseController {
         user = await this.model.findOne({ where: { id: userId } });
       } else if (control === 2) {
         // 2 = join organisation
-        // step 1: find organisation based on the invitation code
+        // step 1: find organisation based on the invitation code and email
         const joinOrganisation = await this.invitation.findOne({
-          where: { inviteCode },
+          where: { inviteCode, inviteeEmail: email },
         });
+        console.log("joinOrganisation", joinOrganisation);
 
         // step 2: update user record with the organisation_id
         await this.model.update(
@@ -404,29 +526,36 @@ class AuthController extends BaseController {
           },
           { where: { id: userId } }
         );
+        console.log("updated");
 
         // step 3: update is_confirmed to true
-        await this.invitation.update({
-          isConfirmed: true,
-        });
+        await this.invitation.update(
+          {
+            isConfirmed: true,
+          },
+          { where: { inviteeEmail: email } }
+        );
+
+        console.log("isConfirmed");
 
         user = await this.model.findOne({ where: { id: userId } });
+        console.log("user", user);
       } else {
         return res.status(400).json({
           error: true,
-          msg: "Error: invalid request.",
+          msg: "Error: Invalid request. Please try again.",
         });
       }
 
       return res.status(200).json({
         success: true,
         data: user,
-        msg: "Success: user has joined or created organisation successfully!",
+        msg: "Success: You are now a member of the organisation!",
       });
     } catch (error) {
       return res.status(400).json({
         error: true,
-        msg: "Error: unable to join or create organisation.",
+        msg: "Error: We encountered an error while handling your request. Please try again.",
       });
     }
   };
@@ -435,9 +564,9 @@ class AuthController extends BaseController {
   deleteOneUser = async (req, res) => {
     const { userId } = req.params;
     const transaction = await sequelize.transaction();
-    console.log("userId", userId);
 
     try {
+      // check if user exists
       const user = await this.model.findByPk(userId, {
         include: [
           {
@@ -445,13 +574,11 @@ class AuthController extends BaseController {
           },
         ],
       });
-      console.log("user", user);
 
-      // check if user exists
       if (!user) {
         return res.status(404).json({
           error: true,
-          msg: "Error: user not found.",
+          msg: "Error: Account not found",
         });
       }
 
@@ -472,12 +599,12 @@ class AuthController extends BaseController {
       await transaction.commit();
       return res.status(200).json({
         success: true,
-        msg: "Success: user has been removed from Ketchup!",
+        msg: "Success: User account has been removed from Ketchup!",
       });
     } catch (error) {
       return res.status(400).json({
         error: true,
-        msg: "Error: unable to remove user.",
+        msg: "Error: We encountered an error while handling your request. Please try again.",
       });
     }
   };
@@ -500,7 +627,7 @@ class AuthController extends BaseController {
         },
       ],
     };
-    console.log(__dirname); // Print the current directory
+
     try {
       await createTransporter.sendMail(message);
       return true;

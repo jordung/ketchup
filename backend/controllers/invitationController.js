@@ -13,16 +13,13 @@ class InvitationController extends BaseController {
     this.organisation_admin = organisation_admin;
   }
 
-  // FLOW:
-  // 1. Organisation admin to invite new users
-  // 2. Invitation email will be sent to the invitee's email address
-  // 3. The invitee will be directed to Ketchup's signup page and register as new user
-
-  //TODO: grab organisationId from token
-
-  //? To check with Jordan the following:
-  // step 6: verify email address? do we sill need this step?
-  // step 7: update user table with is confirmed = true, refresh token, and if need send email verification then emailVerified = true
+  // Signup Through Invite Flow:
+  // 1. New user will be invited by their organisation admin
+  // 2. An invitation email will be sent to the invitee's email address
+  // 3. The invitee will be redirected to Ketchup's signup page and register as a new user
+  // 4. The organisation id will be retrieved via query params
+  // 5. Proceed with the signup request passing user info + organisation id
+  // 6. Verify Email
 
   // ====== invite users ====== //
   inviteUsers = async (req, res) => {
@@ -43,17 +40,15 @@ class InvitationController extends BaseController {
 
     // return true if user is an admin
     const isAdmin = inviter.organisation_admin !== null;
-    console.log("step 2 check isAdmin:", isAdmin);
 
     if (!isAdmin) {
-      return res.status(400).json({
+      return res.status(401).json({
         error: true,
-        msg: "Error: invitation request can only be made by admin users.",
+        msg: "Error: You are not authorised to send invitation request.",
       });
     }
 
     const organisationName = inviter.organisation.name;
-    console.log("organisationName:", organisationName);
 
     try {
       // generate invitation code
@@ -69,8 +64,6 @@ class InvitationController extends BaseController {
       // send the invitation email
       const createTransporter = await transporter;
       const invitationLink = `${process.env.APP_URL}/invite?token=${invitationCode}`;
-      console.log("invitationLink", invitationLink);
-      console.log("invitationLink", organisationName);
 
       const message = {
         from: process.env.NODEMAILER_EMAIL,
@@ -90,59 +83,65 @@ class InvitationController extends BaseController {
           },
         ],
       };
-      console.log("message", message);
+      // console.log("message", message);
 
       await createTransporter.sendMail(message);
 
       return res.status(200).json({
         success: true,
-        msg: "Success: invitation sent!",
+        msg: "Success: An email invitation has been sent to the email address!",
       });
     } catch (error) {
       return res.status(400).json({
         error: true,
-        msg: "Error: unable to send invitation.",
+        msg: "Error: We encountered an issue while attempting to send the invite. Please refresh the page and try again.",
       });
     }
   };
 
-  // ====== Get Organisation Id ====== //
+  // ====== Get Organisation ====== //
   getOrganissation = async (req, res) => {
-    // receive token from query parameter in the URL
+    // receive invite code from URL query parameter
     const { inviteCode } = req.query;
 
     if (!inviteCode) {
       return res.status(400).json({
         error: true,
-        msg: "Error: missing invitation code.",
+        msg: "Error: Please provide the invitation code.",
       });
     }
 
     try {
-      // find user based on the verification token
+      // check if user has indeed been invited to join organisation
       const invitee = await this.invitation.findOne({
         where: { inviteCode: inviteCode },
+        include: [
+          {
+            model: this.organisation,
+          },
+        ],
       });
 
       if (!invitee) {
         return res.status(404).json({
           error: true,
-          msg: "Error: invitee not found or invalid invitation code.",
+          msg: "Error: Invalid verification code",
         });
       } else {
-        // update email verified to true
-        const organisationId = invitee.organisationId;
+        // retrieve organisation id and pass to FE
+        const organisation = invitee.organisation;
+        console.log("organisation", organisation);
 
         return res.status(200).json({
           success: true,
-          data: organisationId,
-          msg: "Success: email verified!",
+          data: organisation,
+          msg: "Success: You have been invited by your organisation to join Ketchup!",
         });
       }
     } catch (error) {
       return res.status(400).json({
         error: true,
-        msg: "Error: unable to verify email.",
+        msg: "Error: We are unable to proceed with your request. Please try again later or contact our support team for further assistance.",
       });
     }
   };

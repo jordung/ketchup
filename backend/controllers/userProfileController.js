@@ -38,12 +38,12 @@ class UserProfileController extends BaseController {
       return res.status(200).json({
         success: true,
         data: user,
-        msg: "Success: user information retrieved successfully!",
+        msg: "Success: Retrieved user information!",
       });
     } catch (error) {
       return res.status(400).json({
         error: true,
-        msg: "Error: unable to retrieve user information.",
+        msg: "Error: We encountered an error while handling your request. Please try again.",
       });
     }
   };
@@ -79,12 +79,12 @@ class UserProfileController extends BaseController {
       return res.status(200).json({
         success: true,
         data: user,
-        msg: "Success: user logged out successfully!",
+        msg: "Success: user logged out successfully!", //TODO
       });
     } catch (error) {
       return res.status(400).json({
         error: true,
-        msg: "Error: logout unsuccessful.",
+        msg: "Error: logout unsuccessful.", //TODO
       });
     }
   };

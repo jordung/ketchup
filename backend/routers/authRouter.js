@@ -8,6 +8,7 @@ class AuthRouter {
   routes() {
     // use POST when there's change of state (e.g. from authenticated to unauthenticated)
     router.post("/signup", this.controller.signUp);
+    router.post("/signupthroughinvite", this.controller.signUpThroughInvite);
     router.get("/verify", this.controller.verifyEmail);
     router.post("/organisation", this.controller.joinOrCreateOrganisation);
 

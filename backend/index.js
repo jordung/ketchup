@@ -9,11 +9,13 @@ const jwtAuth = require("./middlewares/jwtAuth");
 const UserProfileRouter = require("./routers/userProfileRouter");
 const AuthRouter = require("./routers/authRouter");
 const InvitationRouter = require("./routers/invitationRouter");
+const KetchupRouter = require("./routers/ketchupRouter");
 
 // importing Controllers
 const UserProfileController = require("./controllers/userProfileController");
 const AuthController = require("./controllers/authController");
 const InvitationController = require("./controllers/invitationController");
+const KetchupController = require("./controllers/ketchupControllers");
 
 // importing DB
 const db = require("./db/models/index");
