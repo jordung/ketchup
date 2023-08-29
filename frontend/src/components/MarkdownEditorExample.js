@@ -1,13 +1,55 @@
-function TESTNotifications() {
+import React, { useEffect, useState } from "react";
+import { BlockNoteView, useBlockNote } from "@blocknote/react";
+import "@blocknote/core/style.css";
+
+function MarkdownEditor() {
+  const [body, setBody] = useState("");
+  const editor = useBlockNote({
+    onEditorContentChange: (editor) => {
+      const saveBlocksAsMarkdown = async () => {
+        const markdown = await editor.blocksToMarkdown(editor.topLevelBlocks);
+        setBody(markdown);
+      };
+      saveBlocksAsMarkdown();
+    },
+  });
+  const viewer = useBlockNote({
+    editable: false,
+  });
+
+  useEffect(() => {
+    if (viewer) {
+      // Whenever the current Markdown content changes, converts it to an array
+      // of Block objects and replaces the editor's content with them.
+      const getBlocks = async () => {
+        const blocks = await viewer.markdownToBlocks(body);
+        viewer.replaceBlocks(viewer.topLevelBlocks, blocks);
+      };
+      getBlocks();
+    }
+  }, [editor, body]);
+
   return (
-    <>
-      <button
+    <div className="h-screen w-screen">
+      <p className="text-3xl font-bold">Input</p>
+      <BlockNoteView editor={editor} theme={"light"} />
+      <br />
+      <p className="text-3xl font-bold">
+        Convert input to markdown to store into state and send to backend
+      </p>
+      <p>{body}</p>
+      <br />
+      <p className="text-3xl font-bold">
+        Pulling markdown state and transforming it back into text{" "}
+      </p>
+      <BlockNoteView editor={viewer} theme={"dark"} />
+      {/* <button
         type="button"
         className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm"
         data-hs-overlay="#hs-overlay-example"
       >
         Open offcanvas
-      </button>
+      </button> */}
       <div
         id="hs-overlay-example"
         className="hs-overlay hs-overlay-open:translate-x-0 -translate-x-full fixed top-0 left-0 transition-all duration-300 transform h-full max-w-xs w-full z-[60] bg-white border-r hidden"
@@ -43,8 +85,8 @@ function TESTNotifications() {
           </p>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
-export default TESTNotifications;
+export default MarkdownEditor;

@@ -7,3 +7,19 @@ html {
   font-family: "Quicksand", Helvetica, Arial;
   background-color: #ffffff !important;
 }
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+html::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+html {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.input {
+  @apply focus:outline-none;
+  @apply focus:ring-0;
+}

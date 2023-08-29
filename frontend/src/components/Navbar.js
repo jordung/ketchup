@@ -15,7 +15,6 @@ function Navbar() {
               draggable="false"
               src={logo}
               alt="logo"
-              //   onClick={() => navigate(isAuthenticated ? "/home" : "/")}
             />
           </button>
         </div>
@@ -42,7 +41,7 @@ function Navbar() {
               className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
             >
               <li>
-                <p>Login</p>
+                <p onClick={() => navigate("/login")}>Login</p>
               </li>
               <li>
                 <p onClick={() => navigate("/signup")}>Signup</p>
@@ -53,7 +52,10 @@ function Navbar() {
           <div className="hidden xl:flex">
             {/* desktop view of quicklinks */}
             <ul className="menu menu-horizontal px-1 gap-4">
-              <button className="hidden btn btn-ghost btn-sm normal-case xl:h-10 xl:inline-flex">
+              <button
+                className="hidden btn btn-ghost btn-sm normal-case xl:h-10 xl:inline-flex"
+                onClick={() => navigate("/login")}
+              >
                 <p className="text-sm font-semibold">Login</p>
               </button>
               <button

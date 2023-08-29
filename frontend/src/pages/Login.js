@@ -2,11 +2,10 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import logo from "../assets/ketchup-logo.png";
 import { useContext, useEffect } from "react";
 import { LoadingContext } from "../App";
-import Spinner from "../components/Spinner";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
-  const { loading, setLoading } = useContext(LoadingContext);
+  const { setLoading } = useContext(LoadingContext);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,7 +14,6 @@ function Login() {
 
   return (
     <div className="h-screen flex justify-center items-center">
-      {loading && <Spinner />}
       <div className="flex flex-col items-center justify-center w-full xl:w-1/2">
         <h2 className="text-2xl font-semibold">Login</h2>
         <Formik
@@ -45,6 +43,7 @@ function Login() {
               // TODO: send this value to backend
               // TODO: navigate to "/home" after
               setSubmitting(false);
+              setLoading(false);
             }, 400);
           }}
         >
