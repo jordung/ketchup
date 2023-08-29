@@ -1,13 +1,112 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quicksand:wght@300;400;500;600;700&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  font-family: "Quicksand", Helvetica, Arial;
+  background-color: #ffffff !important;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* Hide scrollbar for Chrome, Safari and Opera */
+html::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+html {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.input {
+  @apply focus:outline-none;
+  @apply focus:ring-0;
+}
+
+.Toastify__toast--error {
+  border-radius: 0.5rem !important;
+  background: #fae1e2 !important;
+}
+
+.Toastify__toast--error::after {
+  /* content: url("../assets/images/svg/closeToast.svg"); */
+  position: absolute;
+  color: #333333;
+  /* font-size: 0.75rem; */
+  /* font-weight: 600; */
+  left: 265px;
+  padding-top: 14px !important;
+}
+
+.Toastify__toast--error::before {
+  /* content: url("../assets/images/svg/errorToast.svg"); */
+  position: relative;
+  z-index: 100000;
+  left: 12px;
+  top: 6px;
+}
+
+.Toastify__toast--success {
+  border-radius: 0.5rem !important;
+  background: #f0f9fa !important;
+}
+
+.Toastify__toast--success::before {
+  /* content: url("../assets/images/svg/successToast.svg"); */
+  position: relative;
+  z-index: 100000;
+  left: 12px;
+  top: 6px;
+}
+
+.Toastify__toast--success::after {
+  /* content: url("../assets/images/svg/closeToast.svg"); */
+  position: absolute;
+  color: #333333;
+  font-size: 15px;
+  font-weight: 700;
+  left: 265px;
+  padding-top: 14px !important;
+}
+.Toastify__toast--warning {
+  border-radius: 0.5rem !important;
+  background: #fadfc5 !important;
+}
+.Toastify__toast--warning::before {
+  /* content: url("../assets/images/svg/warnToast.svg"); */
+  position: relative;
+  z-index: 100000;
+  left: 12px;
+  top: 6px;
+}
+.Toastify__toast--warning::after {
+  /* content: url("../assets/images/svg/closeToast.svg"); */
+  position: absolute;
+  color: #e78326;
+  font-size: 15px;
+  font-weight: 700;
+  left: 265px;
+  padding-top: 14px !important;
+}
+
+.Toastify__toast {
+  font-family: "Quicksand", Helvetica, Arial !important;
+  --toastify-color-progress-light: #353535;
+}
+
+.Toastify__toast-body {
+  color: #444c63;
+  font-size: 0.75rem;
+  padding-left: 20px;
+  line-height: 20px;
+  padding: 0px;
+  padding-top: 25px;
+  width: 100%;
+  font-weight: 600;
+  margin-left: 25px !important;
+}
+
+.Toastify__toast > button > svg {
+  display: none;
 }
