@@ -83,7 +83,6 @@ class InvitationController extends BaseController {
           },
         ],
       };
-      // console.log("message", message);
 
       await createTransporter.sendMail(message);
 

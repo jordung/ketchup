@@ -1,59 +1,87 @@
 const BaseController = require("./baseController");
+const { Op } = require("sequelize");
 
 class KetchupController extends BaseController {
-  constructor({ user, invitation, organisation, organisation_admin }) {
-    super(user);
+  constructor({
+    user,
+    organisation,
+    flag,
+    reaction,
+    ticket,
+    document,
+    ketchup,
+    ketchup_reaction,
+  }) {
+    super(ketchup);
     this.user = user;
-    this.invitation = invitation;
     this.organisation = organisation;
-    this.organisation_admin = organisation_admin;
+    this.flag = flag;
+    this.reaction = reaction;
+    this.ticket = ticket;
+    this.document = document;
+    this.ketchup = ketchup;
+    this.ketchup_reaction = ketchup_reaction;
   }
 
-  // Signup Through Invite Flow:
-  // 1. New user will be invited by their organisation admin
-  // 2. An invitation email will be sent to the invitee's email address
-  // 3. The invitee will be redirected to Ketchup's signup page and register as a new user
-  // 4. The organisation id will be retrieved via query params
-  // 5. Proceed with the signup request passing user info + organisation id
-  // 6. Verify Email
+  // in homepage, display users who has posted ketchups + those that haven't
+  // display all ketchups (agenda and update) for that day
+  // ketchups to include reactions, tickets, documents, user info + organisation
+  // all posts + reactions + tickets
 
-  // ====== Get Organisation Id ====== //
-  getOrganissation = async (req, res) => {
-    // receive invite code from URL query parameter
-    const { inviteCode } = req.query;
+  // ====== Get Daily Ketchups ====== //
+  getDailyKetchups = async (req, res) => {
+    const { userId } = req.body; //get req.body is diff for FE
 
-    if (!inviteCode) {
-      return res.status(400).json({
-        error: true,
-        msg: "Error: Please provide the invitation code.",
-      });
-    }
+    const currentDate = new Date();
+    const nextDate = new Date(currentDate);
+    nextDate.setDate(nextDate.getDate() + 1);
 
     try {
-      // check if user has indeed been invited to join organisation
-      const invitee = await this.invitation.findOne({
-        where: { inviteCode: inviteCode },
+      // retrieve user information + organisationId and name
+      const user = await this.user.findByPk(userId, {
+        include: [
+          {
+            model: this.organisation,
+            attributes: ["id", "name"],
+          },
+        ],
       });
 
-      if (!invitee) {
-        return res.status(404).json({
-          error: true,
-          msg: "Error: Invalid verification code",
-        });
-      } else {
-        // retrieve organisation id and pass to FE
-        const organisationId = invitee.organisationId;
+      // retrieve organisationId to return all daily ketchups for that organisation
+      const organisation = user.organisation.id;
+      console.log("organisation id", organisation);
 
-        return res.status(200).json({
-          success: true,
-          data: organisationId,
-          msg: "Success: You have been invited by your organisation to join Ketchup!",
-        });
-      }
+      const dailyKetchups = await this.model.findAll(
+        {
+          include: [
+            {
+              model: this.user,
+              as: "creator",
+            },
+          ],
+        },
+        {
+          where: {
+            organisationId: organisation,
+            createdAt: {
+              [Op.gte]: currentDate,
+              [Op.lt]: nextDate,
+            },
+          },
+        }
+      );
+
+      // ? check w jordan if he needs user obj?
+
+      return res.status(200).json({
+        success: true,
+        data: { user, dailyKetchups },
+        msg: "Success: All daily ketchups retrieved!",
+      });
     } catch (error) {
       return res.status(400).json({
         error: true,
-        msg: "Error: We are unable to proceed with your request. Please try again later or contact our support team for further assistance.",
+        msg: "Error: We encountered an error while retrieving daily ketchups. Please try again.",
       });
     }
   };

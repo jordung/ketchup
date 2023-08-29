@@ -7,8 +7,7 @@ class KetchupRouter {
     // this.jwtAuth = jwtAuth;
   }
   routes() {
-    // router.post("/", this.controller.inviteUsers);
-    // router.get("/id", this.controller.getOrganissation);
+    router.get("/", this.controller.getDailyKetchups);
     return router;
   }
 }
