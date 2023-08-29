@@ -8,9 +8,16 @@ import logo from "../assets/ketchup-logo-bottle.png";
 import jordan from "../assets/landing/jordan.jpeg";
 import jaelyn from "../assets/landing/jaelyn.jpg";
 import { useNavigate } from "react-router-dom";
+import { useContext, useEffect } from "react";
+import { LoadingContext } from "../App";
 
 function Landing() {
+  const { setLoading } = useContext(LoadingContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setLoading(false);
+  }, []);
 
   return (
     <div className="min-h-screen bg-white pt-16 md:pt-20 w-full">
@@ -96,7 +103,7 @@ function Landing() {
         <div>
           <img src={logo} alt="logo" className="w-16 h-auto" />
           <p className="font-bold">
-            Ketchup Ltd <br />
+            The Ketchup Corner <br />
             Starting up since 2023.
           </p>
           <p>Copyright © 2023 - All right reserved</p>

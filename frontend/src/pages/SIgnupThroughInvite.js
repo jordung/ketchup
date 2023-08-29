@@ -1,21 +1,19 @@
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import logo from "../assets/ketchup-logo.png";
 import { useContext, useEffect, useState } from "react";
-import { LoadingContext, UserContext } from "../App";
-import { useNavigate } from "react-router-dom";
+import { LoadingContext } from "../App";
+import { useNavigate, useParams } from "react-router-dom";
 import Avatar, { genConfig } from "react-nice-avatar";
 import domtoimage from "dom-to-image";
 import { PiArrowsCounterClockwiseBold, PiTrashBold } from "react-icons/pi";
+import { FaArrowLeftLong } from "react-icons/fa6";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase";
 import { v4 as uuidv4 } from "uuid";
 import { AnimatePresence, motion } from "framer-motion";
-import axios from "axios";
 
-function Signup() {
+function SignupThroughInvite() {
   const { setLoading } = useContext(LoadingContext);
-  const { setUser } = useContext(UserContext);
-
   const [refresh, setRefresh] = useState(true);
   const [showFirstStep, setShowFirstStep] = useState(true);
   const [profilePictureFile, setProfilePictureFile] = useState(null);
@@ -23,6 +21,13 @@ function Signup() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const { inviteCode } = useParams();
+
+  console.log(inviteCode);
+
+  //TODO: use inviteCode to grab organisationId and organisationName
+  const organisationName = "Handshake";
 
   const config = genConfig();
   const navigate = useNavigate();
@@ -53,36 +58,22 @@ function Signup() {
         STORAGE_KEY + profilePictureFile.name
       );
       uploadBytes(storageRefInstance, profilePictureFile).then((snapshot) => {
-        getDownloadURL(storageRefInstance, profilePictureFile.name).then(
-          (url) => {
-            const sendSignupInformation = async () => {
-              const response = await axios.post(
-                `${process.env.REACT_APP_DB_API}/signup`,
-                {
-                  firstName: firstName,
-                  lastName: lastName,
-                  email: email,
-                  password: password,
-                  profilePicture: url,
-                }
-              );
-              console.log(response.data);
-              setUser(response.data.data.user);
-
-              localStorage.setItem(
-                "accessToken",
-                response.data.data.accessToken
-              );
-              localStorage.setItem(
-                "refreshToken",
-                response.data.data.user.refreshToken
-              );
-              setLoading(false);
-              navigate("/setorganisation");
-            };
-            sendSignupInformation();
-          }
-        );
+        getDownloadURL(storageRefInstance, profilePictureFile.name)
+          .then((url) => {
+            console.log({
+              firstName: firstName,
+              lastName: lastName,
+              email: email,
+              password: password,
+              profilePicture: url,
+            });
+            // TODO: send userInfo to backend
+            // TODO: navigate to home
+          })
+          .then(() => {
+            setLoading(false);
+            navigate("/setorganisation");
+          });
       });
     } else {
       const filename = uuidv4();
@@ -102,35 +93,22 @@ function Signup() {
 
         const storageRefInstance = ref(storage, STORAGE_KEY + filename);
         uploadBytes(storageRefInstance, blob).then((snapshot) => {
-          getDownloadURL(storageRefInstance, filename).then((url) => {
-            const sendSignupInformation = async () => {
-              const response = await axios.post(
-                `${process.env.REACT_APP_DB_API}/signup`,
-                {
-                  firstName: firstName,
-                  lastName: lastName,
-                  email: email,
-                  password: password,
-                  profilePicture: url,
-                }
-              );
-
-              console.log(response.data);
-              setUser(response.data.data.user);
-
-              localStorage.setItem(
-                "accessToken",
-                response.data.data.accessToken
-              );
-              localStorage.setItem(
-                "refreshToken",
-                response.data.data.user.refreshToken
-              );
+          getDownloadURL(storageRefInstance, filename)
+            .then((url) => {
+              console.log({
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                password: password,
+                profilePicture: url,
+              });
+              // TODO: send userInfo to backend
+              // TODO: navigate to home
+            })
+            .then(() => {
               setLoading(false);
               navigate("/setorganisation");
-            };
-            sendSignupInformation();
-          });
+            });
         });
       }
     }
@@ -141,6 +119,7 @@ function Signup() {
       <AnimatePresence mode="wait">
         {showFirstStep ? (
           // * Step 1: Render out form to collect user information
+
           <motion.div
             key="0"
             initial={{ opacity: 0 }}
@@ -149,8 +128,10 @@ function Signup() {
             exit={{ opacity: 0 }}
             className="flex flex-col items-center justify-center w-full xl:w-1/2"
           >
-            {" "}
-            <h2 className="text-2xl font-semibold">Sign Up</h2>
+            <h2 className="text-2xl font-semibold w-5/6 text-center">
+              You're on your way to{" "}
+              <span className="italic text-primary">{organisationName}</span>
+            </h2>
             <Formik
               initialValues={{
                 firstname: "",
@@ -186,16 +167,14 @@ function Signup() {
                 return errors;
               }}
               onSubmit={(values, { setSubmitting }) => {
-                setTimeout(() => {
-                  setLoading(true);
-                  setFirstName(values.firstname);
-                  setLastName(values.lastname);
-                  setEmail(values.email);
-                  setPassword(values.password);
-                  setSubmitting(false);
-                  setShowFirstStep(false);
-                  setLoading(false);
-                }, 400);
+                setLoading(true);
+                setFirstName(values.firstname);
+                setLastName(values.lastname);
+                setEmail(values.email);
+                setPassword(values.password);
+                setSubmitting(false);
+                setShowFirstStep(false);
+                setLoading(false);
               }}
             >
               {({ isSubmitting }) => (
@@ -308,15 +287,6 @@ function Signup() {
                   >
                     Continue
                   </button>
-                  <p className="text-sm font-semibold mt-4">
-                    Already have an account with us?{" "}
-                    <span
-                      className="underline text-secondary btn btn-link p-0 normal-case btn-sm"
-                      onClick={() => navigate("/login")}
-                    >
-                      Login now!
-                    </span>
-                  </p>
                 </Form>
               )}
             </Formik>
@@ -331,12 +301,19 @@ function Signup() {
             exit={{ opacity: 0 }}
             className="flex flex-col items-center justify-center w-full xl:w-1/2"
           >
-            {" "}
             <h2 className="text-2xl font-semibold">Set Your Avatar</h2>
             <p className="text-sm text-center w-3/4">
               You can choose from any of our existing avatars, or feel free to
               upload your own picture!
             </p>
+            <div className="flex justify-start w-3/4 px-2">
+              <button
+                className="btn btn-ghost btn-sm normal-case"
+                onClick={() => setShowFirstStep(true)}
+              >
+                <FaArrowLeftLong /> Back
+              </button>
+            </div>
             <div className="relative h-auto w-auto">
               {!profilePictureFile ? (
                 <>
@@ -396,4 +373,4 @@ function Signup() {
   );
 }
 
-export default Signup;
+export default SignupThroughInvite;
