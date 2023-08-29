@@ -1,10 +1,11 @@
 import { useContext, useEffect } from "react";
 import logo from "../assets/ketchup-logo.png";
-import { LoadingContext } from "../App";
+import { LoadingContext, LoggedInContext } from "../App";
 import { useNavigate } from "react-router-dom";
 
 function Error() {
   const { setLoading } = useContext(LoadingContext);
+  const { isLoggedIn } = useContext(LoggedInContext);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,7 +40,7 @@ function Error() {
           </p>
           <button
             className="text-sm btn btn-primary normal-case btn-sm w-full mt-2"
-            onClick={() => navigate("/home")}
+            onClick={() => navigate(isLoggedIn ? "/home" : "/")}
           >
             Back
           </button>

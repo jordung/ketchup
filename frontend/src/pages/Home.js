@@ -12,7 +12,7 @@ function Home() {
 
   const [composePost, setComposePost] = useState(false);
 
-  // console.log(user);
+  console.log(user);
 
   useEffect(() => {
     setLoading(false);
