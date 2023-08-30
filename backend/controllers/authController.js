@@ -1,5 +1,6 @@
 const BaseController = require("./baseController");
 const { sequelize } = require("../db/models/index");
+const { Op } = require("sequelize");
 
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -166,7 +167,12 @@ class AuthController extends BaseController {
         });
       } else {
         // update is_confirmed in invitation table to true
-        await this.invitation.update({ isConfirmed: true });
+        await this.invitation.update(
+          {
+            isConfirmed: true,
+          },
+          { where: { inviteeEmail: email } }
+        );
 
         // create new account
         // step 1: hash password
@@ -489,35 +495,62 @@ class AuthController extends BaseController {
 
     try {
       let user;
+      let organisation;
+
+      const formattedOrganisationName = organisationName.toLowerCase();
       // 1 = create organisation
       if (control === 1) {
-        // step 1: create new organisation
-        const newOrganisation = await this.organisation.create({
-          name: organisationName,
+        const checkExisting = await this.organisation.findOne({
+          where: { name: { [Op.iLike]: formattedOrganisationName } },
         });
 
-        // step 2: add user to the newly created organisation
-        await this.model.update(
-          {
+        if (checkExisting) {
+          return res.status(400).json({
+            error: true,
+            msg: "Error: Organisation name taken, please pick another name.",
+          });
+        } else {
+          // step 1: create new organisation
+          const newOrganisation = await this.organisation.create({
+            name: organisationName,
+          });
+
+          // step 2: add user to the newly created organisation
+          await this.model.update(
+            {
+              organisationId: newOrganisation.id,
+            },
+            { where: { id: userId } }
+          );
+
+          // step 3: assign user as admin
+          await this.organisation_admin.create({
+            userId: userId,
             organisationId: newOrganisation.id,
-          },
-          { where: { id: userId } }
-        );
+          });
 
-        // step 3: assign user as admin
-        await this.organisation_admin.create({
-          userId: userId,
-          organisationId: newOrganisation.id,
-        });
+          user = await this.model.findOne({ where: { id: userId } });
+          organisation = await this.organisation.findByPk(user.organisationId);
 
-        user = await this.model.findOne({ where: { id: userId } });
+          return res.status(200).json({
+            success: true,
+            data: user,
+            msg: `Success: You have created ${organisation.name}!`,
+          });
+        }
       } else if (control === 2) {
         // 2 = join organisation
         // step 1: find organisation based on the invitation code and email
         const joinOrganisation = await this.invitation.findOne({
           where: { inviteCode, inviteeEmail: email },
         });
-        console.log("joinOrganisation", joinOrganisation);
+
+        if (!joinOrganisation) {
+          return res.status(400).json({
+            error: true,
+            msg: "Error: Invalid invitation code",
+          });
+        }
 
         // step 2: update user record with the organisation_id
         await this.model.update(
@@ -526,7 +559,6 @@ class AuthController extends BaseController {
           },
           { where: { id: userId } }
         );
-        console.log("updated");
 
         // step 3: update is_confirmed to true
         await this.invitation.update(
@@ -536,22 +568,22 @@ class AuthController extends BaseController {
           { where: { inviteeEmail: email } }
         );
 
-        console.log("isConfirmed");
-
         user = await this.model.findOne({ where: { id: userId } });
-        console.log("user", user);
+        organisation = await this.organisation.findByPk({
+          id: joinOrganisation.organisationId,
+        });
+
+        return res.status(200).json({
+          success: true,
+          data: user,
+          msg: `Success: Success: You have joined ${organisation.name}!`,
+        });
       } else {
         return res.status(400).json({
           error: true,
           msg: "Error: Invalid request. Please try again.",
         });
       }
-
-      return res.status(200).json({
-        success: true,
-        data: user,
-        msg: "Success: You are now a member of the organisation!",
-      });
     } catch (error) {
       return res.status(400).json({
         error: true,

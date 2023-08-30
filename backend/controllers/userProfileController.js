@@ -19,6 +19,10 @@ class UserProfileController extends BaseController {
       const user = await this.model.findByPk(userId, {
         include: [
           {
+            model: this.organisation,
+            attributes: ["id", "name"],
+          },
+          {
             model: this.watcher,
             attributes: ["userId"],
             include: [
@@ -64,22 +68,22 @@ class UserProfileController extends BaseController {
       if (control === 1) {
         // update user model to integrate with slack
         //TODO: slack integration
+      } else if (control === 2) {
+        // 2 = update user information
+        const user = await this.model.update(
+          {
+            firstName: firstName,
+            lastName: lastName,
+            profilePicture: profilePicture,
+          },
+          { where: { id: userId } }
+        );
       }
-
-      // 2 = update user information
-      const user = await this.model.update(
-        {
-          firstName: firstName,
-          lastName: lastName,
-          profilePicture: profilePicture,
-        },
-        { where: { id: userId } }
-      );
 
       return res.status(200).json({
         success: true,
         data: user,
-        msg: "Success: user logged out successfully!", //TODO
+        msg: "Success: Your profile has been updated!", //TODO
       });
     } catch (error) {
       return res.status(400).json({
