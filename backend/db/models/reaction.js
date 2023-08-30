@@ -3,7 +3,10 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Reaction extends Model {
     static associate(models) {
-      this.hasMany(models.ketchup);
+      this.hasMany(models.ketchup, {
+        as: "mood",
+        foreignKey: "reaction_id",
+      });
 
       this.hasMany(models.post_reaction);
       this.belongsToMany(models.user, { through: models.post_reaction });

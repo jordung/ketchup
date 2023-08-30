@@ -63,7 +63,7 @@ class InvitationController extends BaseController {
 
       // send the invitation email
       const createTransporter = await transporter;
-      const invitationLink = `${process.env.APP_URL}/invite?token=${invitationCode}`;
+      const invitationLink = `${process.env.APP_URL}/invite?inviteCode=${invitationCode}`;
 
       const message = {
         from: process.env.NODEMAILER_EMAIL,
@@ -124,7 +124,7 @@ class InvitationController extends BaseController {
       if (!invitee) {
         return res.status(404).json({
           error: true,
-          msg: "Error: Invalid verification code",
+          msg: "Error: Invalid invitation code",
         });
       } else {
         // retrieve organisation id and pass to FE

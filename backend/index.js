@@ -9,13 +9,15 @@ const jwtAuth = require("./middlewares/jwtAuth");
 const UserProfileRouter = require("./routers/userProfileRouter");
 const AuthRouter = require("./routers/authRouter");
 const InvitationRouter = require("./routers/invitationRouter");
-const KetchupRouter = require("./routers/ketchupRouter");
+const HomeRouter = require("./routers/homeRouter");
+const AdminRouter = require("./routers/adminRouter");
 
 // importing Controllers
 const UserProfileController = require("./controllers/userProfileController");
 const AuthController = require("./controllers/authController");
 const InvitationController = require("./controllers/invitationController");
-const KetchupController = require("./controllers/ketchupControllers");
+const HomeController = require("./controllers/homeController");
+const AdminController = require("./controllers/adminController");
 
 // importing DB
 const db = require("./db/models/index");
@@ -33,14 +35,14 @@ const {
   document,
   // document_ticket,
   watcher,
-  // post,
-  // post_reaction,
+  post,
+  post_reaction,
   ketchup,
   ketchup_reaction,
-  // agenda,
-  // ketchup_agenda,
-  // update,
-  // ketchup_update,
+  agenda,
+  ketchup_agenda,
+  update,
+  ketchup_update,
   // notification,
 } = db;
 
@@ -60,6 +62,12 @@ const authController = new AuthController({
   organisation_admin,
 });
 
+const adminController = new AdminController({
+  user,
+  organisation,
+  organisation_admin,
+});
+
 const invitationController = new InvitationController({
   user,
   invitation,
@@ -67,15 +75,21 @@ const invitationController = new InvitationController({
   organisation_admin,
 });
 
-const ketchupController = new KetchupController({
+const homeController = new HomeController({
   user,
   organisation,
   flag,
   reaction,
   ticket,
   document,
+  post,
+  post_reaction,
   ketchup,
   ketchup_reaction,
+  agenda,
+  ketchup_agenda,
+  update,
+  ketchup_update,
 });
 
 // initialising routers
@@ -86,8 +100,9 @@ const userProfileRouter = new UserProfileRouter(
 ).routes();
 
 const authRouter = new AuthRouter(authController).routes();
+const adminRouter = new AdminRouter(adminController).routes();
 const invitationRouter = new InvitationRouter(invitationController).routes();
-const ketchupRouter = new KetchupRouter(ketchupController).routes();
+const homeRouter = new HomeRouter(homeController).routes();
 
 const PORT = process.env.PORT;
 const app = express();
@@ -101,8 +116,9 @@ app.use(express.urlencoded({ extended: false }));
 // using the routers
 app.use("/users", userProfileRouter);
 app.use("/auth", authRouter);
+app.use("/admin", adminRouter);
 app.use("/invite", invitationRouter);
-app.use("/ketchup", ketchupRouter);
+app.use("/home", homeRouter);
 
 app.listen(PORT, () => {
   console.log(`Express app listening on port ${PORT}!`);
