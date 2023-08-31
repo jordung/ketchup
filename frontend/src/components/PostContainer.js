@@ -1,73 +1,39 @@
-import { PiSmileyBold } from "react-icons/pi";
-import jordan from "../assets/landing/jordan.jpeg";
-import { useState } from "react";
-import data from "@emoji-mart/data";
-import Picker from "@emoji-mart/react";
-import TicketCard from "./TicketCard";
+import PostCard from "./PostCard";
+import { PiBeerSteinBold } from "react-icons/pi";
 
-function PostContainer() {
-  const [showReactionsSelector, setShowReactionsSelector] = useState(false);
-  const [emojiObj, setEmojiObj] = useState([{ unicode: "1f60d", count: 1 }]);
-
-  const handleSelectedReaction = (e) => {
-    console.log(e.unified);
-    setShowReactionsSelector(false);
-    setEmojiObj((prevState) => [
-      ...prevState,
-      { unicode: e.unified, count: 1 },
-    ]);
-  };
-
+function PostContainer(props) {
+  const { allPosts } = props;
   return (
-    <div className="w-full rounded-lg shadow-xl mb-4 flex gap-2 items-start p-4 bg-white">
-      <div className="avatar">
-        <div className="w-12 rounded-full relative">
-          <img src={jordan} alt="" />
-        </div>
+    <div className="flex flex-col gap-4 flex-grow">
+      <div className="w-full bg-base-100 rounded-lg p-4">
+        <h3 className="text-xl font-semibold">Newest Posts</h3>
       </div>
-      <div className="flex flex-col items-start w-full">
-        <div className="flex gap-2 items-center">
-          <p className="font-semibold">Jordan Ang</p>
-          <p className="text-xs ">21 August 2023</p>
-        </div>
-        <div>
-          <p className="text-sm">Check out this article!</p>
-        </div>
-        <TicketCard ticketName="FE - Add Homepage" />
-        <div className="flex gap-2 flex-wrap mt-1">
-          {emojiObj.map((emoji, index) => (
-            <div key={index}>
-              <button className="btn btn-xs bg-base-100 border-0 normal-case flex items-center justify-center gap-2">
-                <span>{String.fromCodePoint(parseInt(emoji.unicode, 16))}</span>
-                <span>{emoji.count}</span>
-              </button>
-            </div>
-          ))}
-          <div>
-            <button
-              className="btn btn-xs bg-base-100 border-0 normal-case"
-              onClick={() => setShowReactionsSelector(!showReactionsSelector)}
-            >
-              <PiSmileyBold className="w-6 h-4 text-gray-400" />
-            </button>
-            {showReactionsSelector && (
-              <div className="absolute mt-2 left-16 md:left-auto z-10">
-                <Picker
-                  data={data}
-                  onEmojiSelect={handleSelectedReaction}
-                  theme={"light"}
-                  searchPosition={"none"}
-                  previewPosition={"none"}
-                  navPosition={"none"}
-                  perLine={7}
-                  emojiButtonSize={40}
-                  emojiSize={20}
-                />
-              </div>
-            )}
+      {/* Container for each post */}
+      {allPosts.length > 0 ? (
+        allPosts.map((post) => (
+          <PostCard
+            key={post.id}
+            postId={post.id}
+            userId={post.user.id}
+            profilePicture={post.user.profilePicture}
+            firstName={post.user.firstName}
+            lastName={post.user.lastName}
+            date={post.createdAt}
+            content={post.content}
+            ticket={post.ticket}
+            groupedReactions={post.groupedReactions}
+          />
+        ))
+      ) : (
+        <div className="flex items-start gap-2 px-2">
+          <div className="bg-accent p-1 rounded-full">
+            <PiBeerSteinBold className="w-5 h-5" />
           </div>
+          <span className="font-semibold text-sm">
+            Create a new post to share with your team now!
+          </span>
         </div>
-      </div>
+      )}
     </div>
   );
 }

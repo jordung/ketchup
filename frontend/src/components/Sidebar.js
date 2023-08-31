@@ -12,16 +12,20 @@ import {
   PiBellRingingBold,
 } from "react-icons/pi";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { UserContext } from "../App";
+import VerifyEmailOverlay from "./VerifyEmailOverlay";
 
 function Sidebar() {
   const [showMore, setShowMore] = useState(false);
+  const { user } = useContext(UserContext);
   const navigate = useNavigate();
   const location = useLocation();
 
   return (
     <AnimatePresence>
       <div className="flex flex-row overflow-x-hidden">
+        {user && !user.emailVerified && <VerifyEmailOverlay />}
         <motion.aside
           layout
           className={`${
@@ -80,10 +84,10 @@ function Sidebar() {
                   >
                     <motion.span layout="position">
                       <PiPencilBold
-                        className={`h-9 w-9 text-lg p-2 rounded-full text-white ${
+                        className={`h-9 w-9 text-lg p-2 rounded-full ${
                           location.pathname === "/daily"
-                            ? "bg-neutral"
-                            : "bg-primary"
+                            ? "bg-white text-neutral"
+                            : "bg-primary text-white"
                         }`}
                       />
                     </motion.span>
@@ -104,26 +108,38 @@ function Sidebar() {
                     )}
                   </button>
                 </li>
-                <li className="mt-8">
+                <li className="mt-8 w-full group">
                   <button
-                    htmlFor="notification-panel"
-                    className={`flex flex-row items-center justify-start px-0 lg:px-3 rounded-xl w-full btn btn-ghost group-hover:bg-accent`}
+                    className={`flex flex-row items-center justify-start px-0 lg:px-3 rounded-xl w-full btn btn-ghost ${
+                      location.pathname === "/notifications"
+                        ? "bg-neutral group-hover:bg-neutral"
+                        : "group-hover:bg-accent"
+                    }`}
+                    onClick={() => navigate("/notifications")}
                   >
                     <motion.span layout="position">
                       <PiBellRingingBold
-                        className={`h-10 w-10 p-2 text-lg rounded-full text-neutral group-hover:text-primary`}
+                        className={`h-10 w-10 p-2 text-lg rounded-full text-neutral ${
+                          location.pathname === "/notifications"
+                            ? "text-white"
+                            : "text-neutral group-hover:text-primary"
+                        }`}
                       />
                     </motion.span>
                     {showMore && (
-                      <motion.span
+                      <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.5, delay: 0.5 }}
-                        className={`ml-3 text-sm font-semibold normal-case text-neutral group-hover:text-primary `}
+                        className={`ml-3 text-sm font-semibold normal-case flex flex-col items-start ${
+                          location.pathname === "/notifications"
+                            ? "text-white"
+                            : "text-neutral group-hover:text-primary"
+                        }`}
                       >
-                        Notifications
-                      </motion.span>
+                        <span>Notifications</span>
+                      </motion.div>
                     )}
                   </button>
                 </li>
@@ -203,7 +219,7 @@ function Sidebar() {
                 <li className="w-full group">
                   <button
                     className={`flex flex-row items-center justify-start px-0 lg:px-3 rounded-xl w-full btn btn-ghost ${
-                      location.pathname === "/tickets"
+                      location.pathname.includes("/tickets")
                         ? "bg-neutral group-hover:bg-neutral"
                         : "group-hover:bg-accent"
                     }`}
@@ -212,7 +228,7 @@ function Sidebar() {
                     <motion.span layout="position">
                       <PiTicketBold
                         className={`h-10 w-10 p-2 text-lg rounded-full text-neutral ${
-                          location.pathname === "/tickets"
+                          location.pathname.includes("/tickets")
                             ? "text-white"
                             : "text-neutral group-hover:text-primary"
                         }`}
@@ -225,7 +241,7 @@ function Sidebar() {
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.5, delay: 0.5 }}
                         className={`ml-3 text-sm font-semibold normal-case ${
-                          location.pathname === "/tickets"
+                          location.pathname.includes("/tickets")
                             ? "text-white"
                             : "text-neutral group-hover:text-primary"
                         }`}
@@ -238,7 +254,7 @@ function Sidebar() {
                 <li className="w-full group">
                   <button
                     className={`flex flex-row items-center justify-start px-0 lg:px-3 rounded-xl w-full btn btn-ghost ${
-                      location.pathname === "/documents"
+                      location.pathname.includes("/documents")
                         ? "bg-neutral group-hover:bg-neutral"
                         : "group-hover:bg-accent"
                     }`}
@@ -247,7 +263,7 @@ function Sidebar() {
                     <motion.span layout="position">
                       <PiFilesBold
                         className={`h-10 w-10 p-2 text-lg rounded-full text-neutral ${
-                          location.pathname === "/documents"
+                          location.pathname.includes("/documents")
                             ? "text-white"
                             : "text-neutral group-hover:text-primary"
                         }`}
@@ -260,7 +276,7 @@ function Sidebar() {
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.5, delay: 0.5 }}
                         className={`ml-3 text-sm font-semibold normal-case ${
-                          location.pathname === "/documents"
+                          location.pathname.includes("/documents")
                             ? "text-white"
                             : "text-neutral group-hover:text-primary"
                         }`}
@@ -273,10 +289,56 @@ function Sidebar() {
               </ul>
             </div>
             <ul className="flex flex-col w-full">
-              {/* <li className="w-full group">
-                <button className="flex flex-row items-center justify-start px-0 lg:px-3 rounded-xl w-full btn btn-ghost group-hover:bg-accent">
+              <li className="w-full group">
+                <button
+                  className={`flex flex-row items-center justify-start px-0 lg:px-3 rounded-xl w-full btn btn-ghost ${
+                    location.pathname === `/profile/${user.id}`
+                      ? "bg-neutral group-hover:bg-neutral"
+                      : "group-hover:bg-accent"
+                  }`}
+                  onClick={() => navigate(`/profile/${user.id}`)}
+                >
                   <motion.span layout="position">
-                    <PiUserCirclePlusBold className="h-10 w-10 p-2 text-lg rounded-full text-neutral group-hover:text-primary" />
+                    <img
+                      src={user.profilePicture}
+                      className={`h-6 w-6 m-2 border-2 rounded-full object-cover ${
+                        location.pathname === `/profile/${user.id}`
+                          ? "border-white"
+                          : "group-hover:border-primary border-neutral"
+                      }`}
+                      alt="profile"
+                    />
+                  </motion.span>
+                  {showMore && (
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.5, delay: 0.5 }}
+                      className={`ml-3 text-sm font-semibold normal-case ${
+                        location.pathname === `/profile/${user.id}`
+                          ? "text-white"
+                          : "text-neutral group-hover:text-primary"
+                      }`}
+                    >
+                      Profile
+                    </motion.span>
+                  )}
+                </button>
+              </li>
+              {/* <li className="w-full group">
+                <button
+                  className="flex flex-row items-center justify-start px-0 lg:px-3 rounded-xl w-full btn btn-ghost group-hover:bg-accent"
+                  onClick={() => navigate(`/profile/${user.id}`)}
+                >
+                  <motion.span layout="position">
+                    <img
+                      src={user.profilePicture}
+                      className={`h-6 w-6 m-2 border-neutral border-2 rounded-full object-fill group-hover:border-primary ${
+                        location.pathname.includes("/profile") && "border-white"
+                      }`}
+                      alt="profile"
+                    />
                   </motion.span>
                   {showMore && (
                     <motion.span
@@ -286,7 +348,7 @@ function Sidebar() {
                       transition={{ duration: 0.5, delay: 0.5 }}
                       className="ml-3 text-sm font-semibold normal-case group-hover:text-primary"
                     >
-                      Invite
+                      Profile
                     </motion.span>
                   )}
                 </button>
