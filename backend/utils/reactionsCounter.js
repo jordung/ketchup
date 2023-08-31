@@ -1,104 +1,87 @@
 // calculate the total number of times the emoji has been reacted to by different users in response to the ketchups/posts
 
-const reactionsCounter = (items, table) => {
-  // step 1: initialise object to store reaction for each ketchup/post
-  const reactionsObject = {};
+// object: [ {"icon": "unicode", "userId": [1, 2,3]} ]
+const getAllReactions = (items, table) => {
+  const reactionsWithItems = [];
+  console.log("1: reactionsWithItems", reactionsWithItems);
 
-  // step 2: iterates through each ketchup/post to get ketchup.id/post.id
   items.forEach((item) => {
-    const itemId = item.id;
+    const itemId = item.dataValues.id;
+    console.log("2: itemId", itemId);
+    const groupedReactions = [];
+    console.log("3: groupedReactions", groupedReactions);
 
-    // step 3: iterates through the current ketchup/post to retrieve all reactions (includ. userId and icon) it has received
-    item[table].forEach((reaction) => {
-      const {
-        userId,
-        reaction: { icon },
-      } = reaction;
+    item[table].forEach((model) => {
+      const icon = model.dataValues.reaction.icon;
+      const userId = model.dataValues.userId;
+      console.log("4: icon", icon);
+      console.log("5: userId", userId);
+      console.log("6. model", model);
 
-      // step 4: to check if ketchupId/postId exists in reactionsObject; return empty object if not found
-      if (!reactionsObject[itemId]) {
-        reactionsObject[itemId] = {};
-      }
-
-      // step 5: then, check if the reaction icon already exists within the object; return empty array if not found
-      if (!reactionsObject[itemId][icon]) {
-        reactionsObject[itemId][icon] = [];
-      }
-
-      // step 6: finally, check if userId exists in the array relating to that specific reaction for that ketchup/post, otherwise, add userId to the array
-      if (!reactionsObject[itemId][icon].includes(userId)) {
-        reactionsObject[itemId][icon].push(userId);
-      }
-    });
-  });
-
-  // iterates through reactionsObject and include 'reactionCounts' to store the total number of times the emoji has been reacted to by different users in response to the ketchups/posts
-  return items.map((item) => {
-    const reactionCounts = {};
-
-    // loop through ketchup/post and retrieve the 'icon' for each reaction it receives
-    item[table].forEach((reaction) => {
-      const { icon } = reaction.reaction;
-
-      // check if an entry for that retrieved 'icon' exists, otherwise, initialise an object for the icon and a users array to include users who have reacted with the same icon
-      if (!reactionCounts[icon]) {
-        reactionCounts[icon] = {
-          icon,
-          // if null, return [], else return the array of userIds stored in the reactionsObject
-          users: reactionsObject[item.id]?.[icon] || [],
-        };
+      const newReaction = {
+        icon: icon,
+        userId: [userId],
+      };
+      // Check if an object with the same id already exists
+      const existingReaction = groupedReactions.find(
+        (item) => item.icon === icon
+      );
+      if (existingReaction) {
+        // Append the userId to the existing userId array
+        existingReaction.userId.push(userId);
+      } else {
+        // Add a new object to the array
+        groupedReactions.push(newReaction);
       }
     });
+    console.log("8: groupedReactions", groupedReactions);
 
-    return {
+    reactionsWithItems.push({
       ...item.toJSON(),
-      reactionCounts: Object.values(reactionCounts),
-    };
+      groupedReactions,
+    });
   });
+
+  return reactionsWithItems;
 };
 
-module.exports = reactionsCounter;
+// note: 'items' here refers to either ketchups or posts
+const addReaction = (items) => {
+  const reactionsWithItems = [];
+  // console.log("1: reactionsWithItems", reactionsWithItems);
 
-// const ketchupReactions = {};
-// ketchups.forEach((ketchup) => {
-//   const ketchupId = ketchup.id;
+  const groupedReactions = [];
 
-//   ketchup.ketchup_reactions.forEach((reaction) => {
-//     const {
-//       userId,
-//       reaction: { icon },
-//     } = reaction;
+  items.forEach((item) => {
+    console.log("item", item);
+    const itemId = item.dataValues.ketchupId || item.dataValues.postId;
+    const icon = item.dataValues.reaction.dataValues.icon;
+    const userId = item.dataValues.userId;
+    console.log("icon", icon);
 
-//     if (!ketchupReactions[ketchupId]) {
-//       ketchupReactions[ketchupId] = {};
-//     }
+    const newReaction = {
+      icon: icon,
+      userId: [userId],
+    };
 
-//     if (!ketchupReactions[ketchupId][icon]) {
-//       ketchupReactions[ketchupId][icon] = [];
-//     }
+    // Check if an object with the same id already exists
+    const existingReaction = groupedReactions.find(
+      (item) => item.icon === icon
+    );
+    if (existingReaction) {
+      // Append the userId to the existing userId array
+      existingReaction.userId.push(userId);
+    } else {
+      // Add a new object to the array
+      groupedReactions.push(newReaction);
+    }
+  });
+  reactionsWithItems.push({
+    ...item.toJSON(),
+    groupedReactions,
+  });
 
-//     if (!ketchupReactions[ketchupId][icon].includes(userId)) {
-//       ketchupReactions[ketchupId][icon].push(userId);
-//     }
-//   });
-// });
-// console.log("ketchupReactions", ketchupReactions);
+  return reactionsWithItems;
+};
 
-// const dailyKetchups = ketchups.map((ketchup) => {
-//   const reactionCounts = {};
-
-//   ketchup.ketchup_reactions.forEach((reaction) => {
-//     const { icon } = reaction.reaction;
-
-//     if (!reactionCounts[icon]) {
-//       reactionCounts[icon] = {
-//         icon,
-//         users: ketchupReactions[ketchup.id]?.[icon] || [],
-//       };
-//     }
-//   });
-//   return {
-//     ...ketchup.toJSON(),
-//     reactionCounts: Object.values(reactionCounts),
-//   };
-// });
+module.exports = { getAllReactions, addReaction };
