@@ -5,8 +5,9 @@ import { PiHandWavingBold } from "react-icons/pi";
 function KetchupContainer(props) {
   const { dailyKetchups, usersWithoutKetchups } = props;
 
+  //TODO: FIX KETCHUP CONTAINER;
   return (
-    <div className="min-w-full xl:min-w-[72rem] max-w-min rounded-lg shadow-xl">
+    <div className="min-w-full xl:min-w-[75%] max-w-min rounded-lg shadow-xl">
       <div className="w-full bg-base-100 rounded-t-lg p-4">
         <h3 className="text-xl font-semibold">Today's Ketchup</h3>
         <div className="mt-2 flex gap-2 max-w-full overflow-x-auto">
@@ -50,8 +51,7 @@ function KetchupContainer(props) {
                 lastName={ketchup.creator.lastName}
                 createdDate={ketchup.createdAt}
                 agendas={ketchup.ketchup_agendas}
-                reactions={ketchup.ketchup_reactions}
-                reactionCounts={[...ketchup.reactionCounts]}
+                groupedReactions={ketchup.groupedReactions}
                 mood={ketchup.mood}
               />
             ))

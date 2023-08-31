@@ -104,7 +104,9 @@ function App() {
         localStorage.removeItem("refreshToken");
         if (
           !location.pathname.includes("/invite") &&
-          !location.pathname.includes("/verify")
+          !location.pathname.includes("/verify") &&
+          !location.pathname.includes("/signup") &&
+          !location.pathname.includes("/")
         ) {
           navigate("/login");
         }

@@ -59,6 +59,7 @@ function SignupThroughInvite() {
         setOrganisationName(response.data.data.name);
         setOrganisationId(response.data.data.id);
       } catch (error) {
+        navigate("/");
         toast.error(`${error.response.data.msg}`);
       } finally {
         setBlobConfig(genConfig());
