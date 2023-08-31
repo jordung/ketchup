@@ -1,11 +1,10 @@
 import { PiSmileyBold } from "react-icons/pi";
 import slack from "../assets/ketchupcard/slack.png";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import TicketCard from "./TicketCard";
 import moment from "moment";
-import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import axios from "axios";
@@ -28,8 +27,6 @@ function KetchupCard(props) {
   const navigate = useNavigate();
 
   const { user } = useContext(UserContext);
-
-  //TODO: display emojis + update them
 
   const [showReactionsSelector, setShowReactionsSelector] = useState(false);
   const [agendaEmojis, setAgendaEmojis] = useState([...groupedReactions]);
@@ -112,13 +109,10 @@ function KetchupCard(props) {
             },
           }
         );
-        console.log(response);
         const currentPost = response.data.data.find(
           (item) => item.id === ketchupId
         );
         setAgendaEmojis(currentPost.groupedReactions);
-        // console.log(currentKetchup.reactionCounts);
-        // setAgendaEmojis([...currentKetchup.reactionCounts]);
       } catch (error) {
         toast.error(error.response.data.msg);
       } finally {
