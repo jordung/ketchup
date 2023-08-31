@@ -21,6 +21,7 @@ class InvitationController extends BaseController {
   // 5. Proceed with the signup request passing user info + organisation id
   // 6. Verify Email
 
+  // full list of emails + status
   // ====== invite users ====== //
   inviteUsers = async (req, res) => {
     const { userId, inviteeEmail } = req.body;
@@ -63,7 +64,7 @@ class InvitationController extends BaseController {
 
       // send the invitation email
       const createTransporter = await transporter;
-      const invitationLink = `${process.env.APP_URL}/invite?token=${invitationCode}`;
+      const invitationLink = `${process.env.APP_URL}/invite?inviteCode=${invitationCode}`;
 
       const message = {
         from: process.env.NODEMAILER_EMAIL,
@@ -83,12 +84,24 @@ class InvitationController extends BaseController {
           },
         ],
       };
-      // console.log("message", message);
 
       await createTransporter.sendMail(message);
 
+      const invitees = await this.organisation.findByPk(
+        inviter.organisationId,
+        {
+          include: [
+            {
+              model: this.invitation,
+              attributes: ["inviteeEmail", "isConfirmed", "createdAt"],
+            },
+          ],
+        }
+      );
+
       return res.status(200).json({
         success: true,
+        data: invitees,
         msg: "Success: An email invitation has been sent to the email address!",
       });
     } catch (error) {
@@ -125,7 +138,7 @@ class InvitationController extends BaseController {
       if (!invitee) {
         return res.status(404).json({
           error: true,
-          msg: "Error: Invalid verification code",
+          msg: "Error: Invalid invitation code",
         });
       } else {
         // retrieve organisation id and pass to FE
