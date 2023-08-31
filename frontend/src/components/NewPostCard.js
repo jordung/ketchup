@@ -1,9 +1,13 @@
 import TicketSelector from "./TicketSelector";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 function NewPostCard(props) {
   //TODO: render out tickets dynamically (including a default N.A null option)
+  const { setComposePost, setAllPosts, organisationId, userId, setLoading } =
+    props;
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [content, setContent] = useState("");
@@ -23,12 +27,46 @@ function NewPostCard(props) {
     },
   ];
 
-  const handleSubmitNewPost = (e) => {
-    console.log(selectedTicket, content);
-    // TODO: set information to backend
-    setSelectedTicket(null);
-    setContent("");
-    props.setComposePost(false);
+  const handleSubmitNewPost = async (e) => {
+    const accessToken = localStorage.getItem("accessToken");
+    console.log({
+      organisationId: organisationId,
+      userId: userId,
+      ticketId: selectedTicket,
+      content: content,
+    });
+
+    if (!content.length > 0) {
+      toast.error("Unable to share empty content!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_DB_API}/home/post`,
+        {
+          organisationId: organisationId,
+          userId: userId,
+          ticketId: selectedTicket,
+          content: content,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      setAllPosts(response.data.data);
+      toast.success("Successfully posted!");
+    } catch (error) {
+      toast.error(error.response.data.msg);
+    } finally {
+      setSelectedTicket(null);
+      setContent("");
+      setComposePost(false);
+      setLoading(false);
+    }
   };
 
   return (

@@ -17,6 +17,7 @@ function Preferences() {
   const navigate = useNavigate();
 
   const [dailyKetchupTime, setDailyKetchupTime] = useState("");
+  const [organisationId, setOrganisationId] = useState();
   const [inviteeEmail, setInviteeEmail] = useState("");
 
   const users = [
@@ -35,13 +36,61 @@ function Preferences() {
   ];
 
   useEffect(() => {
-    setLoading(false);
+    const getOrganisationPreferences = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_DB_API}/admin/${user.organisationId}`
+        );
+        setDailyKetchupTime({
+          value: response.data.data.time,
+          label: response.data.data.time.slice(0, 5),
+        });
+        setOrganisationId(response.data.data.id);
+      } catch (error) {
+        toast.error(error.response.data.msg);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getOrganisationPreferences();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    console.log(dailyKetchupTime);
-  }, [dailyKetchupTime]);
+  const handleUpdateDailyKetchupTime = async (value) => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const response = await axios.put(
+        `${process.env.REACT_APP_DB_API}/admin/${organisationId}`,
+        {
+          time: value.value.slice(0, 5),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      setDailyKetchupTime({
+        value: response.data.data.time,
+        label: response.data.data.time.slice(0, 5),
+      });
+      toast.success("Successfully updated Daily Ketchup Timing");
+    } catch (error) {
+      toast.error(error.response.data.msg);
+    }
+  };
+
+  const handleInvite = async () => {
+    // TODO: send email & ?? to BE
+    if (inviteeEmail === "") {
+      toast.error("Invitee email is empty");
+      return;
+    }
+    console.log(inviteeEmail);
+    setInviteeEmail("");
+    toast.success("Invite sent!");
+  };
 
   const handleLogout = async () => {
     setLoading(true);
@@ -74,22 +123,6 @@ function Preferences() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleUpdateDailyKetchupTime = async (value) => {
-    setDailyKetchupTime(value);
-    toast.success("Successfully updated Daily Ketchup Timing");
-  };
-
-  const handleInvite = async () => {
-    // TODO: send email & ?? to BE
-    if (inviteeEmail === "") {
-      toast.error("Invitee email is empty");
-      return;
-    }
-    console.log(inviteeEmail);
-    setInviteeEmail("");
-    toast.success("Invite sent!");
   };
 
   return (
@@ -125,6 +158,7 @@ function Preferences() {
                 styles={colourStyles}
                 options={timeIntervals}
                 onChange={handleUpdateDailyKetchupTime}
+                value={dailyKetchupTime}
                 placeholder="Select a timing..."
               />
             </div>

@@ -14,7 +14,7 @@ function SetOrganisation() {
   const { user, setUser } = useContext(UserContext);
   const [isOpen, setIsOpen] = useState(null);
 
-  console.log(user);
+  // console.log(user);
 
   const navigate = useNavigate();
 

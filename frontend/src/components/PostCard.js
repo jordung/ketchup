@@ -104,7 +104,7 @@ function PostCard(props) {
             },
           }
         );
-        const currentPost = response.data.data.getPostReactions.find(
+        const currentPost = response.data.data.find(
           (item) => item.id === postId
         );
         setAgendaEmojis(currentPost.groupedReactions);
