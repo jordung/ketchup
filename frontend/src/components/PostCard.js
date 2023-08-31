@@ -52,7 +52,6 @@ function PostCard(props) {
 
   const handleAddReaction = (e) => {
     const inputEmoji = typeof e === "object" ? e.unified : e;
-    console.log(inputEmoji);
     const updateEmojiInformation = async () => {
       try {
         const response = await axios.post(
@@ -70,15 +69,13 @@ function PostCard(props) {
             },
           }
         );
-        console.log(response.data.data);
-        const currentPost = response.data.data.find(
+        const currentPost = response.data.data.getPostReactions.find(
           (item) => item.id === postId
         );
         setAgendaEmojis(currentPost.groupedReactions);
         // console.log(currentKetchup.reactionCounts);
         // setAgendaEmojis([...currentKetchup.reactionCounts]);
       } catch (error) {
-        console.log(error);
         toast.error(error.response.data.msg);
       } finally {
         setShowReactionsSelector(false);
@@ -92,7 +89,6 @@ function PostCard(props) {
     const inputEmoji = typeof e === "object" ? e.unified : e;
     const updateEmojiInformation = async () => {
       try {
-        console.log("deleting");
         const response = await axios.delete(
           `${process.env.REACT_APP_DB_API}/home`,
           {
@@ -108,15 +104,13 @@ function PostCard(props) {
             },
           }
         );
-        console.log(response.data.data);
-        const currentPost = response.data.data.find(
+        const currentPost = response.data.data.getPostReactions.find(
           (item) => item.id === postId
         );
         setAgendaEmojis(currentPost.groupedReactions);
         // console.log(currentKetchup.reactionCounts);
         // setAgendaEmojis([...currentKetchup.reactionCounts]);
       } catch (error) {
-        console.log(error);
         toast.error(error.response.data.msg);
       } finally {
         setShowReactionsSelector(false);
@@ -155,7 +149,6 @@ function PostCard(props) {
               className="btn btn-xs bg-base-100 border-0 normal-case tooltip before:text-xs"
               data-tip="Add reaction..."
               onClick={handleTogglePopover}
-              // onBlur={() => setShowReactionsSelector(false)}
             >
               <PiSmileyBold className="w-6 h-4 text-neutral" />
             </button>
@@ -177,7 +170,6 @@ function PostCard(props) {
                 <Picker
                   data={data}
                   onEmojiSelect={handleAddReaction}
-                  // onBlur={() => setShowReactionsSelector(false)}
                   theme={"light"}
                   searchPosition={"none"}
                   previewPosition={"none"}
@@ -192,8 +184,10 @@ function PostCard(props) {
           {agendaEmojis.map((emoji) => (
             <div key={emoji.icon}>
               <button
-                className={`btn btn-xs border-0 normal-case flex items-center justify-center gap-2 ${
-                  emoji.userId.includes(user.id) ? "bg-accent" : "bg-base-100"
+                className={`btn btn-xs normal-case flex items-center justify-center gap-2 ${
+                  emoji.userId.includes(user.id)
+                    ? "bg-accent border-primary"
+                    : "bg-base-100 border-0"
                 }`}
                 onClick={() => {
                   if (!emoji.userId.includes(user.id)) {

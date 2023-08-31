@@ -210,7 +210,7 @@ function Profile() {
                           htmlFor="watching-drawer"
                           className="drawer-overlay"
                         ></label>
-                        <ul className="menu p-4 w-80 md:w-1/2 min-h-full bg-base-200 text-base-content">
+                        <ul className="menu p-4 w-80 md:w-1/3 min-h-full bg-base-200 text-base-content">
                           {/* drawer content */}
                           <span className="text-lg font-semibold">
                             Watchlist
