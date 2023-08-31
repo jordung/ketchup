@@ -209,6 +209,7 @@ module.exports = {
       {
         organisation_id: 1,
         user_id: 3,
+        ticket_id: 4,
         content:
           "Our team is actively working to enhance the authentication system, making it more secure and user-friendly. Stay tuned for the latest improvements!",
         created_at: new Date().toISOString(),

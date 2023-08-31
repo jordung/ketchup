@@ -58,47 +58,47 @@ module.exports = {
     // ===== 4: REACTIONS ===== //
     await queryInterface.bulkInsert("reactions", [
       {
-        icon: "\u{1F606}",
+        icon: "1F606",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
       {
-        icon: "\u{1F609}",
+        icon: "1F609",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
       {
-        icon: "\u{1F92A}",
+        icon: "1F92A",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
       {
-        icon: "\u{1F617}",
+        icon: "1F617",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
       {
-        icon: "\u{1F642}",
+        icon: "1F642",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
       {
-        icon: "\u{1F972}",
+        icon: "1F972",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
       {
-        icon: "\u{1F92F}",
+        icon: "1F92F",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
       {
-        icon: "\u{1F971}",
+        icon: "1F971",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
       {
-        icon: "\u{1F927}",
+        icon: "1F927",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },

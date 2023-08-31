@@ -5,7 +5,10 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       this.belongsTo(models.organisation);
       this.belongsTo(models.user, { as: "creator", foreignKey: "user_id" });
-      this.belongsTo(models.reaction);
+      this.belongsTo(models.reaction, {
+        as: "mood",
+        foreignKey: "reaction_id",
+      });
 
       this.hasMany(models.ketchup_agenda, { foreignKey: "ketchup_id" });
       this.hasMany(models.ketchup_update, { foreignKey: "ketchup_id" });
