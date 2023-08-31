@@ -14,7 +14,7 @@ function SetOrganisation() {
   const { user, setUser } = useContext(UserContext);
   const [isOpen, setIsOpen] = useState(null);
 
-  console.log(user);
+  // console.log(user);
 
   const navigate = useNavigate();
 
@@ -172,6 +172,7 @@ function SetOrganisation() {
                   setSubmitting(true);
                   const setOrganisation = async () => {
                     try {
+                      console.log(values);
                       const response = await axios.post(
                         `${process.env.REACT_APP_DB_API}/auth/organisation`,
                         {
@@ -179,6 +180,7 @@ function SetOrganisation() {
                           inviteCode: values.invitecode,
                           userId: user.id,
                           control: isOpen,
+                          email: user.email,
                         }
                       );
                       setUser(response.data.data);
@@ -223,7 +225,7 @@ function SetOrganisation() {
                         type="submit"
                         disabled={isSubmitting}
                       >
-                        Create
+                        Join
                       </button>
                     </Form>
                   </motion.div>

@@ -62,7 +62,15 @@ function Home() {
         layout
         className="mt-2 pb-4 max-w-[calc(100vw_-_5rem)] lg:max-w-[calc(100vw_-_9rem)] flex flex-col gap-4"
       >
-        {composePost && <NewPostCard setComposePost={setComposePost} />}
+        {composePost && (
+          <NewPostCard
+            setComposePost={setComposePost}
+            setAllPosts={setAllPosts}
+            organisationId={user.organisationId}
+            userId={user.id}
+            setLoading={setLoading}
+          />
+        )}
         <motion.div
           layout="position"
           className="flex flex-col gap-4 xl:flex-row xl:items-start"

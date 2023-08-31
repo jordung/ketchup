@@ -1,11 +1,10 @@
 import { PiSmileyBold } from "react-icons/pi";
 import slack from "../assets/ketchupcard/slack.png";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import TicketCard from "./TicketCard";
 import moment from "moment";
-import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import axios from "axios";
@@ -21,8 +20,7 @@ function KetchupCard(props) {
     lastName,
     createdDate,
     agendas,
-    reactions,
-    reactionCounts,
+    groupedReactions,
     mood,
   } = props;
 
@@ -30,10 +28,8 @@ function KetchupCard(props) {
 
   const { user } = useContext(UserContext);
 
-  //TODO: display emojis + update them
-
   const [showReactionsSelector, setShowReactionsSelector] = useState(false);
-  const [agendaEmojis, setAgendaEmojis] = useState(reactionCounts);
+  const [agendaEmojis, setAgendaEmojis] = useState([...groupedReactions]);
   const [popoverPosition, setPopoverPosition] = useState("below");
 
   // determine if reactions selector popover should appear below or above the button based on available space
@@ -55,10 +51,10 @@ function KetchupCard(props) {
     setShowReactionsSelector(!showReactionsSelector);
   };
 
-  const handleSelectedReaction = (e) => {
+  const accessToken = localStorage.getItem("accessToken");
+
+  const handleAddReaction = (e) => {
     const inputEmoji = typeof e === "object" ? e.unified : e;
-    console.log(inputEmoji);
-    const accessToken = localStorage.getItem("accessToken");
     const updateEmojiInformation = async () => {
       try {
         const response = await axios.post(
@@ -76,14 +72,48 @@ function KetchupCard(props) {
             },
           }
         );
-        // console.log(response.data.data);
-        const currentKetchup = response.data.data.find(
+        // console.log(response);
+        const currentPost = response.data.data.getKetchupReactions.find(
           (item) => item.id === ketchupId
         );
-        console.log(currentKetchup.reactionCounts);
-        setAgendaEmojis([...currentKetchup.reactionCounts]);
+        setAgendaEmojis(currentPost.groupedReactions);
+        // console.log(currentKetchup.reactionCounts);
+        // setAgendaEmojis([...currentKetchup.reactionCounts]);
       } catch (error) {
         console.log(error);
+        toast.error(error.response.data.msg);
+      } finally {
+        setShowReactionsSelector(false);
+      }
+    };
+
+    updateEmojiInformation();
+  };
+
+  const handleRemoveReaction = (e) => {
+    const inputEmoji = typeof e === "object" ? e.unified : e;
+    const updateEmojiInformation = async () => {
+      try {
+        const response = await axios.delete(
+          `${process.env.REACT_APP_DB_API}/home`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+            data: {
+              // control = 1, add reaction to ketchup OR control = 2, add reaction to post
+              control: 1,
+              userId: user.id,
+              ketchupId: ketchupId,
+              icon: inputEmoji,
+            },
+          }
+        );
+        const currentPost = response.data.data.find(
+          (item) => item.id === ketchupId
+        );
+        setAgendaEmojis(currentPost.groupedReactions);
+      } catch (error) {
         toast.error(error.response.data.msg);
       } finally {
         setShowReactionsSelector(false);
@@ -191,7 +221,7 @@ function KetchupCard(props) {
               >
                 <Picker
                   data={data}
-                  onEmojiSelect={handleSelectedReaction}
+                  onEmojiSelect={handleAddReaction}
                   theme={"light"}
                   searchPosition={"none"}
                   previewPosition={"none"}
@@ -204,19 +234,24 @@ function KetchupCard(props) {
             )}
           </div>
           {agendaEmojis.map((emoji) => (
-            <div key={uuidv4()}>
+            <div key={emoji.icon}>
               {/*  */}
               <button
                 className={`btn btn-xs normal-case flex items-center justify-center gap-2 ${
-                  emoji.users.includes(user.id)
+                  emoji.userId.includes(user.id)
                     ? "bg-accent border-primary"
-                    : "bg-base-100 border-0"
+                    : "bg-base-100 border-gray-100"
                 }`}
-                // if user reacted - bg-accent, else bg-base-100
-                onClick={() => handleSelectedReaction(emoji.icon)}
+                onClick={() => {
+                  if (!emoji.userId.includes(user.id)) {
+                    handleAddReaction(emoji.icon);
+                  } else {
+                    handleRemoveReaction(emoji.icon);
+                  }
+                }}
               >
                 <span>{String.fromCodePoint(parseInt(emoji.icon, 16))}</span>
-                <span>{emoji.users.length}</span>
+                <span>{emoji.userId.length}</span>
               </button>
             </div>
           ))}
