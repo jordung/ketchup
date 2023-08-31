@@ -64,6 +64,7 @@ const authController = new AuthController({
 
 const adminController = new AdminController({
   user,
+  invitation,
   organisation,
   organisation_admin,
 });

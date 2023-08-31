@@ -21,6 +21,7 @@ class InvitationController extends BaseController {
   // 5. Proceed with the signup request passing user info + organisation id
   // 6. Verify Email
 
+  // full list of emails + status
   // ====== invite users ====== //
   inviteUsers = async (req, res) => {
     const { userId, inviteeEmail } = req.body;
@@ -86,8 +87,21 @@ class InvitationController extends BaseController {
 
       await createTransporter.sendMail(message);
 
+      const invitees = await this.organisation.findByPk(
+        inviter.organisationId,
+        {
+          include: [
+            {
+              model: this.invitation,
+              attributes: ["inviteeEmail", "isConfirmed", "createdAt"],
+            },
+          ],
+        }
+      );
+
       return res.status(200).json({
         success: true,
+        data: invitees,
         msg: "Success: An email invitation has been sent to the email address!",
       });
     } catch (error) {

@@ -9,6 +9,7 @@ class AdminRouter {
   routes() {
     router.get("/:organisationId", this.controller.getOrganisation);
     router.put("/:organisationId", this.controller.updateOrganisationTiming);
+    router.post("/", this.controller.updateMemberStatus);
     return router;
   }
 }
