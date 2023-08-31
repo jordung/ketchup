@@ -1,7 +1,7 @@
 const BaseController = require("./baseController");
 const { Op } = require("sequelize");
 const { startDate, endDate } = require("../utils/getDates");
-const { getAllReactions, addReaction } = require("../utils/reactionsCounter");
+const { getAllReactions } = require("../utils/reactionsCounter");
 
 class HomeController extends BaseController {
   constructor({
@@ -196,10 +196,8 @@ class HomeController extends BaseController {
       return res.status(200).json({
         success: true,
         data: {
-          // dailyKetchups,
           getKetchupReactions,
           usersWithoutKetchups,
-          // allPosts,
           getPostReactions,
         },
         msg: "Success: All daily ketchups retrieved!",
@@ -217,6 +215,8 @@ class HomeController extends BaseController {
   // 1 -> check if icon exists in reaction table, add reaction to ketchup_reaction
   // 2 --> check if icon exists in reaction table, add reaction to post_reaction
 
+  // 3 scenarios: (1) user reacted w a new emoji, (2) user reacted w an existing emoji for the first time, and (3) user reacted w an existing emoji for the second time - no new entry will be added to database.
+
   // ====== Add One Reaction ====== //
   addOneReaction = async (req, res) => {
     const { control, userId, ketchupId, postId, icon } = req.body;
@@ -224,149 +224,174 @@ class HomeController extends BaseController {
 
     try {
       const formattedIcon = icon.toUpperCase();
+      console.log("formattedIcon", formattedIcon);
 
       const existingIcon = await this.reaction.findOne({
         where: { icon: formattedIcon },
       });
+      console.log("existingIcon", existingIcon);
 
       const user = await this.user.findByPk(userId);
 
-      if (control === 1) {
-        // existing entry checks if user has already reacted w this icon for that specific ketchupId
-        const existingEntry = await this.ketchup_reaction.findOne({
-          where: {
-            userId: userId,
-            ketchupId: ketchupId,
-            reactionId: existingIcon.id,
-          },
+      if (!existingIcon) {
+        await this.reaction.create({ icon: formattedIcon });
+        const newIcon = await this.reaction.findOne({
+          where: { icon: formattedIcon },
         });
-        if (!existingEntry && !existingIcon) {
-          const newIcon = await this.reaction.create({ icon: formattedIcon });
+        if (control === 1) {
           await this.ketchup_reaction.create({
             userId: userId,
             ketchupId: ketchupId,
             reactionId: newIcon.id,
           });
-        } else if (!existingEntry && existingIcon) {
-          // if existing icon && not existing entry
-          await this.ketchup_reaction.create({
-            userId: userId,
-            ketchupId: ketchupId,
-            reactionId: existingIcon.id,
-          });
-        }
-
-        const dailyKetchups = await this.model.findAll({
-          include: [
-            {
-              model: this.ketchup_reaction,
-              separate: true,
-              attributes: ["userId", "ketchupId", "reactionId", "createdAt"],
-              include: [
-                {
-                  model: this.reaction,
-                  attributes: ["icon"],
-                },
-              ],
-            },
-          ],
-          where: {
-            organisationId: user.organisationId,
-          },
-          attributes: ["id", "organisationId", "createdAt", "updatedAt"],
-          order: [["id", "DESC"]],
-        });
-
-        const getKetchupReactions = getAllReactions(
-          dailyKetchups,
-          "ketchup_reactions"
-        );
-
-        return res.status(200).json({
-          success: true,
-          data: getKetchupReactions,
-          msg: "Success: Reaction added successfully!",
-        });
-      } else if (control === 2) {
-        // existing entry checks if user has already reacted w this icon for that specific ketchupId
-        const existingEntry = await this.post_reaction.findOne({
-          where: {
-            userId: userId,
-            postId: postId,
-            reactionId: existingIcon.id,
-          },
-        });
-        if (!existingEntry && !existingIcon) {
-          const newIcon = await this.reaction.create({ icon: formattedIcon });
+        } else {
           await this.post_reaction.create({
             userId: userId,
             postId: postId,
             reactionId: newIcon.id,
           });
-        } else if (!existingEntry && existingIcon) {
-          // if existing icon && not existing entry
-          await this.post_reaction.create({
-            userId: userId,
-            postId: postId,
-            reactionId: existingIcon.id,
-          });
         }
-
-        const allPosts = await this.post.findAll({
-          include: [
-            {
-              model: this.post_reaction,
-              separate: true,
-              attributes: ["userId", "postId", "reactionId", "createdAt"],
-              include: [
-                {
-                  model: this.reaction,
-                  attributes: ["icon"],
-                },
-              ],
-            },
-          ],
-          where: {
-            organisationId: user.organisationId,
-          },
-          attributes: ["id", "content", "createdAt"],
-          order: [["id", "DESC"]],
-        });
-
-        const getPostReactions = getAllReactions(allPosts, "post_reactions");
-
-        // const posts = await this.post.findAll({
-        //   include: [
-        //     {
-        //       model: this.post_reaction,
-        //       attributes: ["userId", "createdAt"],
-        //       include: [
-        //         {
-        //           model: this.reaction,
-        //           attributes: ["icon"],
-        //         },
-        //       ],
-        //     },
-        //   ],
-        //   where: {
-        //     organisationId: user.organisationId,
-        //   },
-        //   attributes: ["id", "createdAt"],
-        //   order: [["id", "DESC"]],
-        // });
-
-        // const allPosts = reactionsCounter(posts, "post_reactions");
-        return res.status(200).json({
-          success: true,
-          data: getPostReactions,
-          msg: "Success: Reaction added successfully!",
-        });
       } else {
-        return res.status(400).json({
-          error: true,
-          msg: "Error: Invalid request. Please try again.",
-        });
+        if (control === 1) {
+          const existingEntry = await this.ketchup_reaction.findOne({
+            where: {
+              userId: userId,
+              ketchupId: ketchupId,
+              reactionId: existingIcon.id,
+            },
+          });
+          if (!existingEntry) {
+            await this.ketchup_reaction.create({
+              userId: userId,
+              ketchupId: ketchupId,
+              reactionId: existingIcon.id,
+            });
+          }
+        } else {
+          const existingEntry = await this.post_reaction.findOne({
+            where: {
+              userId: userId,
+              postId: postId,
+              reactionId: existingIcon.id,
+            },
+          });
+          if (!existingEntry) {
+            await this.post_reaction.create({
+              userId: userId,
+              postId: postId,
+              reactionId: existingIcon.id,
+            });
+          }
+        }
       }
+
+      const dailyKetchups = await this.model.findAll({
+        include: [
+          {
+            model: this.ketchup_reaction,
+            separate: true,
+            attributes: ["userId", "ketchupId", "reactionId", "createdAt"],
+            include: [
+              {
+                model: this.reaction,
+                attributes: ["icon"],
+              },
+            ],
+          },
+        ],
+        where: {
+          organisationId: user.organisationId,
+        },
+        attributes: ["id", "organisationId", "createdAt", "updatedAt"],
+        order: [["id", "DESC"]],
+      });
+
+      const getKetchupReactions = getAllReactions(
+        dailyKetchups,
+        "ketchup_reactions"
+      );
+
+      const allPosts = await this.post.findAll({
+        include: [
+          {
+            model: this.post_reaction,
+            separate: true,
+            attributes: ["userId", "postId", "reactionId", "createdAt"],
+            include: [
+              {
+                model: this.reaction,
+                attributes: ["icon"],
+              },
+            ],
+          },
+        ],
+        where: {
+          organisationId: user.organisationId,
+        },
+        attributes: ["id", "content", "createdAt"],
+        order: [["id", "DESC"]],
+      });
+
+      const getPostReactions = getAllReactions(allPosts, "post_reactions");
+
+      return res.status(200).json({
+        success: true,
+        data: { getKetchupReactions, getPostReactions },
+        msg: "Success: Reaction added successfully!",
+      });
+
+      // } else if (control === 2) {
+      //   console.log("i am control 2");
+      //   const existingEntry = await this.post_reaction.findOne({
+      //     where: {
+      //       userId: userId,
+      //       postId: postId,
+      //       reactionId: existingIcon.id,
+      //     },
+      //   });
+      //   if (!existingEntry && !existingIcon) {
+      //     const newIcon = await this.reaction.create({ icon: formattedIcon });
+      //     await this.post_reaction.create({
+      //       userId: userId,
+      //       postId: postId,
+      //       reactionId: newIcon.id,
+      //     });
+      //   } else if (!existingEntry && existingIcon) {
+      //     await this.post_reaction.create({
+      //       userId: userId,
+      //       postId: postId,
+      //       reactionId: existingIcon.id,
+      //     });
+      //   }
+
+      // const allPosts = await this.post.findAll({
+      //   include: [
+      //     {
+      //       model: this.post_reaction,
+      //       separate: true,
+      //       attributes: ["userId", "postId", "reactionId", "createdAt"],
+      //       include: [
+      //         {
+      //           model: this.reaction,
+      //           attributes: ["icon"],
+      //         },
+      //       ],
+      //     },
+      //   ],
+      //   where: {
+      //     organisationId: user.organisationId,
+      //   },
+      //   attributes: ["id", "content", "createdAt"],
+      //   order: [["id", "DESC"]],
+      // });
+
+      // const getPostReactions = getAllReactions(allPosts, "post_reactions");
+
+      // return res.status(200).json({
+      //   success: true,
+      //   data: getPostReactions,
+      //   msg: "Success: Reaction added successfully!",
+      // });
     } catch (error) {
       return res.status(400).json({
         error: true,
@@ -487,13 +512,12 @@ class HomeController extends BaseController {
   addNewPost = async (req, res) => {
     const { userId, organisationId, ticketId, content } = req.body;
     try {
-      const newPost = await this.post.create({
+      await this.post.create({
         userId,
         organisationId,
         ticketId,
         content,
       });
-      // console.log("newPost", newPost);
 
       const allPosts = await this.post.findAll({
         include: [
@@ -516,7 +540,8 @@ class HomeController extends BaseController {
           },
           {
             model: this.post_reaction,
-            attributes: ["userId"],
+            separate: true,
+            attributes: ["userId", "postId", "reactionId", "createdAt"],
             include: [
               {
                 model: this.reaction,
@@ -525,7 +550,9 @@ class HomeController extends BaseController {
             ],
           },
         ],
-        where: { organisationId },
+        where: {
+          organisationId: organisationId,
+        },
         attributes: ["id", "content", "createdAt"],
         order: [["id", "DESC"]],
       });
@@ -534,7 +561,7 @@ class HomeController extends BaseController {
 
       return res.status(200).json({
         success: true,
-        data: { allPosts, getPostReactions },
+        data: getPostReactions,
         msg: "Success: New post added!",
       });
     } catch (error) {
@@ -547,3 +574,123 @@ class HomeController extends BaseController {
 }
 
 module.exports = HomeController;
+
+// else {
+//   if (control === 1) {
+//     const existingEntry = await this.ketchup_reaction.findOne({
+//       where: {
+//         userId: userId,
+//         ketchupId: ketchupId,
+//         reactionId: existingIcon.id,
+//       },
+//     });
+//     if (!existingEntry) {
+//       await this.ketchup_reaction.create({
+//         userId: userId,
+//         ketchupId: ketchupId,
+//         reactionId: existingIcon.id,
+//       });
+//     }
+//   } else {
+//     const existingEntry = await this.post_reaction.findOne({
+//       where: {
+//         userId: userId,
+//         postId: postId,
+//         reactionId: existingIcon.id,
+//       },
+//     });
+//     if (!existingEntry) {
+//       await this.post_reaction.create({
+//         userId: userId,
+//         postId: postId,
+//         reactionId: existingIcon.id,
+//       });
+//     }
+//   }
+// }
+
+// if (existingIcon) {
+//   let existingEntry;
+//   existingEntry = await this.ketchup_reaction.findOne({
+//     where: {
+//       userId: userId,
+//       ketchupId: ketchupId,
+//       reactionId: existingIcon.id,
+//     },
+//   });
+//   existingEntry = await this.post_reaction.findOne({
+//     where: {
+//       userId: userId,
+//       postId: postId,
+//       reactionId: existingIcon.id,
+//     },
+//   });
+
+//   console.log("existingEntry", existingEntry);
+
+//   if (!existingEntry) {
+//     if (control === 1) {
+//       console.log("i am control 1");
+//       await this.ketchup_reaction.create({
+//         userId: userId,
+//         ketchupId: ketchupId,
+//         reactionId: existingIcon.id,
+//       });
+//       console.log("done adding existing emoji and entry");
+//     } else {
+//       console.log("i am control 2");
+//       await this.post_reaction.create({
+//         userId: userId,
+//         postId: postId,
+//         reactionId: existingIcon.id,
+//       });
+//       console.log("done adding existing emoji and entry");
+//     }
+//   }
+// } else {
+//   if (control === 1) {
+//     console.log("i am control 1");
+//     console.log("adding new emoji");
+//     const newIcon = await this.reaction.create({ icon: formattedIcon });
+//     console.log("newIcon", newIcon);
+
+//     await this.ketchup_reaction.create({
+//       userId: userId,
+//       ketchupId: ketchupId,
+//       reactionId: newIcon.id,
+//     });
+//     console.log("done adding new emoji and entry");
+//   } else {
+//     console.log("i am control 2");
+//     const newIcon = await this.reaction.create({ icon: formattedIcon });
+
+//     await this.post_reaction.create({
+//       userId: userId,
+//       postId: postId,
+//       reactionId: newIcon.id,
+//     });
+//   }
+// }
+
+// if (control === 1) {
+//   console.log("i am control 1");
+//   // existing entry checks if user has already reacted w this icon for that specific ketchupId
+
+//   if (!existingEntry && !existingIcon) {
+//     console.log("adding new emoji");
+//     const newIcon = await this.reaction.create({ icon: formattedIcon });
+//     console.log("newIcon", newIcon);
+
+//     await this.ketchup_reaction.create({
+//       userId: userId,
+//       ketchupId: ketchupId,
+//       reactionId: newIcon.id,
+//     });
+//     console.log("done adding new emoji and entry");
+//   } else if (!existingEntry && existingIcon) {
+//     await this.ketchup_reaction.create({
+//       userId: userId,
+//       ketchupId: ketchupId,
+//       reactionId: existingIcon.id,
+//     });
+//   }
