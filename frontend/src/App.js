@@ -1,12 +1,13 @@
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { createContext, useEffect, useState } from "react";
+import axios from "axios";
 import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Components
 import Navbar from "./components/Navbar";
 import Spinner from "./components/Spinner";
 import Sidebar from "./components/Sidebar";
-// import VerifyEmailOverlay from "./components/VerifyEmailOverlay";
 
 // Pages
 import Landing from "./pages/Landing";
@@ -14,7 +15,7 @@ import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import SetOrganisation from "./pages/SetOrganisation";
-import SignupThroughInvite from "./pages/SIgnupThroughInvite";
+import SignupThroughInvite from "./pages/SignupThroughInvite";
 import DailyKetchup from "./pages/DailyKetchup";
 import Tickets from "./pages/Tickets";
 import Documents from "./pages/Documents";
@@ -23,17 +24,44 @@ import AllKetchups from "./pages/AllKetchups";
 import Document from "./pages/Document";
 import Preferences from "./pages/Preferences";
 import VerifyUser from "./pages/VerifyUser";
+import Profile from "./pages/Profile";
 import Error from "./pages/Error";
-import axios from "axios";
+import Notifications from "./pages/Notifications";
 
 export const LoadingContext = createContext();
 export const UserContext = createContext();
 export const LoggedInContext = createContext();
 
+// TODO DELETE REQUESTS HAVE TO BE STRUCTURED LIKE THIS
+// const handleDeleteComment = (commentId) => {
+// const deleteComment = async () => {
+//   try {
+//     const updatedCommentsList = await axios.delete(
+//       `${process.env.REACT_APP_DB_API}/comments`,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+//         },
+//         data: {
+//           userId: selectedComms.userId,
+//           commsId: selectedComms.commsId,
+//           commentId: commentId,
+//         },
+//       }
+//     );
+//     console.log(updatedCommentsList.data.data);
+//     setCommentsList(updatedCommentsList.data.data);
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
+
 function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -44,7 +72,7 @@ function App() {
     const checkTokenValidity = async () => {
       try {
         const response = await axios.post(
-          `${process.env.REACT_APP_DB_API}/refresh`,
+          `${process.env.REACT_APP_DB_API}/auth/refresh`,
           {
             refreshToken: refreshToken,
           },
@@ -58,7 +86,13 @@ function App() {
         if (response.data.data && response.data.data.organisationId) {
           setUser(response.data.data);
           setIsLoggedIn(true);
-          navigate("/home");
+          if (
+            location.pathname === "/login" ||
+            location.pathname === "/" ||
+            location.pathname === "signup"
+          ) {
+            navigate("/home");
+          }
         } else if (response.data.data && !response.data.data.organisationId) {
           setUser(response.data.data);
           setIsLoggedIn(true);
@@ -66,32 +100,37 @@ function App() {
         }
       } catch (error) {
         console.log(error);
-        navigate("/login");
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        if (
+          !location.pathname.includes("/invite") &&
+          !location.pathname.includes("/verify")
+        ) {
+          navigate("/login");
+        }
       } finally {
         setLoading(false);
       }
     };
     checkTokenValidity();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // * get user on load App if logged in
-  // 1. check localStorage for existing accessToken and refreshToken
-  // 2. send refreshToken to backend (includ. headers: authorisation passing accessToken here) to verify
-  // 3a. BE use refreshToken to return user Obj
-  // 3b. accessToken is invalid, refreshToken is valid -> BE to issue new accessToken + return userObj
-  // 3c. accessToken and refreshToken is invalid -> redirect to “login”
+  // TODO: need to think about how to check accessToken silently
 
-  // ? need to think about how to check accessToken silently
+  if (loading) {
+    return <Spinner />;
+  }
 
   return (
     <LoadingContext.Provider value={{ loading, setLoading }}>
       <UserContext.Provider value={{ user, setUser }}>
         <LoggedInContext.Provider value={{ isLoggedIn, setIsLoggedIn }}>
-          {loading && <Spinner />}
-          <ToastContainer position="bottom-right" />
-          {/* {location.pathname === "/home" &&
-          ((user !== null && user.emailVerified === false) ||
-            user === null) && <VerifyEmailOverlay />} */}
+          <ToastContainer
+            position="bottom-right"
+            pauseOnFocusLoss={false}
+            pauseOnHover={false}
+          />
           <Routes>
             <Route element={<Navbar />}>
               {/* Routes with Navbar */}
@@ -109,7 +148,9 @@ function App() {
                   <Route path="/documents" element={<Documents />} />
                   <Route path="/documents/:documentId" element={<Document />} />
                   <Route path="/allketchups" element={<AllKetchups />} />
+                  <Route path="/profile/:userId" element={<Profile />} />
                   <Route path="/preferences" element={<Preferences />} />
+                  <Route path="/notifications" element={<Notifications />} />
                 </Route>
 
                 {/* Routes without Navbar or Sidebar & Authenticated */}

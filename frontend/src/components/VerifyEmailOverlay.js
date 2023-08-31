@@ -2,7 +2,7 @@ import logo from "../assets/ketchup-logo.png";
 
 function VerifyEmailOverlay() {
   return (
-    <div className="fixed z-50 h-screen backdrop-blur-md flex flex-col justify-center items-center px-2 max-w-[calc(100vw_-_5rem)] lg:min-w-[calc(100vw_-_9rem)]">
+    <div className="fixed z-50 h-screen backdrop-blur-md flex flex-col justify-center items-center px-4 w-screen">
       <img src={logo} alt="logo" className="w-24 object-contain" />
       <div className="flex flex-col items-center justify-center text-center">
         <p className="font-semibold text-sm my-">

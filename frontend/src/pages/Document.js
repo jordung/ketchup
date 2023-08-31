@@ -1,13 +1,15 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import jordan from "../assets/landing/jaelyn.jpg";
+import jaelyn from "../assets/landing/jaelyn.jpg";
 import {
   PiCalendarPlusBold,
   PiCalendarBlankBold,
   PiTagBold,
   PiLinkSimpleBold,
   PiPencilLineBold,
+  PiEyeBold,
+  PiPlusBold,
 } from "react-icons/pi";
 import MarkdownEditor from "../components/MarkdownEditor";
 import Creatable from "react-select/creatable";
@@ -59,6 +61,7 @@ function Document() {
     setDocumentTag(data.documentTag);
     setDocumentContent(data.documentContent);
     setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChangeTag = (value) => {
@@ -156,7 +159,7 @@ function Document() {
 
                   <div className="flex items-center input input-sm bg-white border-1 border-base-200 rounded-lg">
                     <img
-                      src={jordan}
+                      src={jaelyn}
                       alt=""
                       className="h-4 w-4 rounded-full object-cover flex-shrink-0"
                     />
@@ -233,6 +236,42 @@ function Document() {
                         (option) => option.value === documentRelatedTicket
                       )}
                     />
+                  </div>
+
+                  {/* 6th row */}
+                  <div className="flex items-center">
+                    <PiEyeBold className="h-5 w-5" />
+                    <label className="text-sm ml-1 font-semibold">
+                      Watching
+                    </label>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <div className="avatar-group -space-x-2">
+                      <div className="avatar border-none">
+                        <div className="w-8">
+                          <img src={jaelyn} alt="" />
+                        </div>
+                      </div>
+                      <div className="avatar border-none">
+                        <div className="w-8">
+                          <img src={jaelyn} alt="" />
+                        </div>
+                      </div>
+                      <div className="avatar border-none">
+                        <div className="w-8">
+                          <img src={jaelyn} alt="" />
+                        </div>
+                      </div>
+                      <div className="avatar placeholder border-none">
+                        <div className="w-8 bg-base-100 text-neutral">
+                          <span className="text-xs font-semibold">+4</span>
+                        </div>
+                      </div>
+                    </div>
+                    <button className="btn bg-white btn-sm rounded-xl">
+                      <PiPlusBold />
+                    </button>
                   </div>
                 </div>
               </div>

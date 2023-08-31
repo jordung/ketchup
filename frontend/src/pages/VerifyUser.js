@@ -32,8 +32,10 @@ function VerifyUser() {
   useEffect(() => {
     const verifyUser = async () => {
       try {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
         const response = await axios.get(
-          `${process.env.REACT_APP_DB_API}/verify?token=${verificationToken}`
+          `${process.env.REACT_APP_DB_API}/auth/verify?token=${verificationToken}`
         );
         console.log(response);
         if (response.data.success) {
@@ -49,6 +51,7 @@ function VerifyUser() {
     };
 
     verifyUser().then(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

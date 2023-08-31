@@ -1,16 +1,14 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import KetchupContainer from "../components/KetchupContainer";
-import PostContainer from "../components/PostContainer";
 import { motion } from "framer-motion";
-import NewPostCard from "../components/NewPostCard";
 import { LoadingContext } from "../App";
 
 function AllKetchups() {
-  const [composePost, setComposePost] = useState(false);
   const { setLoading } = useContext(LoadingContext);
 
   useEffect(() => {
     setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -25,11 +23,10 @@ function AllKetchups() {
         layout
         className="mt-2 max-w-[calc(100vw_-_5rem)] lg:max-w-[calc(100vw_-_9rem)] flex flex-col gap-4"
       >
-        {composePost && <NewPostCard setComposePost={setComposePost} />}
         <motion.div layout="position" className="flex flex-col gap-4">
-          <KetchupContainer />
-          <KetchupContainer />
-          <KetchupContainer />
+          {/* <KetchupContainer /> */}
+          {/* <KetchupContainer /> */}
+          {/* <KetchupContainer /> */}
         </motion.div>
       </motion.div>
     </div>

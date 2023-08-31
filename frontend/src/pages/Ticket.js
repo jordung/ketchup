@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import jordan from "../assets/landing/jaelyn.jpg";
+import jaelyn from "../assets/landing/jaelyn.jpg";
 import {
   PiHandPalmBold,
   PiCrosshairSimpleBold,
@@ -11,6 +11,8 @@ import {
   PiGitForkBold,
   PiFlagBold,
   PiSpinnerBold,
+  PiEyeBold,
+  PiPlusBold,
 } from "react-icons/pi";
 import MarkdownEditor from "../components/MarkdownEditor";
 import UserSelector from "../components/UserSelector";
@@ -68,6 +70,7 @@ function Ticket() {
     setTicketTag(data.ticketTag);
     setTicketStatus(data.ticketStatus);
     setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChangeTag = (value) => {
@@ -132,12 +135,14 @@ function Ticket() {
       {/* Header */}
       <div className="border-b border-base-100 flex items-center justify-between py-2 overflow-hidden">
         <h2 className="text-2xl font-bold">Ticket</h2>
-        <button
-          className="btn btn-neutral normal-case rounded-xl btn-sm"
-          onClick={() => handleSaveTicket()}
-        >
-          Save Changes
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            className="btn btn-neutral normal-case rounded-xl btn-sm"
+            onClick={() => handleSaveTicket()}
+          >
+            Save Changes
+          </button>
+        </div>
       </div>
 
       {/* Body */}
@@ -185,7 +190,7 @@ function Ticket() {
 
                   <div className="flex items-center input input-sm bg-white border-1 border-base-200 rounded-lg">
                     <img
-                      src={jordan}
+                      src={jaelyn}
                       alt=""
                       className="h-4 w-4 rounded-full object-cover flex-shrink-0"
                     />
@@ -359,6 +364,42 @@ function Ticket() {
                       onClick={() => setTicketStatus(3)}
                     >
                       Completed
+                    </button>
+                  </div>
+
+                  {/* 9th Row */}
+                  <div className="flex items-center">
+                    <PiEyeBold className="h-5 w-5" />
+                    <label className="text-sm ml-1 font-semibold">
+                      Watching
+                    </label>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <div className="avatar-group -space-x-2">
+                      <div className="avatar border-none">
+                        <div className="w-8">
+                          <img src={jaelyn} alt="" />
+                        </div>
+                      </div>
+                      <div className="avatar border-none">
+                        <div className="w-8">
+                          <img src={jaelyn} alt="" />
+                        </div>
+                      </div>
+                      <div className="avatar border-none">
+                        <div className="w-8">
+                          <img src={jaelyn} alt="" />
+                        </div>
+                      </div>
+                      <div className="avatar placeholder border-none">
+                        <div className="w-8 bg-base-100 text-neutral">
+                          <span className="text-xs font-semibold">+4</span>
+                        </div>
+                      </div>
+                    </div>
+                    <button className="btn bg-white btn-sm rounded-xl">
+                      <PiPlusBold />
                     </button>
                   </div>
                 </div>
