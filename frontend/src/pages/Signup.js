@@ -1,22 +1,34 @@
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import logo from "../assets/ketchup-logo.png";
 import { useContext, useEffect, useState } from "react";
-import { LoadingContext, UserContext } from "../App";
+import { LoadingContext, LoggedInContext, UserContext } from "../App";
 import { useNavigate } from "react-router-dom";
 import Avatar, { genConfig } from "react-nice-avatar";
 import domtoimage from "dom-to-image";
-import { PiArrowsCounterClockwiseBold, PiTrashBold } from "react-icons/pi";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import {
+  PiArrowsCounterClockwiseBold,
+  PiTrashBold,
+  PiArrowLeftBold,
+} from "react-icons/pi";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
 import { storage } from "../firebase";
 import { v4 as uuidv4 } from "uuid";
 import { AnimatePresence, motion } from "framer-motion";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 function Signup() {
   const { setLoading } = useContext(LoadingContext);
   const { setUser } = useContext(UserContext);
+  const { setIsLoggedIn } = useContext(LoggedInContext);
 
-  const [refresh, setRefresh] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
+  const [blobConfig, setBlobConfig] = useState();
   const [showFirstStep, setShowFirstStep] = useState(true);
   const [profilePictureFile, setProfilePictureFile] = useState(null);
   const [firstName, setFirstName] = useState("");
@@ -24,10 +36,10 @@ function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const config = genConfig();
   const navigate = useNavigate();
 
   useEffect(() => {
+    setBlobConfig(genConfig());
     setLoading(false);
   }, [setLoading]);
 
@@ -35,18 +47,13 @@ function Signup() {
 
   // to refresh random avatar
   const handleRefreshAvatar = () => {
-    setRefresh(!refresh);
+    setBlobConfig(genConfig());
   };
-
-  useEffect(() => {
-    genConfig();
-  }, [refresh]);
 
   // submit user display picture
   const handleCreateAccount = async () => {
-    setLoading(true);
-
     // check if user has uploaded own profile picture
+    setIsCreating(true);
     if (profilePictureFile) {
       const storageRefInstance = ref(
         storage,
@@ -56,29 +63,38 @@ function Signup() {
         getDownloadURL(storageRefInstance, profilePictureFile.name).then(
           (url) => {
             const sendSignupInformation = async () => {
-              const response = await axios.post(
-                `${process.env.REACT_APP_DB_API}/signup`,
-                {
-                  firstName: firstName,
-                  lastName: lastName,
-                  email: email,
-                  password: password,
-                  profilePicture: url,
-                }
-              );
-              console.log(response.data);
-              setUser(response.data.data.user);
+              try {
+                const response = await axios.post(
+                  `${process.env.REACT_APP_DB_API}/auth/signup`,
+                  {
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: email,
+                    password: password,
+                    profilePicture: url,
+                  }
+                );
+                console.log(response.data);
+                setUser(response.data.data.user);
 
-              localStorage.setItem(
-                "accessToken",
-                response.data.data.accessToken
-              );
-              localStorage.setItem(
-                "refreshToken",
-                response.data.data.user.refreshToken
-              );
-              setLoading(false);
-              navigate("/setorganisation");
+                localStorage.setItem(
+                  "accessToken",
+                  response.data.data.accessToken
+                );
+                localStorage.setItem(
+                  "refreshToken",
+                  response.data.data.user.refreshToken
+                );
+                setIsLoggedIn(true);
+                toast.success(`${response.data.msg}`);
+                navigate("/setorganisation");
+              } catch (error) {
+                const profilePictureRef = ref(storage, url);
+                deleteObject(profilePictureRef);
+                toast.error(`${error.response.data.msg}`);
+              } finally {
+                setIsCreating(false);
+              }
             };
             sendSignupInformation();
           }
@@ -94,7 +110,7 @@ function Signup() {
           style: {
             transform: `scale(${scale}) translate(${
               node.offsetWidth / 2 / scale
-            }px, ${node.offsetHeight / 2 / scale}px)`,
+            }px, ${node.offsetHeight / 2.5 / scale}px)`,
             "border-radius": 0,
           },
           width: node.offsetWidth * scale,
@@ -104,30 +120,39 @@ function Signup() {
         uploadBytes(storageRefInstance, blob).then((snapshot) => {
           getDownloadURL(storageRefInstance, filename).then((url) => {
             const sendSignupInformation = async () => {
-              const response = await axios.post(
-                `${process.env.REACT_APP_DB_API}/signup`,
-                {
-                  firstName: firstName,
-                  lastName: lastName,
-                  email: email,
-                  password: password,
-                  profilePicture: url,
-                }
-              );
+              try {
+                const response = await axios.post(
+                  `${process.env.REACT_APP_DB_API}/auth/signup`,
+                  {
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: email,
+                    password: password,
+                    profilePicture: url,
+                  }
+                );
 
-              console.log(response.data);
-              setUser(response.data.data.user);
+                console.log(response.data);
+                setUser(response.data.data.user);
 
-              localStorage.setItem(
-                "accessToken",
-                response.data.data.accessToken
-              );
-              localStorage.setItem(
-                "refreshToken",
-                response.data.data.user.refreshToken
-              );
-              setLoading(false);
-              navigate("/setorganisation");
+                localStorage.setItem(
+                  "accessToken",
+                  response.data.data.accessToken
+                );
+                localStorage.setItem(
+                  "refreshToken",
+                  response.data.data.user.refreshToken
+                );
+                setIsLoggedIn(true);
+                toast.success(`${response.data.msg}`);
+                navigate("/setorganisation");
+              } catch (error) {
+                const profilePictureRef = ref(storage, url);
+                deleteObject(profilePictureRef);
+                toast.error(`${error.response.data.msg}`);
+              } finally {
+                setIsCreating(false);
+              }
             };
             sendSignupInformation();
           });
@@ -187,14 +212,12 @@ function Signup() {
               }}
               onSubmit={(values, { setSubmitting }) => {
                 setTimeout(() => {
-                  setLoading(true);
                   setFirstName(values.firstname);
                   setLastName(values.lastname);
                   setEmail(values.email);
                   setPassword(values.password);
                   setSubmitting(false);
                   setShowFirstStep(false);
-                  setLoading(false);
                 }, 400);
               }}
             >
@@ -340,7 +363,11 @@ function Signup() {
             <div className="relative h-auto w-auto">
               {!profilePictureFile ? (
                 <>
-                  <Avatar className="w-56 h-56 mt-4" {...config} id="avatar" />
+                  <Avatar
+                    className="w-56 h-56 mt-4"
+                    {...blobConfig}
+                    id="avatar"
+                  />
                   <button
                     className="btn btn-link absolute bottom-0 right-0"
                     onClick={handleRefreshAvatar}
@@ -379,11 +406,17 @@ function Signup() {
                 onChange={(e) => setProfilePictureFile(e.target.files[0])}
               />
               <button
-                className="btn btn-primary w-full rounded-xl max-w-xs md:max-w-lg mt-4 normal-case"
+                className="btn btn-primary w-1/2 rounded-xl max-w-xs md:max-w-lg mt-4 normal-case"
                 onClick={handleCreateAccount}
+                disabled={isCreating}
               >
-                {/* <FaRegCircleCheck className="h-5 w-5" /> */}
                 Create Account
+              </button>
+              <button
+                className="btn btn-base-100 btn-sm w-1/2 rounded-xl max-w-xs md:max-w-lg normal-case"
+                onClick={() => setShowFirstStep(true)}
+              >
+                <PiArrowLeftBold /> Back
               </button>
             </div>
           </motion.div>

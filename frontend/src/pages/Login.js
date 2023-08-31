@@ -5,7 +5,6 @@ import { LoadingContext, LoggedInContext, UserContext } from "../App";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 function Login() {
   const { setLoading } = useContext(LoadingContext);
@@ -15,6 +14,7 @@ function Login() {
 
   useEffect(() => {
     setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -42,12 +42,10 @@ function Login() {
           }}
           onSubmit={(values, { setSubmitting }) => {
             setTimeout(() => {
-              // alert(JSON.stringify(values, null, 2));
-              setLoading(true);
               const loginUser = async () => {
                 try {
                   const response = await axios.post(
-                    `${process.env.REACT_APP_DB_API}/login`,
+                    `${process.env.REACT_APP_DB_API}/auth/login`,
                     {
                       email: values.email,
                       password: values.password,
@@ -69,7 +67,6 @@ function Login() {
                   toast.error(`${error.response.data.msg}`);
                 } finally {
                   setSubmitting(false);
-                  setLoading(false);
                 }
               };
               loginUser();

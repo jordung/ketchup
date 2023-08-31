@@ -1,20 +1,40 @@
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import logo from "../assets/ketchup-logo.png";
 import { useContext, useEffect, useState } from "react";
-import { LoadingContext } from "../App";
-import { useNavigate, useParams } from "react-router-dom";
+import { LoadingContext, LoggedInContext, UserContext } from "../App";
+import { useNavigate } from "react-router-dom";
 import Avatar, { genConfig } from "react-nice-avatar";
 import domtoimage from "dom-to-image";
-import { PiArrowsCounterClockwiseBold, PiTrashBold } from "react-icons/pi";
-import { FaArrowLeftLong } from "react-icons/fa6";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import {
+  PiArrowsCounterClockwiseBold,
+  PiTrashBold,
+  PiArrowLeftBold,
+} from "react-icons/pi";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
 import { storage } from "../firebase";
 import { v4 as uuidv4 } from "uuid";
 import { AnimatePresence, motion } from "framer-motion";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 function SignupThroughInvite() {
   const { setLoading } = useContext(LoadingContext);
-  const [refresh, setRefresh] = useState(true);
+  const { setUser } = useContext(UserContext);
+  const { setIsLoggedIn } = useContext(LoggedInContext);
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const inviteCode = urlParams.get("inviteCode");
+
+  const [organisationName, setOrganisationName] = useState("");
+  const [organisationId, setOrganisationId] = useState();
+
+  const [isCreating, setIsCreating] = useState(false);
+  const [blobConfig, setBlobConfig] = useState(true);
   const [showFirstStep, setShowFirstStep] = useState(true);
   const [profilePictureFile, setProfilePictureFile] = useState(null);
   const [firstName, setFirstName] = useState("");
@@ -22,60 +42,107 @@ function SignupThroughInvite() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const { inviteCode } = useParams();
-
-  console.log(inviteCode);
-
-  //TODO: use inviteCode to grab organisationId and organisationName
-  const organisationName = "Handshake";
-
-  const config = genConfig();
   const navigate = useNavigate();
 
   useEffect(() => {
-    setLoading(false);
-  }, [setLoading]);
+    const getOrganisationInformation = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_DB_API}/invite`,
+          {
+            params: {
+              inviteCode: inviteCode,
+            },
+          }
+        );
+        toast.success(`${response.data.msg}`);
+        setOrganisationName(response.data.data.name);
+        setOrganisationId(response.data.data.id);
+      } catch (error) {
+        toast.error(`${error.response.data.msg}`);
+      } finally {
+        setBlobConfig(genConfig());
+        setLoading(false);
+      }
+    };
+
+    getOrganisationInformation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const STORAGE_KEY = "profile/";
 
   // to refresh random avatar
   const handleRefreshAvatar = () => {
-    setRefresh(!refresh);
+    setBlobConfig(genConfig());
   };
-
-  useEffect(() => {
-    genConfig();
-  }, [refresh]);
 
   // submit user display picture
   const handleCreateAccount = async () => {
-    setLoading(true);
-
+    setIsCreating(true);
     // check if user has uploaded own profile picture
     if (profilePictureFile) {
+      // user uploads own profile picture
       const storageRefInstance = ref(
         storage,
         STORAGE_KEY + profilePictureFile.name
       );
       uploadBytes(storageRefInstance, profilePictureFile).then((snapshot) => {
-        getDownloadURL(storageRefInstance, profilePictureFile.name)
-          .then((url) => {
-            console.log({
-              firstName: firstName,
-              lastName: lastName,
-              email: email,
-              password: password,
-              profilePicture: url,
-            });
-            // TODO: send userInfo to backend
-            // TODO: navigate to home
-          })
-          .then(() => {
-            setLoading(false);
-            navigate("/setorganisation");
-          });
+        getDownloadURL(storageRefInstance, profilePictureFile.name).then(
+          (url) => {
+            const sendSignupThroughInviteInformation = async () => {
+              try {
+                console.log({
+                  firstName: firstName,
+                  lastName: lastName,
+                  email: email,
+                  password: password,
+                  profilePicture: url,
+                  organisationId: organisationId,
+                  inviteCode: inviteCode,
+                });
+                const response = await axios.post(
+                  `${process.env.REACT_APP_DB_API}/auth/signupthroughinvite`,
+                  {
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: email,
+                    password: password,
+                    profilePicture: url,
+                    organisationId: organisationId,
+                    inviteCode: inviteCode,
+                  }
+                );
+
+                console.log(response.data);
+                setUser(response.data.data.user);
+
+                localStorage.setItem(
+                  "accessToken",
+                  response.data.data.accessToken
+                );
+                localStorage.setItem(
+                  "refreshToken",
+                  response.data.data.user.refreshToken
+                );
+
+                setIsLoggedIn(true);
+                toast.success(`${response.data.msg}`);
+                navigate("/home");
+              } catch (error) {
+                toast.error(`${error.response.data.msg}`);
+                const profilePictureRef = ref(storage, url);
+                deleteObject(profilePictureRef);
+              } finally {
+                setIsCreating(false);
+              }
+            };
+            sendSignupThroughInviteInformation();
+          }
+        );
       });
     } else {
+      // user uses default avatar
       const filename = uuidv4();
       const scale = 2;
       const node = document.getElementById("avatar");
@@ -85,7 +152,7 @@ function SignupThroughInvite() {
           style: {
             transform: `scale(${scale}) translate(${
               node.offsetWidth / 2 / scale
-            }px, ${node.offsetHeight / 2 / scale}px)`,
+            }px, ${node.offsetHeight / 2.5 / scale}px)`,
             "border-radius": 0,
           },
           width: node.offsetWidth * scale,
@@ -93,22 +160,57 @@ function SignupThroughInvite() {
 
         const storageRefInstance = ref(storage, STORAGE_KEY + filename);
         uploadBytes(storageRefInstance, blob).then((snapshot) => {
-          getDownloadURL(storageRefInstance, filename)
-            .then((url) => {
-              console.log({
-                firstName: firstName,
-                lastName: lastName,
-                email: email,
-                password: password,
-                profilePicture: url,
-              });
-              // TODO: send userInfo to backend
-              // TODO: navigate to home
-            })
-            .then(() => {
-              setLoading(false);
-              navigate("/setorganisation");
-            });
+          getDownloadURL(storageRefInstance, filename).then((url) => {
+            const sendSignupThroughInviteInformation = async () => {
+              try {
+                console.log({
+                  firstName: firstName,
+                  lastName: lastName,
+                  email: email,
+                  password: password,
+                  profilePicture: url,
+                  organisationId: organisationId,
+                  inviteCode: inviteCode,
+                });
+                const response = await axios.post(
+                  `${process.env.REACT_APP_DB_API}/auth/signupthroughinvite`,
+                  {
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: email,
+                    password: password,
+                    profilePicture: url,
+                    organisationId: organisationId,
+                    inviteCode: inviteCode,
+                  }
+                );
+
+                console.log(response.data);
+                setUser(response.data.data.user);
+
+                localStorage.setItem(
+                  "accessToken",
+                  response.data.data.accessToken
+                );
+                localStorage.setItem(
+                  "refreshToken",
+                  response.data.data.user.refreshToken
+                );
+
+                setIsLoggedIn(true);
+                toast.success(`${response.data.msg}`);
+                navigate("/home");
+              } catch (error) {
+                console.log(error);
+                const profilePictureRef = ref(storage, url);
+                deleteObject(profilePictureRef);
+                toast.error(`${error.response.data.msg}`);
+              } finally {
+                setIsCreating(false);
+              }
+            };
+            sendSignupThroughInviteInformation();
+          });
         });
       }
     }
@@ -167,14 +269,12 @@ function SignupThroughInvite() {
                 return errors;
               }}
               onSubmit={(values, { setSubmitting }) => {
-                setLoading(true);
                 setFirstName(values.firstname);
                 setLastName(values.lastname);
                 setEmail(values.email);
                 setPassword(values.password);
                 setSubmitting(false);
                 setShowFirstStep(false);
-                setLoading(false);
               }}
             >
               {({ isSubmitting }) => (
@@ -306,18 +406,14 @@ function SignupThroughInvite() {
               You can choose from any of our existing avatars, or feel free to
               upload your own picture!
             </p>
-            <div className="flex justify-start w-3/4 px-2">
-              <button
-                className="btn btn-ghost btn-sm normal-case"
-                onClick={() => setShowFirstStep(true)}
-              >
-                <FaArrowLeftLong /> Back
-              </button>
-            </div>
             <div className="relative h-auto w-auto">
               {!profilePictureFile ? (
                 <>
-                  <Avatar className="w-56 h-56 mt-4" {...config} id="avatar" />
+                  <Avatar
+                    className="w-56 h-56 mt-4"
+                    {...blobConfig}
+                    id="avatar"
+                  />
                   <button
                     className="btn btn-link absolute bottom-0 right-0"
                     onClick={handleRefreshAvatar}
@@ -356,11 +452,17 @@ function SignupThroughInvite() {
                 onChange={(e) => setProfilePictureFile(e.target.files[0])}
               />
               <button
-                className="btn btn-primary w-full rounded-xl max-w-xs md:max-w-lg mt-4 normal-case"
+                className="btn btn-primary w-1/2 rounded-xl max-w-xs md:max-w-lg mt-4 normal-case"
                 onClick={handleCreateAccount}
+                disabled={isCreating}
               >
-                {/* <FaRegCircleCheck className="h-5 w-5" /> */}
                 Create Account
+              </button>
+              <button
+                className="btn btn-base-100 btn-sm w-1/2 rounded-xl max-w-xs md:max-w-lg normal-case"
+                onClick={() => setShowFirstStep(true)}
+              >
+                <PiArrowLeftBold /> Back
               </button>
             </div>
           </motion.div>
