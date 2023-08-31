@@ -10,6 +10,7 @@ class HomeRouter {
     router.get("/:userId", this.controller.getDailyKetchups);
     router.post("/", this.controller.addOneReaction);
     router.post("/post", this.controller.addNewPost);
+    router.delete("/", this.controller.removeOneReaction);
     return router;
   }
 }

@@ -1,7 +1,7 @@
 const BaseController = require("./baseController");
 const { Op } = require("sequelize");
 const { startDate, endDate } = require("../utils/getDates");
-const reactionsCounter = require("../utils/reactionsCounter");
+const { getAllReactions, addReaction } = require("../utils/reactionsCounter");
 
 class HomeController extends BaseController {
   constructor({
@@ -61,7 +61,7 @@ class HomeController extends BaseController {
       // retrieve organisationId to return all daily ketchups for that organisation
       const organisation = user.organisation.id;
 
-      const ketchups = await this.model.findAll({
+      const dailyKetchups = await this.model.findAll({
         include: [
           {
             model: this.user,
@@ -99,7 +99,8 @@ class HomeController extends BaseController {
           },
           {
             model: this.ketchup_reaction,
-            attributes: ["userId", "createdAt"],
+            separate: true,
+            attributes: ["userId", "ketchupId", "reactionId", "createdAt"],
             include: [
               {
                 model: this.reaction,
@@ -137,7 +138,7 @@ class HomeController extends BaseController {
       // return the list of users who have not posted ketchups
       const usersWithoutKetchups = [];
       allUsers.forEach((user) => {
-        const hasKetchup = ketchups.some(
+        const hasKetchup = dailyKetchups.some(
           (ketchup) => ketchup.creator.id === user.id
         );
         if (!hasKetchup) {
@@ -145,7 +146,7 @@ class HomeController extends BaseController {
         }
       });
 
-      const posts = await this.post.findAll({
+      const allPosts = await this.post.findAll({
         include: [
           {
             model: this.user,
@@ -166,7 +167,8 @@ class HomeController extends BaseController {
           },
           {
             model: this.post_reaction,
-            attributes: ["userId"],
+            separate: true,
+            attributes: ["userId", "postId", "reactionId", "createdAt"],
             include: [
               {
                 model: this.reaction,
@@ -182,15 +184,23 @@ class HomeController extends BaseController {
         order: [["id", "DESC"]],
       });
 
-      const dailyKetchups = reactionsCounter(ketchups, "ketchup_reactions");
-      const allPosts = reactionsCounter(posts, "post_reactions");
+      const getKetchupReactions = getAllReactions(
+        dailyKetchups,
+        "ketchup_reactions"
+      );
+      const getPostReactions = getAllReactions(allPosts, "post_reactions");
+
+      // console.log("getKetchupReactions", getKetchupReactions);
+      // console.log("getPostReactions", getPostReactions);
 
       return res.status(200).json({
         success: true,
         data: {
-          dailyKetchups,
+          // dailyKetchups,
+          getKetchupReactions,
           usersWithoutKetchups,
-          allPosts,
+          // allPosts,
+          getPostReactions,
         },
         msg: "Success: All daily ketchups retrieved!",
       });
@@ -214,26 +224,31 @@ class HomeController extends BaseController {
 
     try {
       const formattedIcon = icon.toUpperCase();
-      console.log("formattedicon", formattedIcon);
 
       const existingIcon = await this.reaction.findOne({
         where: { icon: formattedIcon },
       });
-      console.log("existingIcon", existingIcon);
 
       const user = await this.user.findByPk(userId);
 
       if (control === 1) {
-        // if not existing icon
-        if (!existingIcon) {
-          const newIcon = await this.reaction.create({ formattedIcon });
+        // existing entry checks if user has already reacted w this icon for that specific ketchupId
+        const existingEntry = await this.ketchup_reaction.findOne({
+          where: {
+            userId: userId,
+            ketchupId: ketchupId,
+            reactionId: existingIcon.id,
+          },
+        });
+        if (!existingEntry && !existingIcon) {
+          const newIcon = await this.reaction.create({ icon: formattedIcon });
           await this.ketchup_reaction.create({
             userId: userId,
             ketchupId: ketchupId,
             reactionId: newIcon.id,
           });
-        } else {
-          // if existing icon
+        } else if (!existingEntry && existingIcon) {
+          // if existing icon && not existing entry
           await this.ketchup_reaction.create({
             userId: userId,
             ketchupId: ketchupId,
@@ -241,43 +256,12 @@ class HomeController extends BaseController {
           });
         }
 
-        //debugging
-        // const reactions = await this.ketchup_reaction.findAll({
-        //   include: [{ model: this.reaction }],
-        // });
-
-        // const reactions = await this.ketchup_reaction.findAll({
-        //   include: [{ model: this.reaction }],
-        // });
-
-        // const groupByKetchup = {};
-
-        // reactions.forEach((reaction) => {
-        //   const ketchups = control === 1 ? reaction.ketchupId : reaction.postId;
-        //   if (!groupByKetchup[ketchups]) {
-        //     groupByKetchup[ketchups] = [];
-        //   }
-
-        //   groupByKetchup[ketchups].push(reaction);
-        // });
-
-        // const ketchups = await this.model.findAll();
-
-        // // Group reactions for each ketchup/post
-        // const ketchupsWithReactions = ketchups.map((ketchup) => {
-        //   const ketchupId = ketchup.id;
-        //   const ketchupReactions = reactionsByTicket[ketchupId] || [];
-        //   return {
-        //     ketchup,
-        //     reactions: ketchupReactions,
-        //   };
-        // });
-
-        const ketchups = await this.model.findAll({
+        const dailyKetchups = await this.model.findAll({
           include: [
             {
               model: this.ketchup_reaction,
-              attributes: ["userId", "createdAt"],
+              separate: true,
+              attributes: ["userId", "ketchupId", "reactionId", "createdAt"],
               include: [
                 {
                   model: this.reaction,
@@ -289,38 +273,51 @@ class HomeController extends BaseController {
           where: {
             organisationId: user.organisationId,
           },
-          attributes: ["id", "createdAt"],
-          order: [["createdAt", "ASC"]],
+          attributes: ["id", "organisationId", "createdAt", "updatedAt"],
+          order: [["id", "DESC"]],
         });
-        const dailyKetchups = reactionsCounter(ketchups, "ketchup_reactions");
+
+        const getKetchupReactions = getAllReactions(
+          dailyKetchups,
+          "ketchup_reactions"
+        );
 
         return res.status(200).json({
           success: true,
-          data: dailyKetchups,
+          data: getKetchupReactions,
           msg: "Success: Reaction added successfully!",
         });
       } else if (control === 2) {
-        if (!existingIcon) {
-          // if not existing icon
+        // existing entry checks if user has already reacted w this icon for that specific ketchupId
+        const existingEntry = await this.post_reaction.findOne({
+          where: {
+            userId: userId,
+            postId: postId,
+            reactionId: existingIcon.id,
+          },
+        });
+        if (!existingEntry && !existingIcon) {
           const newIcon = await this.reaction.create({ icon: formattedIcon });
           await this.post_reaction.create({
             userId: userId,
             postId: postId,
             reactionId: newIcon.id,
           });
-        } else {
-          // if existing icon
+        } else if (!existingEntry && existingIcon) {
+          // if existing icon && not existing entry
           await this.post_reaction.create({
             userId: userId,
             postId: postId,
             reactionId: existingIcon.id,
           });
         }
-        const posts = await this.post.findAll({
+
+        const allPosts = await this.post.findAll({
           include: [
             {
               model: this.post_reaction,
-              attributes: ["userId", "createdAt"],
+              separate: true,
+              attributes: ["userId", "postId", "reactionId", "createdAt"],
               include: [
                 {
                   model: this.reaction,
@@ -332,15 +329,146 @@ class HomeController extends BaseController {
           where: {
             organisationId: user.organisationId,
           },
-          attributes: ["id", "createdAt"],
+          attributes: ["id", "content", "createdAt"],
           order: [["id", "DESC"]],
         });
 
-        const allPosts = reactionsCounter(posts, "post_reactions");
+        const getPostReactions = getAllReactions(allPosts, "post_reactions");
+
+        // const posts = await this.post.findAll({
+        //   include: [
+        //     {
+        //       model: this.post_reaction,
+        //       attributes: ["userId", "createdAt"],
+        //       include: [
+        //         {
+        //           model: this.reaction,
+        //           attributes: ["icon"],
+        //         },
+        //       ],
+        //     },
+        //   ],
+        //   where: {
+        //     organisationId: user.organisationId,
+        //   },
+        //   attributes: ["id", "createdAt"],
+        //   order: [["id", "DESC"]],
+        // });
+
+        // const allPosts = reactionsCounter(posts, "post_reactions");
         return res.status(200).json({
           success: true,
-          data: allPosts,
+          data: getPostReactions,
           msg: "Success: Reaction added successfully!",
+        });
+      } else {
+        return res.status(400).json({
+          error: true,
+          msg: "Error: Invalid request. Please try again.",
+        });
+      }
+    } catch (error) {
+      return res.status(400).json({
+        error: true,
+        msg: "Error: We encountered an error while handling your request. Please try again.",
+      });
+    }
+  };
+
+  // ====== Remove One Reaction ====== //
+  removeOneReaction = async (req, res) => {
+    const { control, userId, ketchupId, postId, icon } = req.body;
+    // note: if control = 1 (remove from ketchup) | if control = 2, (remove from post)
+
+    try {
+      const formattedIcon = icon.toUpperCase();
+
+      const findReaction = await this.reaction.findOne({
+        where: { icon: formattedIcon },
+      });
+
+      const user = await this.user.findByPk(userId);
+
+      if (control === 1) {
+        await this.ketchup_reaction.destroy({
+          where: {
+            userId: userId,
+            ketchupId: ketchupId,
+            reactionId: findReaction.id,
+          },
+        });
+
+        const dailyKetchups = await this.model.findAll({
+          include: [
+            {
+              model: this.ketchup_reaction,
+              separate: true,
+              attributes: ["userId", "ketchupId", "reactionId", "createdAt"],
+              include: [
+                {
+                  model: this.reaction,
+                  attributes: ["icon"],
+                },
+              ],
+            },
+          ],
+          where: {
+            organisationId: user.organisationId,
+          },
+          attributes: ["id", "organisationId", "createdAt", "updatedAt"],
+          order: [["id", "DESC"]],
+        });
+
+        const getKetchupReactions = getAllReactions(
+          dailyKetchups,
+          "ketchup_reactions"
+        );
+
+        return res.status(200).json({
+          success: true,
+          data: getKetchupReactions,
+          msg: "Success: Reaction removed successfully!",
+        });
+      } else if (control === 2) {
+        const findReaction = await this.reaction.findOne({
+          where: { icon: formattedIcon },
+        });
+
+        await this.post_reaction.destroy({
+          where: {
+            userId: userId,
+            postId: postId,
+            reactionId: findReaction.id,
+          },
+        });
+
+        const allPosts = await this.post.findAll({
+          include: [
+            {
+              model: this.post_reaction,
+              separate: true,
+              attributes: ["userId", "postId", "reactionId", "createdAt"],
+              include: [
+                {
+                  model: this.reaction,
+                  attributes: ["icon"],
+                },
+              ],
+            },
+          ],
+          where: {
+            organisationId: user.organisationId,
+          },
+          attributes: ["id", "content", "createdAt"],
+          order: [["id", "DESC"]],
+        });
+
+        const getPostReactions = getAllReactions(allPosts, "post_reactions");
+
+        return res.status(200).json({
+          success: true,
+          data: getPostReactions,
+          msg: "Success: Reaction removed successfully!",
         });
       } else {
         return res.status(400).json({
@@ -365,9 +493,9 @@ class HomeController extends BaseController {
         ticketId,
         content,
       });
-      console.log("newPost", newPost);
+      // console.log("newPost", newPost);
 
-      const posts = await this.post.findAll({
+      const allPosts = await this.post.findAll({
         include: [
           {
             model: this.user,
@@ -402,11 +530,11 @@ class HomeController extends BaseController {
         order: [["id", "DESC"]],
       });
 
-      const allPosts = reactionsCounter(posts, "post_reactions");
+      const getPostReactions = getAllReactions(allPosts, "post_reactions");
 
       return res.status(200).json({
         success: true,
-        data: allPosts,
+        data: { allPosts, getPostReactions },
         msg: "Success: New post added!",
       });
     } catch (error) {
