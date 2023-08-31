@@ -7,6 +7,7 @@ import { Formik, Field, ErrorMessage, Form } from "formik";
 import { LoadingContext, UserContext } from "../App";
 import Spinner from "../components/Spinner";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 function SetOrganisation() {
   const { loading, setLoading } = useContext(LoadingContext);
@@ -35,7 +36,7 @@ function SetOrganisation() {
           layout="position"
           className="flex flex-col items-center"
         >
-          <h2 className="text-2xl font-semibold">Welcome {user.firstName}</h2>
+          <h2 className="text-2xl font-semibold">Welcome, {user.firstName}</h2>
           <p className="text-sm text-center w-full">
             Please select one of the following options:
           </p>
@@ -73,12 +74,11 @@ function SetOrganisation() {
                   return errors;
                 }}
                 onSubmit={(values, { setSubmitting }) => {
-                  setLoading(true);
                   setSubmitting(true);
                   const setOrganisation = async () => {
                     try {
                       const response = await axios.post(
-                        `${process.env.REACT_APP_DB_API}/organisation`,
+                        `${process.env.REACT_APP_DB_API}/auth/organisation`,
                         {
                           organisationName: values.organisationname,
                           inviteCode: null,
@@ -87,10 +87,11 @@ function SetOrganisation() {
                         }
                       );
                       setUser(response.data.data);
-                      setIsOpen(0);
+                      toast.success(response.data.msg);
                       navigate("/home");
                     } catch (error) {
-                      console.log(error);
+                      toast.error(error.response.data.msg);
+                      setSubmitting(false);
                     }
                   };
 
@@ -168,12 +169,11 @@ function SetOrganisation() {
                   return errors;
                 }}
                 onSubmit={(values, { setSubmitting }) => {
-                  setLoading(true);
                   setSubmitting(true);
                   const setOrganisation = async () => {
                     try {
                       const response = await axios.post(
-                        `${process.env.REACT_APP_DB_API}/organisation`,
+                        `${process.env.REACT_APP_DB_API}/auth/organisation`,
                         {
                           organisationName: null,
                           inviteCode: values.invitecode,
@@ -182,10 +182,11 @@ function SetOrganisation() {
                         }
                       );
                       setUser(response.data.data);
-                      setIsOpen(0);
+                      toast.success(response.data.msg);
                       navigate("/home");
                     } catch (error) {
-                      console.log(error);
+                      toast.error(error.response.data.msg);
+                      setSubmitting(false);
                     }
                   };
 

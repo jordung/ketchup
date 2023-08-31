@@ -3,7 +3,6 @@ import { useContext, useEffect, useState } from "react";
 import { LoadingContext, LoggedInContext, UserContext } from "../App";
 import axios from "axios";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import Select from "react-select";
 import { colourStyles, timeIntervals } from "../utils/selectSettings";
 import { useNavigate } from "react-router-dom";
@@ -18,12 +17,13 @@ function Preferences() {
   const navigate = useNavigate();
 
   const [dailyKetchupTime, setDailyKetchupTime] = useState("");
+  const [inviteeEmail, setInviteeEmail] = useState("");
 
   const users = [
     {
       id: 1,
       name: "Jordan Ang",
-      email: "jordanayd@gmail.com",
+      email: "jordanahahahahhahahahyd@gmail.com",
     },
     {
       id: 2,
@@ -36,6 +36,7 @@ function Preferences() {
 
   useEffect(() => {
     setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -47,7 +48,7 @@ function Preferences() {
     const accessToken = localStorage.getItem("accessToken");
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_DB_API}/logout`,
+        `${process.env.REACT_APP_DB_API}/auth/logout`,
         {
           userId: user.id,
         },
@@ -75,17 +76,35 @@ function Preferences() {
     }
   };
 
+  const handleUpdateDailyKetchupTime = async (value) => {
+    setDailyKetchupTime(value);
+    toast.success("Successfully updated Daily Ketchup Timing");
+  };
+
+  const handleInvite = async () => {
+    // TODO: send email & ?? to BE
+    if (inviteeEmail === "") {
+      toast.error("Invitee email is empty");
+      return;
+    }
+    console.log(inviteeEmail);
+    setInviteeEmail("");
+    toast.success("Invite sent!");
+  };
+
   return (
     <div className="h-screen mt-4 mx-4 min-w-[calc(100vw_-_5rem)] lg:min-w-[calc(100vw_-_9rem)]">
       {/* Header */}
       <div className="border-b border-base-100 flex items-center justify-between py-2 overflow-hidden">
         <h2 className="text-2xl font-bold">Preferences</h2>
-        <button
-          className="btn btn-neutral normal-case rounded-xl btn-sm"
-          onClick={handleLogout}
-        >
-          Log out
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            className="btn btn-neutral normal-case rounded-xl btn-sm"
+            onClick={handleLogout}
+          >
+            Log out
+          </button>
+        </div>
       </div>
 
       {/* Body */}
@@ -95,43 +114,60 @@ function Preferences() {
       >
         <motion.div
           layout="position"
-          className="flex flex-col gap-4 shadow-lg p-2 rounded-lg"
+          className="flex flex-col gap-4 xl:flex-row xl:gap-4"
         >
           {/* Organisation Standup Time Preferences - for Admin */}
-          <div className="flex flex-col gap-2">
-            <h3 className="text-lg font-semibold">Daily Ketchup Timing</h3>
-            <Select
-              className="font-semibold text-xs cursor-pointer max-w-sm"
-              styles={colourStyles}
-              options={timeIntervals}
-              onChange={(value) => setDailyKetchupTime(value)}
-              placeholder="Select a timing..."
-            />
+          <div className="flex flex-col gap-2 shadow-lg px-2 pt-2 pb-4 lg:px-4 rounded-lg min-w-full lg:min-w-[50%] lg:max-w-min">
+            <div className="min-w-full lg:min-w-0 lg:mx-">
+              <h3 className="text-lg font-semibold">Daily Ketchup Timing</h3>
+              <Select
+                className="font-semibold text-xs cursor-pointer"
+                styles={colourStyles}
+                options={timeIntervals}
+                onChange={handleUpdateDailyKetchupTime}
+                placeholder="Select a timing..."
+              />
+            </div>
+
+            {/* User List */}
+            <div className="flex flex-col gap-2 min-w-full lg:min-w-0">
+              <h3 className="text-lg font-semibold">Users List</h3>
+              {/* User List Card */}
+              {users.map((user) => (
+                <UserListCard
+                  key={user.id}
+                  profilePicture={jordan}
+                  name={user.name}
+                  email={user.email}
+                />
+              ))}
+            </div>
           </div>
 
-          {/* User List */}
-          <div className="flex flex-col gap-2 mt-8 pb-8">
-            <h3 className="text-lg font-semibold">Users List</h3>
-            {/* User List Card */}
-            {users.map((user) => (
-              <UserListCard
-                key={user.id}
-                profilePicture={jordan}
-                name={user.name}
-                email={user.email}
-              />
-            ))}
-
-            {/* Invited Users List */}
-            <h3 className="text-sm font-semibold mt-4">Invited</h3>
+          {/* Invited Users List */}
+          <div className="flex flex-col gap-2 shadow-lg px-2 pt-2 pb-4 rounded-lg min-w-full lg:min-w-[50%] lg:max-w-min lg:px-4">
+            {/* Invite User */}
+            <div className="flex flex-col items-start justify-center gap-2 min-w-full lg:min-w-0">
+              <h3 className="text-lg font-semibold">Invite</h3>
+              <div className="flex w-full gap-2">
+                <input
+                  type="text"
+                  className="input input-sm text-sm w-full rounded-xl"
+                  value={inviteeEmail}
+                  onChange={(e) => setInviteeEmail(e.target.value)}
+                />
+                <button
+                  className="btn btn-neutral normal-case rounded-xl btn-sm"
+                  onClick={handleInvite}
+                >
+                  Invite
+                </button>
+              </div>
+            </div>
+            <h3 className="text-sm font-semibold">Invited</h3>
             {/* Pending User Card */}
             {users.map((user) => (
-              <InvitedUserCard
-                key={user.id}
-                profilePicture={jordan}
-                name={user.name}
-                email={user.email}
-              />
+              <InvitedUserCard key={user.id} email={user.email} />
             ))}
           </div>
         </motion.div>
