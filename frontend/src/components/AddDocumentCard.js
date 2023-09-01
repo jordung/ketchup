@@ -11,8 +11,10 @@ import MarkdownEditor from "./MarkdownEditor";
 import Creatable from "react-select/creatable";
 import TicketSelector from "./TicketSelector";
 import { tagDefaultOptions, colourStyles } from "../utils/selectSettings";
+import { toast } from "react-toastify";
 
 function AddDocumentCard(props) {
+  const { setAddDocument } = props;
   //TODO: render out tickets dynamically (including a default N.A null option)
   const [isTicketSelectorOpen, setIsTicketSelectorOpen] = useState(false);
 
@@ -30,6 +32,7 @@ function AddDocumentCard(props) {
 
   const handleCreateTag = (inputValue) => {
     console.log(inputValue);
+    tagDefaultOptions.push({ value: inputValue, label: inputValue });
   };
 
   const tickets = [
@@ -48,6 +51,10 @@ function AddDocumentCard(props) {
   ];
 
   const handleAddDocument = (e) => {
+    if (!documentTitle.trim().length > 0) {
+      toast.error("Document Title must not be blank.");
+      return;
+    }
     console.log({
       documentTitle: documentTitle,
       documentCreatedBy: "userId",
@@ -59,7 +66,7 @@ function AddDocumentCard(props) {
     // TODO: set information to backend
     // setTicketAssignee(null);
     // setContent("");
-    props.setAddDocument(false);
+    setAddDocument(false);
   };
 
   return (
@@ -110,6 +117,7 @@ function AddDocumentCard(props) {
                 type="date"
                 className="cursor-pointer font-semibold bg-white border-base-200 text-xs input input-sm w-full rounded-lg text-center"
                 defaultValue={documentCreatedOn}
+                disabled
                 onChange={(e) => setDocumentCreatedOn(e.target.value)}
               />
             </div>
@@ -129,7 +137,7 @@ function AddDocumentCard(props) {
                 onChange={handleChangeTag}
                 onCreateOption={(input) => handleCreateTag(input)}
                 styles={colourStyles}
-                placeholder=""
+                placeholder="Search..."
               />
             </div>
 
@@ -178,7 +186,7 @@ function AddDocumentCard(props) {
         </button>
         <button
           className="btn btn-base-100 btn-sm normal-case mt-2"
-          onClick={() => props.setAddDocument(false)}
+          onClick={() => setAddDocument(false)}
         >
           Cancel
         </button>

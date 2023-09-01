@@ -43,10 +43,7 @@ function UserListCard(props) {
           },
         }
       );
-
-      console.log(response);
       const currentUser = response.data.data.find((user) => user.id === userId);
-      console.log(currentUser);
       setUserStatus({
         value: currentUser.isAdmin,
         label: currentUser.isAdmin ? "Admin" : "Member",
@@ -83,7 +80,7 @@ function UserListCard(props) {
         value={userStatus}
         onChange={handleUpdateUserStatus}
         className="text-xs font-semibold w-28 md:w-40"
-        isDisabled={isCurrentUserAdmin}
+        isDisabled={isCurrentUserAdmin || userId === user.id}
       />
     </div>
   );
