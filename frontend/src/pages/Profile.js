@@ -31,7 +31,6 @@ function Profile() {
         setUserProfile(response.data.data);
         setWatchlist(response.data.data.watchers);
         setUpdatedWatchlist(response.data.data.watchers);
-        console.log(response.data.data.watchers);
       } catch (error) {
         toast.error(error.response.data.msg);
       } finally {
@@ -112,7 +111,7 @@ function Profile() {
                   <img
                     src={userProfile.profilePicture}
                     alt="profile"
-                    className="rounded-full w-48 object-cover"
+                    className="rounded-full w-48 h-48 object-cover"
                   />
                   <div className="absolute -bottom-[5%] left-1/2 transform -translate-x-1/2">
                     <span
@@ -153,11 +152,15 @@ function Profile() {
                           Delete Account
                         </button>
                       </ul>
-                      <EditUserModal user={user} />
+                      <EditUserModal
+                        user={user}
+                        setUserProfile={setUserProfile}
+                      />
                       <DeleteUserModal
                         userId={user.id}
                         firstName={user.firstName}
                         lastName={user.lastName}
+                        profilePicture={user.profilePicture}
                       />
                     </div>
                   )}

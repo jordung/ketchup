@@ -120,14 +120,11 @@ function App() {
 
   // TODO: need to think about how to check accessToken silently
 
-  if (loading) {
-    return <Spinner />;
-  }
-
   return (
     <LoadingContext.Provider value={{ loading, setLoading }}>
       <UserContext.Provider value={{ user, setUser }}>
         <LoggedInContext.Provider value={{ isLoggedIn, setIsLoggedIn }}>
+          {loading && <Spinner />}
           <ToastContainer
             position="bottom-right"
             pauseOnFocusLoss={false}
