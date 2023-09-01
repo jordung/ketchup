@@ -5,7 +5,6 @@ import { PiHandWavingBold } from "react-icons/pi";
 function KetchupContainer(props) {
   const { dailyKetchups, usersWithoutKetchups } = props;
 
-  //TODO: FIX KETCHUP CONTAINER;
   return (
     <div className="min-w-full xl:min-w-[75%] max-w-min rounded-lg shadow-xl">
       <div className="w-full bg-base-100 rounded-t-lg p-4">

@@ -6,7 +6,6 @@ import { toast } from "react-toastify";
 import Select from "react-select";
 import { colourStyles, timeIntervals } from "../utils/selectSettings";
 import { useNavigate } from "react-router-dom";
-import jordan from "../assets/landing/jordan.jpeg";
 import UserListCard from "../components/UserListCard";
 import InvitedUserCard from "../components/InvitedUserCard";
 
@@ -21,23 +20,7 @@ function Preferences() {
   const [userList, setUserList] = useState([]);
   const [inviteList, setInviteList] = useState([]);
   const [isInviting, setIsInviting] = useState(false);
-
   const [inviteeEmail, setInviteeEmail] = useState("");
-
-  const users = [
-    {
-      id: 1,
-      name: "Jordan Ang",
-      email: "jordanahahahahhahahahyd@gmail.com",
-    },
-    {
-      id: 2,
-      name: "Jaelyn Teo",
-      email: "jteohn@gmail.com",
-    },
-    { id: 3, name: "Sam", email: "sam@sam.com" },
-    { id: 4, name: "Foong", email: "foong@foong.com" },
-  ];
 
   useEffect(() => {
     const getOrganisationPreferences = async () => {
@@ -240,7 +223,7 @@ function Preferences() {
               </div>
             </div>
             <h3 className="text-sm font-semibold">Invited</h3>
-            {/* Pending User Card */}
+            {/* Invited User Card */}
             {inviteList.map((user, index) => (
               <InvitedUserCard
                 key={index}

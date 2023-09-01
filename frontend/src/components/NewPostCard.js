@@ -84,7 +84,7 @@ function NewPostCard(props) {
       </p>
       <div className="w-full mt-2">
         <textarea
-          className="textarea bg-white resize-none focus:outline-none font-normal my-1 w-full border border-base-200 rounded-lg"
+          className="textarea bg-white resize-none focus:outline-none font-normal my-1 w-full border border-base-200 rounded-lg leading-5"
           placeholder="Content"
           rows={4}
           value={content}
