@@ -15,7 +15,7 @@ import { v4 as uuidv4 } from "uuid";
 import { UserContext } from "../App";
 
 function EditUserModal(props) {
-  const { user } = props;
+  const { user, setUserProfile } = props;
   const { setUser } = useContext(UserContext);
 
   const [isUpdateAvatar, setIsUpdateAvatar] = useState(false);
@@ -53,14 +53,6 @@ function EditUserModal(props) {
 
   const handleUpdateUser = async () => {
     const STORAGE_KEY = "profile/";
-    console.log({
-      control: 2,
-      profilePicture: profilePicture,
-      firstName: firstName,
-      lastName: lastName,
-      slackUserId: "",
-      slackAccessToken: "",
-    });
 
     if (updatedProfilePictureFile) {
       // if user has uploaded their own picture
@@ -87,8 +79,7 @@ function EditUserModal(props) {
                   console.log(error);
                 }
                 const response = await axios.post(
-                  //TODO: update endpoint here!
-                  //   `${process.env.REACT_APP_DB_API}/auth/signup`,
+                  `${process.env.REACT_APP_DB_API}/users/${user.id}`,
                   {
                     control: 2,
                     profilePicture: url,
@@ -98,8 +89,13 @@ function EditUserModal(props) {
                     slackAccessToken: "",
                   }
                 );
-                console.log(response.data);
-                setUser(response.data.data.user);
+                setUser(response.data.data);
+                setUserProfile(response.data.data);
+                setProfilePicture(response.data.data.profilePicture);
+                setFirstName(response.data.data.firstName);
+                setLastName(response.data.data.lastName);
+                setIsUpdateAvatar(false);
+                setUpdatedProfilePictureFile(null);
                 toast.success(`${response.data.msg}`);
               } catch (error) {
                 // if there was an error in sending information to firebase, delete the uploaded image
@@ -142,8 +138,7 @@ function EditUserModal(props) {
                   console.log(error);
                 }
                 const response = await axios.post(
-                  //TODO: update end point
-                  //   `${process.env.REACT_APP_DB_API}/auth/signup`,
+                  `${process.env.REACT_APP_DB_API}/users/${user.id}`,
                   {
                     control: 2,
                     profilePicture: url,
@@ -153,9 +148,13 @@ function EditUserModal(props) {
                     slackAccessToken: "",
                   }
                 );
-
-                console.log(response.data);
-                setUser(response.data.data.user);
+                setUser(response.data.data);
+                setUserProfile(response.data.data);
+                setProfilePicture(response.data.data.profilePicture);
+                setFirstName(response.data.data.firstName);
+                setLastName(response.data.data.lastName);
+                setIsUpdateAvatar(false);
+                setUpdatedProfilePictureFile(null);
                 toast.success(`${response.data.msg}`);
               } catch (error) {
                 const profilePictureRef = ref(storage, url);
@@ -172,8 +171,7 @@ function EditUserModal(props) {
       const updateProfileWithoutChangingPicture = async () => {
         try {
           const response = await axios.post(
-            //TODO: update end point
-            // `${process.env.REACT_APP_DB_API}/auth/signup`,
+            `${process.env.REACT_APP_DB_API}/users/${user.id}`,
             {
               control: 2,
               profilePicture: profilePicture,
@@ -183,9 +181,13 @@ function EditUserModal(props) {
               slackAccessToken: "",
             }
           );
-
-          console.log(response.data);
-          setUser(response.data.data.user);
+          setUser(response.data.data);
+          setUserProfile(response.data.data);
+          setProfilePicture(response.data.data.profilePicture);
+          setFirstName(response.data.data.firstName);
+          setLastName(response.data.data.lastName);
+          setIsUpdateAvatar(false);
+          setUpdatedProfilePictureFile(null);
           toast.success(`${response.data.msg}`);
         } catch (error) {
           toast.error(`${error.response.data.msg}`);
@@ -238,7 +240,7 @@ function EditUserModal(props) {
             ) : (
               <>
                 <img
-                  className="w-56 h-56 mt-4 rounded-full"
+                  className="w-56 h-56 mt-4 rounded-full object-cover"
                   src={profilePicture}
                   alt="existing profile"
                 />

@@ -47,6 +47,7 @@ function SignupThroughInvite() {
   useEffect(() => {
     const getOrganisationInformation = async () => {
       try {
+        setLoading(true);
         const response = await axios.get(
           `${process.env.REACT_APP_DB_API}/invite`,
           {
@@ -56,8 +57,9 @@ function SignupThroughInvite() {
           }
         );
         toast.success(`${response.data.msg}`);
-        setOrganisationName(response.data.data.name);
-        setOrganisationId(response.data.data.id);
+        setOrganisationName(response.data.data.organisation.name);
+        setOrganisationId(response.data.data.organisation.id);
+        setEmail(response.data.data.inviteeEmail);
       } catch (error) {
         navigate("/");
         toast.error(`${error.response.data.msg}`);
@@ -93,15 +95,6 @@ function SignupThroughInvite() {
           (url) => {
             const sendSignupThroughInviteInformation = async () => {
               try {
-                console.log({
-                  firstName: firstName,
-                  lastName: lastName,
-                  email: email,
-                  password: password,
-                  profilePicture: url,
-                  organisationId: organisationId,
-                  inviteCode: inviteCode,
-                });
                 const response = await axios.post(
                   `${process.env.REACT_APP_DB_API}/auth/signupthroughinvite`,
                   {
@@ -115,7 +108,6 @@ function SignupThroughInvite() {
                   }
                 );
 
-                console.log(response.data);
                 setUser(response.data.data.user);
 
                 localStorage.setItem(
@@ -164,15 +156,6 @@ function SignupThroughInvite() {
           getDownloadURL(storageRefInstance, filename).then((url) => {
             const sendSignupThroughInviteInformation = async () => {
               try {
-                console.log({
-                  firstName: firstName,
-                  lastName: lastName,
-                  email: email,
-                  password: password,
-                  profilePicture: url,
-                  organisationId: organisationId,
-                  inviteCode: inviteCode,
-                });
                 const response = await axios.post(
                   `${process.env.REACT_APP_DB_API}/auth/signupthroughinvite`,
                   {
@@ -185,8 +168,6 @@ function SignupThroughInvite() {
                     inviteCode: inviteCode,
                   }
                 );
-
-                console.log(response.data);
                 setUser(response.data.data.user);
 
                 localStorage.setItem(
@@ -239,7 +220,7 @@ function SignupThroughInvite() {
               initialValues={{
                 firstname: "",
                 lastname: "",
-                email: "",
+                email: email,
                 password: "",
                 confirmpassword: "",
               }}
@@ -250,13 +231,6 @@ function SignupThroughInvite() {
                 }
                 if (!values.lastname) {
                   errors.lastname = "Required";
-                }
-                if (!values.email) {
-                  errors.email = "Required";
-                } else if (
-                  !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)
-                ) {
-                  errors.email = "Invalid email address";
                 }
                 if (!values.password) {
                   errors.password = "Required";
@@ -272,7 +246,7 @@ function SignupThroughInvite() {
               onSubmit={(values, { setSubmitting }) => {
                 setFirstName(values.firstname);
                 setLastName(values.lastname);
-                setEmail(values.email);
+                // setEmail(values.email);
                 setPassword(values.password);
                 setSubmitting(false);
                 setShowFirstStep(false);
@@ -331,10 +305,11 @@ function SignupThroughInvite() {
                         Email Address
                       </span>
                     </label>
-                    <Field
+                    <input
                       type="email"
                       name="email"
-                      placeholder="stevejobs@apple.com"
+                      disabled
+                      defaultValue={email}
                       className="input w-full max-w-sm md:max-w-lg text-sm"
                     />
                     <label className="label">
