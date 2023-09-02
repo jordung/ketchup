@@ -5,7 +5,6 @@ class TicketController extends BaseController {
   constructor({
     user,
     organisation,
-    organisation_admin,
     tag,
     priority,
     status,
@@ -17,7 +16,6 @@ class TicketController extends BaseController {
     super(ticket);
     this.user = user;
     this.organisation = organisation;
-    this.organisation_admin = organisation_admin;
     this.tag = tag;
     this.priority = priority;
     this.status = status;
@@ -179,6 +177,7 @@ class TicketController extends BaseController {
           "lastName",
           "profilePicture",
         ],
+        order: [["id", "ASC"]],
       });
 
       const allWatchers = await this.watcher.findAll({
@@ -196,12 +195,13 @@ class TicketController extends BaseController {
           },
         ],
         attributes: ["id", "ticketId"],
+        order: [["id", "ASC"]],
       });
 
       return res.status(200).json({
         success: true,
         data: { ticket, allTickets, allTags, allUsers, allWatchers },
-        msg: "Success: Retrieved ticket!",
+        msg: "Success: Ticket retrieved successfully!",
       });
     } catch (error) {
       return res.status(400).json({
@@ -303,7 +303,7 @@ class TicketController extends BaseController {
       });
 
       if (dependencyId) {
-        // 2. retrieve the ticketId and create a new entry in ticket_dependency model
+        // 2. retrieve the ticketId and create a new entry in ticket_dependencies table
         await this.ticket_dependency.create({
           ticketId: newTicket.id,
           dependencyId,
@@ -379,7 +379,7 @@ class TicketController extends BaseController {
       return res.status(200).json({
         success: true,
         data: { allTickets, allTags, allUsers },
-        msg: "Success: All tickets retrieved!",
+        msg: "Success: You've successfully added a new ticket!",
       });
     } catch (error) {
       return res.status(400).json({
@@ -390,7 +390,7 @@ class TicketController extends BaseController {
   };
 
   // =================== UPDATE TICKET =================== //
-  // Note: organisationId, creatorId, ticket name cannot be changed.
+  // Note: organisationId and creatorId cannot be changed.
 
   updateTicket = async (req, res) => {
     const { ticketId } = req.params;
@@ -399,10 +399,18 @@ class TicketController extends BaseController {
       tagId,
       priorityId,
       statusId,
+      name,
       body,
       dueDate,
       dependencyId,
     } = req.body;
+
+    const getTicket = await this.model.findByPk(ticketId);
+    console.log("getTicket", getTicket);
+    console.log("getTicket.name", getTicket.name);
+
+    const includesName = !name ? getTicket.name : name;
+    console.log("includesName", includesName);
 
     try {
       await this.model.update(
@@ -411,13 +419,14 @@ class TicketController extends BaseController {
           tagId,
           priorityId,
           statusId,
+          name: includesName,
           body,
           dueDate,
         },
         { where: { id: ticketId } }
       );
 
-      // Note: 3 different cases for when user updates ticket dependency:
+      // Note: 3 scenarios for when user updates ticket dependency:
       // 1. The ticket currently has NO dependency; user assigns dependencyId for the first time
       // 2. The ticket currently has a dependency; user reassigns the dependencyId
       // 3. The ticket currently has a dependency; user removes dependencyId (= null)
@@ -532,6 +541,7 @@ class TicketController extends BaseController {
           "lastName",
           "profilePicture",
         ],
+        order: [["id", "ASC"]],
       });
 
       const allWatchers = await this.watcher.findAll({
@@ -549,6 +559,7 @@ class TicketController extends BaseController {
           },
         ],
         attributes: ["id", "ticketId"],
+        order: [["id", "ASC"]],
       });
 
       return res.status(200).json({

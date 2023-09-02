@@ -8,8 +8,8 @@ class TicketRouter {
   }
   routes() {
     router.get("/:organisationId", this.controller.getAllTickets);
-    router.post("/", this.controller.addOneTicket);
     router.get("/view/:ticketId", this.controller.getOneTicket);
+    router.post("/", this.controller.addOneTicket);
     router.post("/view/:ticketId", this.controller.updateTicket);
     router.delete("/:ticketId", this.controller.deleteOneTicket);
 

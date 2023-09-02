@@ -12,6 +12,7 @@ const InvitationRouter = require("./routers/invitationRouter");
 const HomeRouter = require("./routers/homeRouter");
 const AdminRouter = require("./routers/adminRouter");
 const TicketRouter = require("./routers/ticketRouter");
+const DocumentRouter = require("./routers/documentRouter");
 const WatchlistRouter = require("./routers/watchlistRouter");
 
 // importing Controllers
@@ -21,6 +22,7 @@ const InvitationController = require("./controllers/invitationController");
 const HomeController = require("./controllers/homeController");
 const AdminController = require("./controllers/adminController");
 const TicketController = require("./controllers/ticketController");
+const DocumentController = require("./controllers/documentController");
 const WatchlistController = require("./controllers/watchlistController");
 
 // importing DB
@@ -38,7 +40,7 @@ const {
   ticket,
   ticket_dependency,
   document,
-  // document_ticket,
+  document_ticket,
   watcher,
   post,
   post_reaction,
@@ -102,13 +104,22 @@ const homeController = new HomeController({
 const ticketController = new TicketController({
   user,
   organisation,
-  organisation_admin,
   tag,
   priority,
   status,
   ticket,
   ticket_dependency,
   document,
+  watcher,
+});
+
+const documentController = new DocumentController({
+  user,
+  organisation,
+  tag,
+  ticket,
+  document,
+  document_ticket,
   watcher,
 });
 
@@ -132,6 +143,7 @@ const adminRouter = new AdminRouter(adminController).routes();
 const invitationRouter = new InvitationRouter(invitationController).routes();
 const homeRouter = new HomeRouter(homeController).routes();
 const ticketRouter = new TicketRouter(ticketController).routes();
+const documentRouter = new DocumentRouter(documentController).routes();
 const watchlistRouter = new WatchlistRouter(watchlistController).routes();
 
 const PORT = process.env.PORT;
@@ -150,6 +162,7 @@ app.use("/admin", adminRouter);
 app.use("/invite", invitationRouter);
 app.use("/home", homeRouter);
 app.use("/tickets", ticketRouter);
+app.use("/documents", documentRouter);
 app.use("/watch", watchlistRouter);
 
 app.listen(PORT, () => {
