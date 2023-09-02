@@ -514,38 +514,44 @@ function Ticket() {
                         className="avatar-group -space-x-2 group"
                         onClick={() => window.ticketWatcherModal.showModal()}
                       >
-                        {watcherList.length >= 3
-                          ? watcherList.slice(0, 3).map((user) => (
-                              <div
-                                className="avatar border-none group-hover:opacity-50 transition-all duration-300 cursor-pointer"
-                                key={user.user.id}
-                              >
-                                <div className="w-8">
-                                  <img
-                                    src={user.user.profilePicture}
-                                    alt="watcher"
-                                  />
-                                </div>
+                        {watcherList.length >= 3 ? (
+                          watcherList.slice(0, 3).map((user) => (
+                            <div
+                              className="avatar border-none group-hover:opacity-50 transition-all duration-300 cursor-pointer"
+                              key={user.user.id}
+                            >
+                              <div className="w-8">
+                                <img
+                                  src={user.user.profilePicture}
+                                  alt="watcher"
+                                />
                               </div>
-                            ))
-                          : watcherList.map((user) => (
-                              <div
-                                className="avatar border-none group-hover:opacity-50 transition-all duration-300 cursor-pointer"
-                                key={user.user.id}
-                              >
-                                <div className="w-8">
-                                  <img
-                                    src={user.user.profilePicture}
-                                    alt="watcher"
-                                  />
-                                </div>
+                            </div>
+                          ))
+                        ) : watcherList.length > 0 ? (
+                          watcherList.map((user) => (
+                            <div
+                              className="avatar border-none group-hover:opacity-50 transition-all duration-300 cursor-pointer"
+                              key={user.user.id}
+                            >
+                              <div className="w-8">
+                                <img
+                                  src={user.user.profilePicture}
+                                  alt="watcher"
+                                />
                               </div>
-                            ))}
+                            </div>
+                          ))
+                        ) : (
+                          <span className="text-xs h-8 font-semibold badge rounded-lg bg-white cursor-pointer">
+                            None
+                          </span>
+                        )}
                         {watcherList.length - 3 > 0 ? (
                           <div className="avatar placeholder border-none">
                             <div className="w-8 bg-base-100 text-neutral">
                               <span className="text-xs font-semibold">
-                                {watcherList.length - 3}
+                                + {watcherList.length - 3}
                               </span>
                             </div>
                           </div>
