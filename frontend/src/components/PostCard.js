@@ -139,7 +139,7 @@ function PostCard(props) {
           <p className="text-xs "> {moment(date).format("DD MMM YYYY")}</p>
         </div>
         <div>
-          <p className="text-sm">{convertTextToLink(content)}</p>
+          <p className="text-sm break-words">{convertTextToLink(content)}</p>
         </div>
         {ticket && <TicketCard ticketId={ticket.id} ticketName={ticket.name} />}
 

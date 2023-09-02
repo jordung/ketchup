@@ -4,7 +4,7 @@ import { PiBeerSteinBold } from "react-icons/pi";
 function PostContainer(props) {
   const { allPosts } = props;
   return (
-    <div className="flex flex-col gap-4 flex-grow xl:max-w-[25%] break-all">
+    <div className="flex flex-col gap-4 flex-grow xl:max-w-[25%]">
       <div className="w-full bg-base-100 rounded-lg p-4">
         <h3 className="text-xl font-semibold">Newest Posts</h3>
       </div>
