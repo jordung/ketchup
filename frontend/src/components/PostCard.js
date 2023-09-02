@@ -9,6 +9,7 @@ import moment from "moment";
 import { UserContext } from "../App";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { convertTextToLink } from "../utils/convertTextToLink";
 
 function PostCard(props) {
   const navigate = useNavigate();
@@ -138,7 +139,7 @@ function PostCard(props) {
           <p className="text-xs "> {moment(date).format("DD MMM YYYY")}</p>
         </div>
         <div>
-          <p className="text-sm">{content}</p>
+          <p className="text-sm">{convertTextToLink(content)}</p>
         </div>
         {ticket && <TicketCard ticketId={ticket.id} ticketName={ticket.name} />}
 

@@ -1,8 +1,8 @@
 export const tagDefaultOptions = [
-  { value: "frontend", label: "Frontend" },
-  { value: "backend", label: "Backend" },
-  { value: "bugfix", label: "Bugfix" },
-  { value: "feature", label: "Feature" },
+  { value: 1, label: "Frontend" },
+  { value: 2, label: "Backend" },
+  { value: 3, label: "Bugfix" },
+  { value: 4, label: "Feature" },
 ];
 
 export const colourStyles = {
