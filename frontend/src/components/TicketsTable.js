@@ -1,59 +1,21 @@
+import { useEffect, useState } from "react";
 import TicketsTableItem from "./TicketsTableItem";
 
-function TicketsTable() {
-  const data = [
-    {
-      ticketId: 1,
-      ticketTitle: "Bug Fix",
-      ticketPriority: 3,
-      ticketAssignee: "Alice Spring",
-      ticketCreatedOn: "28/08/2023",
-      ticketDueDate: "29/08/2023",
-      ticketBlockedBy: {
-        ticketId: 2,
-        ticketTitle: "Feature Request",
-      },
-      ticketTag: "bug",
-      ticketStatus: 1,
-    },
-    {
-      ticketId: 2,
-      ticketTitle: "Feature Request",
-      ticketPriority: 2,
-      ticketAssignee: "Bob Bob",
-      ticketCreatedOn: "28/08/2023",
-      ticketDueDate: "29/08/2023",
-      ticketBlockedBy: {
-        ticketId: 3,
-        ticketTitle: "UI Enhancement",
-      },
-      ticketTag: "frontend",
-      ticketStatus: 2,
-    },
-    {
-      ticketId: 3,
-      ticketTitle: "UI Enhancement",
-      ticketPriority: 1,
-      ticketAssignee: "Charlie Angels",
-      ticketCreatedOn: "28/08/2023",
-      ticketDueDate: "29/08/2023",
-      ticketBlockedBy: null,
-      ticketTag: "frontend",
-      ticketStatus: 1,
-    },
-    {
-      ticketId: 4,
-      ticketTitle: "Database Issue",
-      ticketPriority: 3,
-      ticketAssignee: "David Archuleta",
-      ticketCreatedOn: "28/08/2023",
-      ticketDueDate: "29/08/2023",
-      ticketBlockedBy: null,
-      ticketTag: "frontend",
-      ticketStatus: 3,
-    },
-    // Add more objects as needed
-  ];
+function TicketsTable(props) {
+  const { allTickets } = props;
+  const [searchedTickets, setSearchedTickets] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    if (searchQuery.length > 0) {
+      const filteredTickets = allTickets.filter((ticket) =>
+        ticket.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setSearchedTickets(filteredTickets);
+    } else {
+      setSearchedTickets(allTickets);
+    }
+  }, [searchQuery, allTickets]);
 
   return (
     <div className="w-full rounded-lg shadow-xl">
@@ -62,6 +24,8 @@ function TicketsTable() {
           type="text"
           className="input w-full text-sm font-semibold input-sm"
           placeholder="Search ticket"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
         <div className="overflow-x-auto">
           <table className="table mt-4">
@@ -71,6 +35,7 @@ function TicketsTable() {
                 <th>Ticket</th>
                 <th>Priority</th>
                 <th>Assignee</th>
+                <th>Creator</th>
                 <th>Status</th>
                 <th>Created On</th>
                 <th>Due Date</th>
@@ -79,19 +44,22 @@ function TicketsTable() {
               </tr>
             </thead>
             <tbody>
-              {/* row 1 */}
-              {data.map((item) => (
+              {searchedTickets.map((ticket) => (
                 <TicketsTableItem
-                  key={item.ticketId}
-                  ticketId={item.ticketId}
-                  ticketTitle={item.ticketTitle}
-                  ticketPriority={item.ticketPriority}
-                  ticketAssignee={item.ticketAssignee}
-                  ticketCreatedOn={item.ticketCreatedOn}
-                  ticketDueDate={item.ticketDueDate}
-                  ticketBlockedBy={item.ticketBlockedBy}
-                  ticketTag={item.ticketTag}
-                  ticketStatus={item.ticketStatus}
+                  key={ticket.id}
+                  ticketId={ticket.id}
+                  ticketTitle={ticket.name}
+                  ticketPriority={ticket.priority}
+                  ticketAssignee={ticket.assignee}
+                  ticketCreator={ticket.creator}
+                  ticketCreatedOn={ticket.createdAt}
+                  ticketDueDate={ticket.dueDate}
+                  ticketBlockedBy={
+                    ticket.ticket_dependencies.length > 0 &&
+                    ticket.ticket_dependencies[0]
+                  }
+                  ticketTag={ticket.tag}
+                  ticketStatus={ticket.status}
                 />
               ))}
             </tbody>
@@ -101,6 +69,7 @@ function TicketsTable() {
                 <th>Ticket</th>
                 <th>Priority</th>
                 <th>Assignee</th>
+                <th>Creator</th>
                 <th>Status</th>
                 <th>Created On</th>
                 <th>Due Date</th>

@@ -25,13 +25,17 @@ function UserSelector({
         >
           {selectedValue && (
             <span className="truncate flex items-center">
-              <img
-                src={selectedValue.profilePicture}
-                alt=""
-                className="h-4 w-4 rounded-full object-cover flex-shrink-0"
-              />
+              {selectedValue.profilePicture ? (
+                <img
+                  src={selectedValue.profilePicture}
+                  alt=""
+                  className="h-4 w-4 rounded-full object-cover flex-shrink-0"
+                />
+              ) : (
+                <div className="h-4 w-4 rounded-full object-cover flex-shrink-0 bg-base-100" />
+              )}
               <span className="ml-2 text-xs font-semibold">
-                {selectedValue.name}
+                {selectedValue.firstName} {selectedValue.lastName}
               </span>
             </span>
           )}
@@ -81,16 +85,26 @@ function UserSelector({
               </div>
 
               <div className="max-h-64 overflow-y-auto">
-                {data.filter((user) =>
-                  user.name.toLowerCase().includes(query.toLowerCase())
+                {data.filter(
+                  (user) =>
+                    user.firstName
+                      .toLowerCase()
+                      .includes(query.toLowerCase()) ||
+                    user.lastName.toLowerCase().includes(query.toLowerCase())
                 ).length === 0 ? (
                   <li className="text-neutral cursor-default relative py-2 pl-3 pr-9">
                     No data found
                   </li>
                 ) : (
                   data
-                    .filter((user) =>
-                      user.name.toLowerCase().includes(query.toLowerCase())
+                    .filter(
+                      (user) =>
+                        user.firstName
+                          .toLowerCase()
+                          .includes(query.toLowerCase()) ||
+                        user.lastName
+                          .toLowerCase()
+                          .includes(query.toLowerCase())
                     )
                     .map((value, index) => {
                       return (
@@ -98,18 +112,22 @@ function UserSelector({
                           key={`${id}-${index}`}
                           className="text-neutral cursor-pointer relative py-2 pl-3 pr-9 flex items-center hover:bg-base-100 transition"
                           onClick={() => {
-                            onChange(value.value);
+                            onChange(value.id);
                             setQuery("");
                             onToggle();
                           }}
                         >
-                          <img
-                            src={value.profilePicture}
-                            alt=""
-                            className="h-4 w-4 rounded-full object-cover flex-shrink-0"
-                          />
+                          {value.profilePicture ? (
+                            <img
+                              src={value.profilePicture}
+                              alt=""
+                              className="h-4 w-4 rounded-full object-cover flex-shrink-0"
+                            />
+                          ) : (
+                            <div className="h-4 w-4 rounded-full object-cover flex-shrink-0 bg-base-100" />
+                          )}
                           <span className="ml-2 text-xs font-semibold truncate">
-                            {value.name}
+                            {value.firstName} {value.lastName}
                           </span>
                         </li>
                       );
