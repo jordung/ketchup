@@ -37,14 +37,14 @@ class HomeController extends BaseController {
     this.ketchup_update = ketchup_update;
   }
 
-  // Calling the 'getDailyKetchups' API will return the following information:
+  // =================== GET DAILY KETCHUPS =================== //
+  // Note: Calling the 'getDailyKetchups' API will return the following information:
   // 1. All ketchups created by users affiliated with the organisation for that day;
   // 2. All reactions received for those ketchups (includ. the total count for various emojis reacted by different users in response to the ketchup)
   // 3. The list of users who have yet to post their daily ketchups
   // 4. All posts tagged to the organisation, listed from newest to oldest.
   // 5. All reactions received for those posts (includ. the total count for various emojis reacted by different users in response to the post)
 
-  // ====== Get Daily Ketchups ====== //
   getDailyKetchups = async (req, res) => {
     const { userId } = req.params;
 
@@ -210,26 +210,24 @@ class HomeController extends BaseController {
     }
   };
 
-  // FE send icon and userId and ketchupid and postId
-  // control 1 = ketchupId, 2 = postId
-  // 1 -> check if icon exists in reaction table, add reaction to ketchup_reaction
-  // 2 --> check if icon exists in reaction table, add reaction to post_reaction
+  // =================== ADD ONE REACTION (AKA EMOJI) =================== //
+  // Note: The 'addOneReaction' API will cater for the following 3 scenarios:
+  // 1. User reacted w a new emoji either to a KETCHUP (control = 1) or POST (control = 2);
+  // 2. User reacted w an existing emoji for the FIRST time either to a KETCHUP (control = 1) or POST (control = 2);
+  // 3. User reacted w an existing emoji for the SECOND time - no new entry will be added to database.
 
-  // 3 scenarios: (1) user reacted w a new emoji, (2) user reacted w an existing emoji for the first time, and (3) user reacted w an existing emoji for the second time - no new entry will be added to database.
-
-  // ====== Add One Reaction ====== //
   addOneReaction = async (req, res) => {
     const { control, userId, ketchupId, postId, icon } = req.body;
-    // note: if control = 1, user is reacting to a ketchup | if control = 2, user is reacting to a post
+    // note: control = 1, user is reacting to a ketchup | control = 2, user is reacting to a post
 
     try {
+      // format unicode to uppercase
       const formattedIcon = icon.toUpperCase();
-      console.log("formattedIcon", formattedIcon);
 
+      // check if emoji exists in database
       const existingIcon = await this.reaction.findOne({
         where: { icon: formattedIcon },
       });
-      console.log("existingIcon", existingIcon);
 
       const user = await this.user.findByPk(userId);
 
@@ -238,6 +236,7 @@ class HomeController extends BaseController {
         const newIcon = await this.reaction.findOne({
           where: { icon: formattedIcon },
         });
+        // if user reacts to KETCHUP with NEW emoji
         if (control === 1) {
           await this.ketchup_reaction.create({
             userId: userId,
@@ -245,6 +244,7 @@ class HomeController extends BaseController {
             reactionId: newIcon.id,
           });
         } else {
+          // if user reacts to POST with NEW emoji
           await this.post_reaction.create({
             userId: userId,
             postId: postId,
@@ -252,7 +252,9 @@ class HomeController extends BaseController {
           });
         }
       } else {
+        // if user reacts to KETCHUP with EXISTING emoji
         if (control === 1) {
+          // check if user has already reacted to that KETCHUP with said emoji
           const existingEntry = await this.ketchup_reaction.findOne({
             where: {
               userId: userId,
@@ -261,6 +263,7 @@ class HomeController extends BaseController {
             },
           });
           if (!existingEntry) {
+            // if no, create a new entry in database
             await this.ketchup_reaction.create({
               userId: userId,
               ketchupId: ketchupId,
@@ -268,6 +271,8 @@ class HomeController extends BaseController {
             });
           }
         } else {
+          // if user reacts to POST with EXISTING emoji
+          // check if user has already reacted to that POST with said emoji
           const existingEntry = await this.post_reaction.findOne({
             where: {
               userId: userId,
@@ -276,6 +281,7 @@ class HomeController extends BaseController {
             },
           });
           if (!existingEntry) {
+            // if no, create a new entry in database
             await this.post_reaction.create({
               userId: userId,
               postId: postId,
@@ -285,6 +291,7 @@ class HomeController extends BaseController {
         }
       }
 
+      // prepare information to be returned to FE
       const dailyKetchups = await this.model.findAll({
         include: [
           {
@@ -339,59 +346,6 @@ class HomeController extends BaseController {
         data: { getKetchupReactions, getPostReactions },
         msg: "Success: Reaction added successfully!",
       });
-
-      // } else if (control === 2) {
-      //   console.log("i am control 2");
-      //   const existingEntry = await this.post_reaction.findOne({
-      //     where: {
-      //       userId: userId,
-      //       postId: postId,
-      //       reactionId: existingIcon.id,
-      //     },
-      //   });
-      //   if (!existingEntry && !existingIcon) {
-      //     const newIcon = await this.reaction.create({ icon: formattedIcon });
-      //     await this.post_reaction.create({
-      //       userId: userId,
-      //       postId: postId,
-      //       reactionId: newIcon.id,
-      //     });
-      //   } else if (!existingEntry && existingIcon) {
-      //     await this.post_reaction.create({
-      //       userId: userId,
-      //       postId: postId,
-      //       reactionId: existingIcon.id,
-      //     });
-      //   }
-
-      // const allPosts = await this.post.findAll({
-      //   include: [
-      //     {
-      //       model: this.post_reaction,
-      //       separate: true,
-      //       attributes: ["userId", "postId", "reactionId", "createdAt"],
-      //       include: [
-      //         {
-      //           model: this.reaction,
-      //           attributes: ["icon"],
-      //         },
-      //       ],
-      //     },
-      //   ],
-      //   where: {
-      //     organisationId: user.organisationId,
-      //   },
-      //   attributes: ["id", "content", "createdAt"],
-      //   order: [["id", "DESC"]],
-      // });
-
-      // const getPostReactions = getAllReactions(allPosts, "post_reactions");
-
-      // return res.status(200).json({
-      //   success: true,
-      //   data: getPostReactions,
-      //   msg: "Success: Reaction added successfully!",
-      // });
     } catch (error) {
       return res.status(400).json({
         error: true,
@@ -400,10 +354,10 @@ class HomeController extends BaseController {
     }
   };
 
-  // ====== Remove One Reaction ====== //
+  // =================== REMOVE ONE REACTION (AKA EMOJI) =================== //
   removeOneReaction = async (req, res) => {
     const { control, userId, ketchupId, postId, icon } = req.body;
-    // note: if control = 1 (remove from ketchup) | if control = 2, (remove from post)
+    // note: control = 1, remove from KETCHUP | control = 2, remove from POST
 
     try {
       const formattedIcon = icon.toUpperCase();
@@ -423,6 +377,7 @@ class HomeController extends BaseController {
           },
         });
 
+        // prepare information to be returned to FE
         const dailyKetchups = await this.model.findAll({
           include: [
             {
@@ -467,6 +422,7 @@ class HomeController extends BaseController {
           },
         });
 
+        // prepare information to be returned to FE
         const allPosts = await this.post.findAll({
           include: [
             {
@@ -509,6 +465,7 @@ class HomeController extends BaseController {
     }
   };
 
+  // =================== ADD NEW POST =================== //
   addNewPost = async (req, res) => {
     const { userId, organisationId, ticketId, content } = req.body;
     try {
@@ -574,123 +531,3 @@ class HomeController extends BaseController {
 }
 
 module.exports = HomeController;
-
-// else {
-//   if (control === 1) {
-//     const existingEntry = await this.ketchup_reaction.findOne({
-//       where: {
-//         userId: userId,
-//         ketchupId: ketchupId,
-//         reactionId: existingIcon.id,
-//       },
-//     });
-//     if (!existingEntry) {
-//       await this.ketchup_reaction.create({
-//         userId: userId,
-//         ketchupId: ketchupId,
-//         reactionId: existingIcon.id,
-//       });
-//     }
-//   } else {
-//     const existingEntry = await this.post_reaction.findOne({
-//       where: {
-//         userId: userId,
-//         postId: postId,
-//         reactionId: existingIcon.id,
-//       },
-//     });
-//     if (!existingEntry) {
-//       await this.post_reaction.create({
-//         userId: userId,
-//         postId: postId,
-//         reactionId: existingIcon.id,
-//       });
-//     }
-//   }
-// }
-
-// if (existingIcon) {
-//   let existingEntry;
-//   existingEntry = await this.ketchup_reaction.findOne({
-//     where: {
-//       userId: userId,
-//       ketchupId: ketchupId,
-//       reactionId: existingIcon.id,
-//     },
-//   });
-//   existingEntry = await this.post_reaction.findOne({
-//     where: {
-//       userId: userId,
-//       postId: postId,
-//       reactionId: existingIcon.id,
-//     },
-//   });
-
-//   console.log("existingEntry", existingEntry);
-
-//   if (!existingEntry) {
-//     if (control === 1) {
-//       console.log("i am control 1");
-//       await this.ketchup_reaction.create({
-//         userId: userId,
-//         ketchupId: ketchupId,
-//         reactionId: existingIcon.id,
-//       });
-//       console.log("done adding existing emoji and entry");
-//     } else {
-//       console.log("i am control 2");
-//       await this.post_reaction.create({
-//         userId: userId,
-//         postId: postId,
-//         reactionId: existingIcon.id,
-//       });
-//       console.log("done adding existing emoji and entry");
-//     }
-//   }
-// } else {
-//   if (control === 1) {
-//     console.log("i am control 1");
-//     console.log("adding new emoji");
-//     const newIcon = await this.reaction.create({ icon: formattedIcon });
-//     console.log("newIcon", newIcon);
-
-//     await this.ketchup_reaction.create({
-//       userId: userId,
-//       ketchupId: ketchupId,
-//       reactionId: newIcon.id,
-//     });
-//     console.log("done adding new emoji and entry");
-//   } else {
-//     console.log("i am control 2");
-//     const newIcon = await this.reaction.create({ icon: formattedIcon });
-
-//     await this.post_reaction.create({
-//       userId: userId,
-//       postId: postId,
-//       reactionId: newIcon.id,
-//     });
-//   }
-// }
-
-// if (control === 1) {
-//   console.log("i am control 1");
-//   // existing entry checks if user has already reacted w this icon for that specific ketchupId
-
-//   if (!existingEntry && !existingIcon) {
-//     console.log("adding new emoji");
-//     const newIcon = await this.reaction.create({ icon: formattedIcon });
-//     console.log("newIcon", newIcon);
-
-//     await this.ketchup_reaction.create({
-//       userId: userId,
-//       ketchupId: ketchupId,
-//       reactionId: newIcon.id,
-//     });
-//     console.log("done adding new emoji and entry");
-//   } else if (!existingEntry && existingIcon) {
-//     await this.ketchup_reaction.create({
-//       userId: userId,
-//       ketchupId: ketchupId,
-//       reactionId: existingIcon.id,
-//     });
-//   }

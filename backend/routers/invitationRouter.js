@@ -9,6 +9,7 @@ class InvitationRouter {
   routes() {
     router.post("/", this.controller.inviteUsers);
     router.get("/", this.controller.getOrganissation);
+    router.post("/:userId", this.controller.removeInvitation);
     return router;
   }
 }

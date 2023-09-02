@@ -13,22 +13,23 @@ const generateEmailToken = require("../utils/emailToken");
 const { verification } = require("../utils/emailTemplates");
 
 class AuthController extends BaseController {
-  constructor({ user, organisation, invitation, organisation_admin }) {
+  constructor({ user, organisation, invitation, organisation_admin, watcher }) {
     super(user);
     this.user = user;
     this.organisation = organisation;
     this.invitation = invitation;
     this.organisation_admin = organisation_admin;
+    this.watcher = watcher;
   }
 
-  // Signup Through Ketchup Flow:
-  // 1. Sign up as new user (organisation id = null)
-  // 2. User to join or create new organisation
-  // 2A. If join organisation: user to provide invite code
-  // 2B. If create new organisation: assign user as the admin user
-  // 3. Verify Email
+  // Note: Signup Through Ketchup Flow:
+  // 1. Sign up as new user (organisationId = null)
+  // 2. User to join or create new organisation -> call 'joinOrCreateOrganisation' API
+  // 2A. If user choose to create a new organisation -> user to provide organisationName and assign user as ADMIN
+  // 2B. If user choose to join organisation -> user to provide invite code
+  // 3. Verify Email -> call 'verifyEmail' API
 
-  // ====== Signup through Ketchup ====== //
+  // =================== SIGN UP THROUGH KETCHUP (DIRECT, WITH OR W/O INVITE CODE) =================== //
   signUp = async (req, res) => {
     const {
       organisationId,
@@ -116,7 +117,11 @@ class AuthController extends BaseController {
     }
   };
 
-  // ====== Signup through Invite ====== //
+  // Note: Signup Through Invite Link Flow:
+  // 1. Sign up as new user (FE to call 'getOrganisation' API from invite controller to retrieve organistion information)
+  // 2. Verify Email -> call 'verifyEmail' API
+
+  // =================== SIGN UP THROUGH INVITE (INVITE LINK) =================== //
   signUpThroughInvite = async (req, res) => {
     const {
       organisationId,
@@ -148,13 +153,6 @@ class AuthController extends BaseController {
         where: { email: email },
       });
 
-      if (existingUser) {
-        return res.status(400).json({
-          error: true,
-          msg: "Error: An account with this email address already exists.",
-        });
-      }
-
       // validate both invite code and email address before creating a new account
       const validateInviteCode = await this.invitation.findOne({
         where: { inviteCode: inviteCode, inviteeEmail: email },
@@ -164,6 +162,11 @@ class AuthController extends BaseController {
         return res.status(400).json({
           error: true,
           msg: "Error: Incorrect invitation code or email address",
+        });
+      } else if (existingUser && validateInviteCode) {
+        return res.status(400).json({
+          error: true,
+          msg: "Error: Invitation code has already been used! Please log in instead",
         });
       } else {
         // update is_confirmed in invitation table to true
@@ -233,7 +236,7 @@ class AuthController extends BaseController {
     }
   };
 
-  // ====== Verify Email ====== //
+  // =================== VERIFY EMAIL =================== //
   verifyEmail = async (req, res) => {
     // receive token from query parameter in the URL
     const { token } = req.query;
@@ -289,7 +292,7 @@ class AuthController extends BaseController {
     }
   };
 
-  // ====== Login ====== //
+  // =================== USER LOGS IN =================== //
   login = async (req, res) => {
     const { email, password } = req.body;
 
@@ -367,7 +370,7 @@ class AuthController extends BaseController {
     }
   };
 
-  // ====== Logout ====== //
+  // =================== USER LOGS OUT =================== //
   logout = async (req, res) => {
     const { userId } = req.body;
     try {
@@ -389,7 +392,7 @@ class AuthController extends BaseController {
     }
   };
 
-  // ====== Validate Refresh Token ====== //
+  // =================== VALIDATE REFRESH TOKEN =================== //
   validateRefreshToken = async (req, res) => {
     // step 1: retrieve refresh token from localStorage
     const { refreshToken } = req.body;
@@ -436,7 +439,7 @@ class AuthController extends BaseController {
     }
   };
 
-  // ====== Renew Access Token ====== //
+  // =================== RENEW ACCESS TOKEN =================== //
   renewAccessToken = async (req, res) => {
     // step 1: retrieve refresh token from localStorage
     const { refreshToken } = req.body;
@@ -489,15 +492,20 @@ class AuthController extends BaseController {
     }
   };
 
-  // ====== Join or Create Organisation ====== //
+  // =================== JOIN (W INVITE CODE) OR CREATE AN ORGANISATION =================== //
   joinOrCreateOrganisation = async (req, res) => {
     const { control, organisationName, inviteCode, userId, email } = req.body;
 
     try {
       let user;
       let organisation;
+      let formattedOrganisationName;
 
-      const formattedOrganisationName = organisationName.toLowerCase();
+      // if organisationName is null, return empty string
+      organisationName
+        ? (formattedOrganisationName = organisationName.toLowerCase())
+        : "";
+
       // 1 = create organisation
       if (control === 1) {
         const checkExisting = await this.organisation.findOne({
@@ -569,9 +577,7 @@ class AuthController extends BaseController {
         );
 
         user = await this.model.findOne({ where: { id: userId } });
-        organisation = await this.organisation.findByPk({
-          id: joinOrganisation.organisationId,
-        });
+        organisation = await this.organisation.findByPk(user.organisationId);
 
         return res.status(200).json({
           success: true,
@@ -592,7 +598,7 @@ class AuthController extends BaseController {
     }
   };
 
-  // ====== DELETE USER ====== //
+  // =================== REMOVE USER FROM KETCHUP =================== //
   deleteOneUser = async (req, res) => {
     const { userId } = req.params;
     const transaction = await sequelize.transaction();
@@ -615,7 +621,7 @@ class AuthController extends BaseController {
       }
 
       // delete associated records from the children tables
-      console.log("user.organisation_admin", user.organisation_admin);
+      await this.watcher.destroy({ where: { userId: userId } });
 
       if (user.organisation_admin !== null) {
         await this.organisation_admin.destroy({
@@ -641,7 +647,7 @@ class AuthController extends BaseController {
     }
   };
 
-  // ====== Function to Send Verification Email ====== //
+  // =================== FUNCTION TO SEND VERIFICATION EMAIL =================== //
   sendVerificationEmail = async (user) => {
     const createTransporter = await transporter;
     const verificationLink = `${process.env.APP_URL}/verify?token=${user.verificationToken}`;

@@ -9,7 +9,7 @@ class AdminController extends BaseController {
     this.organisation_admin = organisation_admin;
   }
 
-  // ====== Get Organisation Preferences ====== //
+  // =================== GET ORGANISATION INFORMATION =================== //
   getOrganisation = async (req, res) => {
     const { organisationId } = req.params;
 
@@ -24,9 +24,10 @@ class AdminController extends BaseController {
             required: false,
           },
         ],
-        attributes: ["id", "firstName", "lastName", "profilePicture"],
+        attributes: ["id", "firstName", "lastName", "email", "profilePicture"],
       });
 
+      // return if user isAdmin in boolean
       const usersWithAdminStatus = users.map((user) => {
         return {
           ...user.toJSON(),
@@ -60,7 +61,7 @@ class AdminController extends BaseController {
     }
   };
 
-  // ====== Update User Profile ====== //
+  // =================== UPDATE ORGANISATION PREFERENCES (TIMING) =================== //
   updateOrganisationTiming = async (req, res) => {
     const { organisationId } = req.params;
     const { time } = req.body;
@@ -95,17 +96,21 @@ class AdminController extends BaseController {
     }
   };
 
-  // ====== Update User Profile ====== //
+  // =================== UPDATE ORGANISATION PREFERENCES (ASSIGN USER ROLE) =================== //
+  // Note: The 'updateMemberStatus' API allows FE to execute both ADMIN and MEMBER (aka non-admin) roles on user //
+
   updateMemberStatus = async (req, res) => {
     const { userId, organisationId } = req.body;
 
     const user = await this.user.findByPk(userId);
 
+    // check if user is already an admin
     const isAdmin = await this.organisation_admin.findOne({
       where: { userId: userId, organisationId: organisationId },
     });
     try {
       if (!isAdmin) {
+        // if user is currently NOT an admin, make user an admin
         await this.organisation_admin.create({
           userId: userId,
           organisationId: organisationId,
@@ -117,12 +122,14 @@ class AdminController extends BaseController {
               where: {
                 organisationId: organisationId,
               },
+              // return empty array if organisation_admin not found in non-admin users
               required: false,
             },
           ],
           attributes: ["id", "firstName", "lastName", "profilePicture"],
         });
 
+        // return if user isAdmin in boolean
         const usersWithAdminStatus = users.map((user) => {
           return {
             ...user.toJSON(),
@@ -140,6 +147,7 @@ class AdminController extends BaseController {
           msg: `Success: ${user.firstName} ${user.lastName} has been successfully updated to Admin!`,
         });
       } else {
+        // if user is currently an admin, make user a member (aka non-admin)
         await this.organisation_admin.destroy({
           where: {
             userId: userId,

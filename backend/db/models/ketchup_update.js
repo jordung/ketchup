@@ -3,8 +3,8 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Ketchup_Update extends Model {
     static associate(models) {
-      this.belongsTo(models.ketchup, { foreignKey: "ketchup_id" });
-      this.belongsTo(models.update, { foreignKey: "update_id" });
+      this.belongsTo(models.ketchup, { foreignKey: "ketchupId" });
+      this.belongsTo(models.update, { foreignKey: "updateId" });
     }
   }
   Ketchup_Update.init(

@@ -4,14 +4,14 @@ module.exports = (sequelize, DataTypes) => {
   class Ketchup extends Model {
     static associate(models) {
       this.belongsTo(models.organisation);
-      this.belongsTo(models.user, { as: "creator", foreignKey: "user_id" });
+      this.belongsTo(models.user, { as: "creator", foreignKey: "userId" });
       this.belongsTo(models.reaction, {
         as: "mood",
-        foreignKey: "reaction_id",
+        foreignKey: "reactionId",
       });
 
-      this.hasMany(models.ketchup_agenda, { foreignKey: "ketchup_id" });
-      this.hasMany(models.ketchup_update, { foreignKey: "ketchup_id" });
+      this.hasMany(models.ketchup_agenda, { foreignKey: "ketchupId" });
+      this.hasMany(models.ketchup_update, { foreignKey: "ketchupId" });
 
       this.hasMany(models.ketchup_reaction);
       this.belongsToMany(models.user, { through: models.ketchup_reaction });

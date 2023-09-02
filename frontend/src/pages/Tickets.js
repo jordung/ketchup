@@ -17,6 +17,7 @@ function Tickets() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(false);
     const getAllTickets = async () => {
       try {
         const response = await axios.get(
@@ -41,7 +42,6 @@ function Tickets() {
 
   return (
     <>
-      {" "}
       {loading && <Spinner />}
       <div className="h-screen pt-4 px-4 min-w-[calc(100vw_-_5rem)] lg:min-w-[calc(100vw_-_9rem)]">
         {/* Header */}

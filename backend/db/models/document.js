@@ -5,6 +5,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       this.belongsTo(models.user, { as: "creator", foreignKey: "user_id" });
       this.belongsTo(models.tag);
+      this.belongsTo(models.organisation);
 
       this.hasMany(models.agenda);
       this.hasMany(models.update);
@@ -21,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   Document.init(
     {
+      organisationId: DataTypes.INTEGER,
       userId: DataTypes.INTEGER,
       tagId: DataTypes.INTEGER,
       name: DataTypes.STRING,

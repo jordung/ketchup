@@ -3,8 +3,8 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Ketchup_Agenda extends Model {
     static associate(models) {
-      this.belongsTo(models.ketchup, { foreignKey: "ketchup_id" });
-      this.belongsTo(models.agenda, { foreignKey: "agenda_id" });
+      this.belongsTo(models.ketchup, { foreignKey: "ketchupId" });
+      this.belongsTo(models.agenda, { foreignKey: "agendaId" });
     }
   }
   Ketchup_Agenda.init(
