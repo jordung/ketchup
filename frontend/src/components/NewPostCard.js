@@ -1,41 +1,38 @@
 import TicketSelector from "./TicketSelector";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import axios from "axios";
 
 function NewPostCard(props) {
-  //TODO: render out tickets dynamically (including a default N.A null option)
   const { setComposePost, setAllPosts, organisationId, userId, setLoading } =
     props;
   const [isOpen, setIsOpen] = useState(false);
+  const [allTickets, setAllTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [content, setContent] = useState("");
 
-  const tickets = [
-    {
-      title: "N.A.",
-      value: null,
-    },
-    {
-      title: "FE - Update UI",
-      value: "1", // ticketId,
-    },
-    {
-      title: "BE - Finish ERD Diagrams",
-      value: "2",
-    },
-  ];
+  useEffect(() => {
+    const getTickets = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_DB_API}/tickets/${organisationId}`
+        );
+        setAllTickets([
+          { name: "N/A", id: null },
+          ...response.data.data.allTickets,
+        ]);
+      } catch (error) {
+        console.log(error);
+        toast.error(error.response.data.msg);
+      }
+    };
+    getTickets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmitNewPost = async (e) => {
     const accessToken = localStorage.getItem("accessToken");
-    console.log({
-      organisationId: organisationId,
-      userId: userId,
-      ticketId: selectedTicket,
-      content: content,
-    });
-
     if (!content.length > 0) {
       toast.error("Unable to share empty content!");
       return;
@@ -97,13 +94,13 @@ function NewPostCard(props) {
             Related Ticket
           </label>
           <TicketSelector
-            data={tickets}
+            data={allTickets}
             id={"ticket-selector"}
             open={isOpen}
             onToggle={() => setIsOpen(!isOpen)}
             onChange={setSelectedTicket}
-            selectedValue={tickets.find(
-              (option) => option.value === selectedTicket
+            selectedValue={allTickets.find(
+              (option) => option.id === selectedTicket
             )}
           />
         </div>
