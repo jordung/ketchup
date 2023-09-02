@@ -44,6 +44,14 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
+      organisation_id: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        references: {
+          model: "organisations",
+          key: "id",
+        },
+      },
       creator_id: {
         allowNull: false,
         type: Sequelize.INTEGER,
@@ -177,6 +185,14 @@ module.exports = {
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
+      },
+      organisation_id: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        references: {
+          model: "organisations",
+          key: "id",
+        },
       },
       user_id: {
         allowNull: false,

@@ -1,4 +1,5 @@
 const BaseController = require("./baseController");
+const { sequelize } = require("../db/models/index");
 
 const generateEmailToken = require("../utils/emailToken");
 const { invitation } = require("../utils/emailTemplates");
@@ -13,16 +14,15 @@ class InvitationController extends BaseController {
     this.organisation_admin = organisation_admin;
   }
 
-  // Signup Through Invite Flow:
-  // 1. New user will be invited by their organisation admin
-  // 2. An invitation email will be sent to the invitee's email address
-  // 3. The invitee will be redirected to Ketchup's signup page and register as a new user
-  // 4. The organisation id will be retrieved via query params
-  // 5. Proceed with the signup request passing user info + organisation id
-  // 6. Verify Email
+  // Note: Admin Invites New User Flow:
+  // 1. Admin send an invitation email to new user (aka invitee) -> call 'inviteUsers' API.
+  // 2. The invitee will receive an email containing both invite link and invite code.
+  // 3A. If invitee chooses to click on invite link -> call 'signUpThroughInvite' API -> followed by the 'getOrganisation' API to retrieve organisation information.
+  // 3B. If invitee chooses to sign up directly via Ketchup page (using the invite code) -> call 'joinOrCreateOrganisation' API from auth controller -> user selects 'join organisation' and provide the invite code.
+  // 4. Sign up success, email verification will be sent to the new user email address.
+  // 5. Verify Email -> call 'verifyEmail' API
 
-  // full list of emails + status
-  // ====== invite users ====== //
+  // =================== INVITE USERS =================== //
   inviteUsers = async (req, res) => {
     const { userId, inviteeEmail } = req.body;
 
@@ -43,7 +43,7 @@ class InvitationController extends BaseController {
     const isAdmin = inviter.organisation_admin !== null;
 
     if (!isAdmin) {
-      return res.status(401).json({
+      return res.status(403).json({
         error: true,
         msg: "Error: You are not authorised to send invitation request.",
       });
@@ -112,15 +112,28 @@ class InvitationController extends BaseController {
     }
   };
 
-  // ====== Get Organisation ====== //
+  // =================== GET ORGANISATION INFORMATION (FOR SIGNUP THROUGH INVITE LINK) =================== //
   getOrganissation = async (req, res) => {
     // receive invite code from URL query parameter
     const { inviteCode } = req.query;
+
+    // check if invite code exists
+    const findInvitation = await this.invitation.findOne({
+      where: { inviteCode: inviteCode },
+    });
+
+    // check if the invite code has already been used
+    const checkInviteCode = findInvitation.isConfirmed;
 
     if (!inviteCode) {
       return res.status(400).json({
         error: true,
         msg: "Error: Please provide the invitation code.",
+      });
+    } else if (inviteCode && checkInviteCode === true) {
+      return res.status(400).json({
+        error: true,
+        msg: "Error: Invitation code has already been used! Please log in instead",
       });
     }
 
@@ -128,6 +141,7 @@ class InvitationController extends BaseController {
       // check if user has indeed been invited to join organisation
       const invitee = await this.invitation.findOne({
         where: { inviteCode: inviteCode },
+        attributes: ["inviteeEmail"],
         include: [
           {
             model: this.organisation,
@@ -141,13 +155,13 @@ class InvitationController extends BaseController {
           msg: "Error: Invalid invitation code",
         });
       } else {
-        // retrieve organisation id and pass to FE
+        // retrieve organisation id + invitee email
         const organisation = invitee.organisation;
-        console.log("organisation", organisation);
+        const inviteeEmail = invitee.inviteeEmail;
 
         return res.status(200).json({
           success: true,
-          data: organisation,
+          data: { organisation, inviteeEmail },
           msg: "Success: You have been invited by your organisation to join Ketchup!",
         });
       }
@@ -155,6 +169,49 @@ class InvitationController extends BaseController {
       return res.status(400).json({
         error: true,
         msg: "Error: We are unable to proceed with your request. Please try again later or contact our support team for further assistance.",
+      });
+    }
+  };
+
+  // =================== FOR TESTING ONLY: REMOVE INVITATION RECORD =================== //
+  removeInvitation = async (req, res) => {
+    const { userId } = req.params;
+    const transaction = await sequelize.transaction();
+
+    try {
+      // check if user exists
+      const user = await this.model.findByPk(userId);
+      console.log("1");
+
+      if (user) {
+        console.log("2");
+        // update user row to remove organisation id
+        await this.model.update(
+          {
+            organisationId: null,
+          },
+          { where: { id: userId } }
+        );
+        console.log("3");
+        // delete associated records from the children tables
+        await this.invitation.destroy({ where: { inviteeEmail: user.email } });
+        console.log("4");
+      } else {
+        return res.status(404).json({
+          error: true,
+          msg: "Error: Account not found",
+        });
+      }
+
+      await transaction.commit();
+      return res.status(200).json({
+        success: true,
+        msg: "Success: Removed invitation to join organisation!",
+      });
+    } catch (error) {
+      return res.status(400).json({
+        error: true,
+        msg: "Error: We encountered an error while handling your request. Please try again.",
       });
     }
   };

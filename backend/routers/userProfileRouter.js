@@ -9,6 +9,7 @@ class UserProfileRouter {
   routes() {
     router.get("/all", this.controller.getAllUsers);
     router.get("/:userId", this.controller.getOneUser);
+    router.post("/:userId", this.controller.updateProfilePicture);
 
     return router;
   }
