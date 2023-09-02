@@ -1,79 +1,133 @@
 import { useNavigate } from "react-router-dom";
-import jordan from "../assets/landing/jordan.jpeg";
-import { priorityConverter } from "../utils/priorityConverter";
-import { statusConverter } from "../utils/statusConverter";
+import moment from "moment";
 
 function TicketsTableItem(props) {
+  const {
+    ticketId,
+    ticketTitle,
+    ticketPriority,
+    ticketAssignee,
+    ticketCreator,
+    ticketCreatedOn,
+    ticketDueDate,
+    ticketBlockedBy,
+    ticketTag,
+    ticketStatus,
+  } = props;
   const navigate = useNavigate();
+
+  // ticket name, creator_id, created_at - cannot be null
 
   return (
     <tr className="hover:bg-base-100 w-full transition-all duration-300">
-      <td>
+      <td className="min-w-[180px]">
         <div className="flex items-center">
-          <button
-            className="btn btn-ghost btn-sm normal-case font-semibold"
-            onClick={() => navigate(`/tickets/${props.ticketId}`)}
+          <p
+            className="font-semibold cursor-pointer hover:text-base-300 transition-all duration-300"
+            onClick={() => navigate(`/tickets/${ticketId}`)}
           >
-            {props.ticketTitle}
-          </button>
+            {ticketTitle}
+          </p>
         </div>
       </td>
       <td>
-        <span
-          className={`font-semibold ${
-            (props.ticketPriority === 1 && "text-success") ||
-            (props.ticketPriority === 2 && "text-warning") ||
-            (props.ticketPriority === 3 && "text-error")
-          }`}
-        >
-          {priorityConverter(props.ticketPriority)}
-        </span>
-      </td>
-      <td className="flex items-center gap-2">
-        <div className="avatar">
-          <div className="w-8 object-contain rounded-full">
-            <img src={jordan} alt="avatar" />
-          </div>
-        </div>
-        <button className="btn btn-sm mr-4 btn-ghost normal-case font-semibold flex-shrink-0">
-          {props.ticketAssignee}
-        </button>
-      </td>
-      <td>
-        <div className="flex items-center w-28">
+        {ticketPriority && (
           <span
-            className={`font-semibold badge text-white ${
-              (props.ticketStatus === 1 && "badge-error") ||
-              (props.ticketStatus === 2 && "badge-warning") ||
-              (props.ticketStatus === 3 && "badge-success")
+            className={`font-semibold ${
+              (ticketPriority.id === 1 && "text-success") ||
+              (ticketPriority.id === 2 && "text-warning") ||
+              (ticketPriority.id === 3 && "text-error")
             }`}
           >
-            {statusConverter(props.ticketStatus)}
+            {ticketPriority.name}
           </span>
+        )}
+      </td>
+      <td>
+        {ticketAssignee ? (
+          <div
+            className="flex items-center gap-2 group cursor-pointer"
+            onClick={() => navigate(`/profile/${ticketAssignee.id}`)}
+          >
+            <div className="avatar">
+              <div className="w-8 object-contain rounded-full">
+                <img
+                  src={ticketAssignee.profilePicture}
+                  alt="avatar"
+                  className="group-hover:opacity-75 transition-all duration-300"
+                />
+              </div>
+            </div>
+            <p className="font-semibold group-hover:text-base-300 transition-all duration-300">
+              {ticketAssignee.firstName} {ticketAssignee.lastName}
+            </p>
+          </div>
+        ) : (
+          <p className="font-semibold">Unassigned</p>
+        )}
+      </td>
+      <td>
+        <div
+          className="flex items-center gap-2 group cursor-pointer"
+          onClick={() => navigate(`/profile/${ticketCreator.id}`)}
+        >
+          <div className="avatar">
+            <div className="w-8 object-contain rounded-full">
+              <img
+                src={ticketCreator.profilePicture}
+                alt="avatar"
+                className="group-hover:opacity-75 transition-all duration-300"
+              />
+            </div>
+          </div>
+          <p className="font-semibold group-hover:text-base-300 transition-all duration-300">
+            {ticketCreator.firstName} {ticketCreator.lastName}
+          </p>
         </div>
       </td>
       <td>
-        <p className="font-semibold">{props.ticketCreatedOn}</p>
+        {ticketStatus && (
+          <div className="flex items-center w-28">
+            <span
+              className={`font-semibold badge text-white ${
+                (ticketStatus.id === 1 && "badge-error") ||
+                (ticketStatus.id === 2 && "badge-warning") ||
+                (ticketStatus.id === 3 && "badge-success")
+              }`}
+            >
+              {ticketStatus.name}
+            </span>
+          </div>
+        )}
       </td>
       <td>
-        <p className="font-semibold">{props.ticketDueDate}</p>
+        <p className="font-semibold">
+          {moment(ticketCreatedOn).format("DD MMM YYYY")}
+        </p>
       </td>
       <td>
-        <div className="flex items-center">
-          {props.ticketBlockedBy && (
-            <button
-              className="btn btn-ghost btn-sm normal-case font-semibold"
+        {ticketDueDate && (
+          <p className="font-semibold">
+            {moment(ticketDueDate).format("DD MMM YYYY")}
+          </p>
+        )}
+      </td>
+      <td className="min-w-[180px]">
+        {ticketBlockedBy.dependencyId && (
+          <div className="flex items-center">
+            <p
+              className="font-semibold cursor-pointer hover:text-base-300 transition-all duration-300"
               onClick={() =>
-                navigate(`/tickets/${props.ticketBlockedBy.ticketId}`)
+                navigate(`/tickets/${ticketBlockedBy.dependencyId}`)
               }
             >
-              {props.ticketBlockedBy.ticketTitle}
-            </button>
-          )}
-        </div>
+              {ticketBlockedBy.ticket.name}
+            </p>
+          </div>
+        )}
       </td>
       <td>
-        <p className="font-semibold badge">{props.ticketTag}</p>
+        {ticketTag && <p className="font-semibold badge">{ticketTag.name}</p>}
       </td>
     </tr>
   );

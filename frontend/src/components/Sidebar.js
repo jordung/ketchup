@@ -15,6 +15,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useContext, useState } from "react";
 import { UserContext } from "../App";
 import VerifyEmailOverlay from "./VerifyEmailOverlay";
+import NotificationsModal from "./NotificationsModal";
 
 function Sidebar() {
   const [showMore, setShowMore] = useState(false);
@@ -30,7 +31,7 @@ function Sidebar() {
           layout
           className={`${
             showMore ? "w-48 lg:w-64" : "w-12 lg:w-24"
-          } fixed h-screen bg-base-100 text-neutral`}
+          } fixed h-screen bg-base-100 text-neutral z-50`}
         >
           {/* button to expand sidebar */}
           <motion.span
@@ -115,7 +116,8 @@ function Sidebar() {
                         ? "bg-neutral group-hover:bg-neutral"
                         : "group-hover:bg-accent"
                     }`}
-                    onClick={() => navigate("/notifications")}
+                    // onClick={() => navigate("/notifications")}
+                    onClick={() => window.notificationsModal.showModal()}
                   >
                     <motion.span layout="position">
                       <PiBellRingingBold
@@ -438,6 +440,7 @@ function Sidebar() {
           animate={{ opacity: 1 }}
           className={`${showMore ? "ml-48 lg:ml-64" : "ml-12 lg:ml-24"}`}
         >
+          <NotificationsModal />
           <Outlet />
         </motion.div>
       </div>

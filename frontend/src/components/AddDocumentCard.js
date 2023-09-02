@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { motion } from "framer-motion";
-import jordan from "../assets/landing/jaelyn.jpg";
 import {
   PiPencilLineBold,
   PiCalendarPlusBold,
@@ -10,19 +9,28 @@ import {
 import MarkdownEditor from "./MarkdownEditor";
 import Creatable from "react-select/creatable";
 import TicketSelector from "./TicketSelector";
-import { tagDefaultOptions, colourStyles } from "../utils/selectSettings";
+import { colourStyles } from "../utils/selectSettings";
 import { toast } from "react-toastify";
+import { UserContext } from "../App";
+import { formatOneTag, formatTags } from "../utils/formatTags";
+import axios from "axios";
 
 function AddDocumentCard(props) {
-  const { setAddDocument } = props;
-  //TODO: render out tickets dynamically (including a default N.A null option)
+  const { setAddDocument, allTags, setAllTags, allTickets, setAllDocuments } =
+    props;
+
+  const ticketList = [{ name: "N/A", id: null }, ...allTickets];
+
+  const { user } = useContext(UserContext);
+
   const [isTicketSelectorOpen, setIsTicketSelectorOpen] = useState(false);
+  const [tagList, setTagList] = useState(formatTags(allTags));
 
   const [documentTitle, setDocumentTitle] = useState("");
   const [documentCreatedOn, setDocumentCreatedOn] = useState(
     new Date().toISOString().substring(0, 10)
   );
-  const [documentTag, setDocumentTag] = useState("");
+  const [documentTag, setDocumentTag] = useState(null);
   const [documentRelatedTicket, setDocumentRelatedTicket] = useState(null);
   const [documentContent, setDocumentContent] = useState("");
 
@@ -30,43 +38,65 @@ function AddDocumentCard(props) {
     setDocumentTag(value);
   };
 
-  const handleCreateTag = (inputValue) => {
-    console.log(inputValue);
-    tagDefaultOptions.push({ value: inputValue, label: inputValue });
+  const handleCreateTag = async (inputValue) => {
+    const accessToken = localStorage.getItem("accessToken");
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_DB_API}/tickets/tag`,
+        {
+          organisationId: user.organisationId,
+          name: inputValue,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      // console.log(response);
+      setTagList(formatTags(response.data.data));
+      setDocumentTag(
+        formatOneTag(
+          response.data.data.find((obj) => obj.name.includes("#" + inputValue))
+        )
+      );
+    } catch (error) {
+      toast.error(`${error.response.data.msg}`);
+    }
   };
 
-  const tickets = [
-    {
-      title: "N.A.",
-      value: null,
-    },
-    {
-      title: "FE - Update UI",
-      value: "1", // ticketId,
-    },
-    {
-      title: "BE - Finish ERD Diagrams",
-      value: "2",
-    },
-  ];
-
-  const handleAddDocument = (e) => {
+  const handleAddDocument = async (e) => {
     if (!documentTitle.trim().length > 0) {
       toast.error("Document Title must not be blank.");
       return;
+    } else {
+      const accessToken = localStorage.getItem("accessToken");
+      try {
+        const response = await axios.post(
+          `${process.env.REACT_APP_DB_API}/documents`,
+          {
+            organisationId: user.organisationId,
+            creatorId: user.id,
+            tagId: documentTag ? documentTag.value : null,
+            ticketId: documentRelatedTicket,
+            name: documentTitle,
+            body: documentContent,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+        console.log(response);
+        setAllDocuments(response.data.data.allDocuments);
+        setAllTags(response.data.data.allTags);
+      } catch (error) {
+        toast.error(error.response.data.msg);
+      } finally {
+        setAddDocument(false);
+      }
     }
-    console.log({
-      documentTitle: documentTitle,
-      documentCreatedBy: "userId",
-      documentCreatedOn: documentCreatedOn,
-      documentTag: documentTag.label,
-      documentRelatedTicket: documentRelatedTicket,
-      documentContent: documentContent,
-    });
-    // TODO: set information to backend
-    // setTicketAssignee(null);
-    // setContent("");
-    setAddDocument(false);
   };
 
   return (
@@ -97,12 +127,12 @@ function AddDocumentCard(props) {
 
             <div className="flex items-center input input-sm bg-white border-1 border-base-200 rounded-lg">
               <img
-                src={jordan}
+                src={user.profilePicture}
                 alt=""
                 className="h-4 w-4 rounded-full object-cover flex-shrink-0"
               />
               <span className="ml-2 text-xs font-semibold truncate">
-                Jaelyn Teo
+                {user.firstName} {user.lastName}
               </span>
             </div>
 
@@ -115,7 +145,7 @@ function AddDocumentCard(props) {
             <div>
               <input
                 type="date"
-                className="cursor-pointer font-semibold bg-white border-base-200 text-xs input input-sm w-full rounded-lg text-center"
+                className="cursor-pointer font-semibold disabled:bg-white border-base-200 text-xs input input-sm w-full rounded-lg text-center"
                 defaultValue={documentCreatedOn}
                 disabled
                 onChange={(e) => setDocumentCreatedOn(e.target.value)}
@@ -132,7 +162,7 @@ function AddDocumentCard(props) {
               <Creatable
                 isClearable
                 className="font-semibold text-xs cursor-pointer"
-                options={tagDefaultOptions}
+                options={tagList}
                 value={documentTag}
                 onChange={handleChangeTag}
                 onCreateOption={(input) => handleCreateTag(input)}
@@ -151,13 +181,13 @@ function AddDocumentCard(props) {
 
             <div>
               <TicketSelector
-                data={tickets}
+                data={ticketList}
                 id={"ticket-selector"}
                 open={isTicketSelectorOpen}
                 onToggle={() => setIsTicketSelectorOpen(!isTicketSelectorOpen)}
                 onChange={setDocumentRelatedTicket}
-                selectedValue={tickets.find(
-                  (option) => option.value === documentRelatedTicket
+                selectedValue={ticketList.find(
+                  (option) => option.id === documentRelatedTicket
                 )}
               />
             </div>

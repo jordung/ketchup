@@ -10,7 +10,7 @@ export const convertTextToLink = (text) => {
         <a
           key={index}
           href={part}
-          className="text-primary inline-block hover:underline"
+          className="text-primary inline-block hover:underline break-all"
           target="_blank"
           rel="noopener noreferrer"
         >

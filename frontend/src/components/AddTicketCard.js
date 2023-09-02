@@ -14,22 +14,40 @@ import MarkdownEditor from "./MarkdownEditor";
 import UserSelector from "./UserSelector";
 import Creatable from "react-select/creatable";
 import TicketSelector from "./TicketSelector";
-import { tagDefaultOptions, colourStyles } from "../utils/selectSettings";
+import { colourStyles } from "../utils/selectSettings";
 import { formatInputDate } from "../utils/formatInputDate";
 import { UserContext } from "../App";
+import { formatOneTag, formatTags } from "../utils/formatTags";
+import axios from "axios";
 
 function AddTicketCard(props) {
-  const { setAddTicket } = props;
-  //TODO: render out tickets dynamically (including a default N.A null option)
-  //TODO: fix tag selection
-
+  const {
+    setAddTicket,
+    allUsers,
+    allTags,
+    allTickets,
+    setAllUsers,
+    setAllTags,
+    setAllTickets,
+  } = props;
   const { user } = useContext(UserContext);
+  const userList = [
+    {
+      id: null,
+      firstName: "N/A",
+      lastName: "",
+      profilePicture: null,
+    },
+    ...allUsers,
+  ];
+  const ticketList = [{ name: "N/A", id: null }, ...allTickets];
 
   const [isUserSelectorOpen, setIsUserSelectorOpen] = useState(false);
   const [isTicketSelectorOpen, setIsTicketSelectorOpen] = useState(false);
-  const [allTicketTags, setAllTicketTags] = useState(tagDefaultOptions);
+  const [tagList, setTagList] = useState(formatTags(allTags));
+
   const [ticketTitle, setTicketTitle] = useState("");
-  const [ticketAssignee, setTicketAssignee] = useState(2);
+  const [ticketAssignee, setTicketAssignee] = useState(null);
   const [ticketCreatedOn, setTicketCreatedOn] = useState(
     new Date().toISOString().substring(0, 10)
   );
@@ -40,70 +58,78 @@ function AddTicketCard(props) {
   const [ticketContent, setTicketContent] = useState("");
 
   const handleChangeTag = (value) => {
-    console.log(value);
     setTicketTag(value);
   };
 
-  const handleCreateTag = (inputValue) => {
-    const newTicketTag = {
-      value: allTicketTags.length + 1,
-      label: inputValue,
-    };
-    console.log(inputValue);
-    setAllTicketTags((prevState) => [...prevState, newTicketTag]);
-    setTicketTag(newTicketTag);
+  const handleCreateTag = async (inputValue) => {
+    const accessToken = localStorage.getItem("accessToken");
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_DB_API}/tickets/tag`,
+        {
+          organisationId: user.organisationId,
+          name: inputValue,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      // console.log(response);
+      setTagList(formatTags(response.data.data));
+      setTicketTag(
+        formatOneTag(
+          response.data.data.find((obj) => obj.name.includes("#" + inputValue))
+        )
+      );
+    } catch (error) {
+      toast.error(`${error.response.data.msg}`);
+    }
   };
 
-  const users = [
-    {
-      name: "Jordan Ang",
-      profilePicture:
-        "https://images.unsplash.com/photo-1527082395-e939b847da0d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1635&q=80",
-      value: 1, // userId,
-    },
-    {
-      name: "Jaelyn Teo",
-      profilePicture:
-        "https://images.unsplash.com/photo-1558507652-2d9626c4e67a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1887&q=80",
-      value: 2,
-    },
-  ];
-
-  const tickets = [
-    {
-      title: "N.A.",
-      value: null,
-    },
-    {
-      title: "FE - Update UI",
-      value: 1, // ticketId,
-    },
-    {
-      title: "BE - Finish ERD Diagrams",
-      value: 2,
-    },
-  ];
-
-  const handleAddTicket = (e) => {
+  const handleAddTicket = async (e) => {
     if (!ticketTitle.trim().length > 0) {
       toast.error("Ticket Title must not be blank.");
       return;
+    } else {
+      const accessToken = localStorage.getItem("accessToken");
+      try {
+        const response = await axios.post(
+          `${process.env.REACT_APP_DB_API}/tickets`,
+          {
+            organisationId: user.organisationId,
+            creatorId: user.id,
+            assigneeId: ticketAssignee,
+            tagId: ticketTag ? ticketTag.value : null,
+            priorityId: ticketPriority,
+            dependencyId: ticketBlockedBy,
+            name: ticketTitle,
+            body: ticketContent,
+            dueDate: formatInputDate(ticketDueDate),
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+        setAllUsers(response.data.data.allUsers);
+        setAllTags(response.data.data.allTags);
+        setAllTickets(response.data.data.allTickets);
+      } catch (error) {
+        toast.error(`${error.response.data.msg}`);
+      } finally {
+        setAddTicket(false);
+      }
     }
-    console.log({
-      ticketTitle: ticketTitle,
-      ticketRaisedBy: user.id,
-      ticketAssignee: ticketAssignee,
-      ticketCreatedOn: formatInputDate(ticketCreatedOn),
-      ticketDueDate: formatInputDate(ticketDueDate),
-      ticketTag: ticketTag.label,
-      ticketBlockedBy: ticketBlockedBy,
-      ticketPriority: ticketPriority,
-      ticketContent: ticketContent,
-    });
-    // TODO: set information to backend
-    // setTicketAssignee(null);
-    // setContent("");
-    setAddTicket(false);
+    setTicketTitle("");
+    setTicketAssignee(null);
+    setTicketDueDate("");
+    setTicketTag(null);
+    setTicketBlockedBy(null);
+    setTicketPriority(null);
+    setTicketContent("");
   };
 
   return (
@@ -151,14 +177,14 @@ function AddTicketCard(props) {
 
             <div className="">
               <UserSelector
-                data={users}
+                data={userList}
                 id={"user-selector"}
                 open={isUserSelectorOpen}
                 onToggle={() => setIsUserSelectorOpen(!isUserSelectorOpen)}
                 onChange={setTicketAssignee}
                 onBlur={() => setIsUserSelectorOpen(false)}
-                selectedValue={users.find(
-                  (option) => option.value === ticketAssignee
+                selectedValue={userList.find(
+                  (option) => option.id === ticketAssignee
                 )}
               />
             </div>
@@ -172,7 +198,7 @@ function AddTicketCard(props) {
             <div>
               <input
                 type="date"
-                className="cursor-pointer font-semibold bg-white border-base-200 text-xs input input-sm w-full rounded-lg text-center"
+                className="cursor-pointer font-semibold disabled:bg-white border-base-200 text-xs input input-sm w-full rounded-lg text-center"
                 defaultValue={ticketCreatedOn}
                 disabled
                 onChange={(e) => setTicketCreatedOn(e.target.value)}
@@ -204,7 +230,7 @@ function AddTicketCard(props) {
               <Creatable
                 isClearable
                 className="font-semibold text-xs cursor-pointer"
-                options={allTicketTags}
+                options={tagList}
                 value={ticketTag}
                 onChange={handleChangeTag}
                 onCreateOption={(input) => handleCreateTag(input)}
@@ -221,13 +247,13 @@ function AddTicketCard(props) {
 
             <div>
               <TicketSelector
-                data={tickets}
+                data={ticketList}
                 id={"ticket-selector"}
                 open={isTicketSelectorOpen}
                 onToggle={() => setIsTicketSelectorOpen(!isTicketSelectorOpen)}
                 onChange={setTicketBlockedBy}
-                selectedValue={tickets.find(
-                  (option) => option.value === ticketBlockedBy
+                selectedValue={ticketList.find(
+                  (option) => option.id === ticketBlockedBy
                 )}
               />
             </div>

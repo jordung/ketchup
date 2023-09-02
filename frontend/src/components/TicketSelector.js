@@ -25,10 +25,10 @@ function TicketSelector({
           disabled={disabled}
         >
           {selectedValue && (
-            <span className="truncate flex items-center">
+            <span className="flex items-center">
               <PiTicketBold className="h-4 w-4 flex-shrink-0" />
               <span className="ml-2 font-semibold text-xs">
-                {selectedValue.title}
+                {selectedValue.name}
               </span>
             </span>
           )}
@@ -79,7 +79,7 @@ function TicketSelector({
 
               <div className="max-h-64 overflow-y-auto">
                 {data.filter((ticket) =>
-                  ticket.title.toLowerCase().includes(query.toLowerCase())
+                  ticket.name.toLowerCase().includes(query.toLowerCase())
                 ).length === 0 ? (
                   <li className="text-neutral cursor-default relative py-2 pl-3 pr-9">
                     No data found
@@ -87,7 +87,7 @@ function TicketSelector({
                 ) : (
                   data
                     .filter((ticket) =>
-                      ticket.title.toLowerCase().includes(query.toLowerCase())
+                      ticket.name.toLowerCase().includes(query.toLowerCase())
                     )
                     .map((value, index) => {
                       return (
@@ -95,14 +95,14 @@ function TicketSelector({
                           key={`${id}-${index}`}
                           className="text-neutral cursor-pointer relative py-2 pl-3 pr-9 flex items-center hover:bg-base-100 transition"
                           onClick={() => {
-                            onChange(value.value);
+                            onChange(value.id);
                             setQuery("");
                             onToggle();
                           }}
                         >
                           <PiTicketBold className="h-4 w-4 flex-shrink-0" />
-                          <span className="ml-2 text-xs font-semibold truncate">
-                            {value.title}
+                          <span className="ml-2 text-xs font-semibold">
+                            {value.name}
                           </span>
                         </li>
                       );
