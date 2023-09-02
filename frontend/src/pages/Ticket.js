@@ -155,7 +155,9 @@ function Ticket() {
       const hasChanges =
         ticketTitle !== originalTicket?.name ||
         ticketAssignee !== originalTicket?.assigneeId ||
-        ticketDueDate.slice(0, 10) !== originalTicket?.dueDate?.slice(0, 10) ||
+        (ticketDueDate.slice(0, 10) !== ""
+          ? ticketDueDate.slice(0, 10)
+          : null) !== (originalTicket?.dueDate?.slice(0, 10) ?? null) ||
         (ticketTag && ticketTag.value) !== originalTicket?.tagId ||
         ticketBlockedBy !==
           (originalTicket?.ticket_dependencies[0]?.dependencyId || null) ||
@@ -223,6 +225,7 @@ function Ticket() {
       setTicketStatus(response.data.data.ticket.status.id);
       setTicketAssignee(response.data.data.ticket.assigneeId);
       setDisableUpdateButton(true);
+      toast.success(response.data.msg);
     } catch (error) {
       toast.error(error.response.data.msg);
     } finally {
