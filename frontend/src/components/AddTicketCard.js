@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { motion } from "framer-motion";
-import jordan from "../assets/landing/jaelyn.jpg";
+import { toast } from "react-toastify";
 import {
   PiHandPalmBold,
   PiCrosshairSimpleBold,
@@ -15,29 +15,43 @@ import UserSelector from "./UserSelector";
 import Creatable from "react-select/creatable";
 import TicketSelector from "./TicketSelector";
 import { tagDefaultOptions, colourStyles } from "../utils/selectSettings";
+import { formatInputDate } from "../utils/formatInputDate";
+import { UserContext } from "../App";
 
 function AddTicketCard(props) {
+  const { setAddTicket } = props;
   //TODO: render out tickets dynamically (including a default N.A null option)
+  //TODO: fix tag selection
+
+  const { user } = useContext(UserContext);
+
   const [isUserSelectorOpen, setIsUserSelectorOpen] = useState(false);
   const [isTicketSelectorOpen, setIsTicketSelectorOpen] = useState(false);
-
+  const [allTicketTags, setAllTicketTags] = useState(tagDefaultOptions);
   const [ticketTitle, setTicketTitle] = useState("");
-  const [ticketAssignee, setTicketAssignee] = useState("1");
+  const [ticketAssignee, setTicketAssignee] = useState(2);
   const [ticketCreatedOn, setTicketCreatedOn] = useState(
     new Date().toISOString().substring(0, 10)
   );
-  const [ticketDueDate, setTicketDueDate] = useState();
-  const [ticketTag, setTicketTag] = useState("");
+  const [ticketDueDate, setTicketDueDate] = useState("");
+  const [ticketTag, setTicketTag] = useState(null);
   const [ticketBlockedBy, setTicketBlockedBy] = useState(null);
   const [ticketPriority, setTicketPriority] = useState(null);
   const [ticketContent, setTicketContent] = useState("");
 
   const handleChangeTag = (value) => {
+    console.log(value);
     setTicketTag(value);
   };
 
   const handleCreateTag = (inputValue) => {
+    const newTicketTag = {
+      value: allTicketTags.length + 1,
+      label: inputValue,
+    };
     console.log(inputValue);
+    setAllTicketTags((prevState) => [...prevState, newTicketTag]);
+    setTicketTag(newTicketTag);
   };
 
   const users = [
@@ -45,13 +59,13 @@ function AddTicketCard(props) {
       name: "Jordan Ang",
       profilePicture:
         "https://images.unsplash.com/photo-1527082395-e939b847da0d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1635&q=80",
-      value: "1", // userId,
+      value: 1, // userId,
     },
     {
       name: "Jaelyn Teo",
       profilePicture:
         "https://images.unsplash.com/photo-1558507652-2d9626c4e67a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1887&q=80",
-      value: "2",
+      value: 2,
     },
   ];
 
@@ -62,25 +76,25 @@ function AddTicketCard(props) {
     },
     {
       title: "FE - Update UI",
-      value: "1", // ticketId,
+      value: 1, // ticketId,
     },
     {
       title: "BE - Finish ERD Diagrams",
-      value: "2",
+      value: 2,
     },
   ];
 
-  // useEffect(() => {
-  //   console.log(content);
-  // }, [content]);
-
   const handleAddTicket = (e) => {
+    if (!ticketTitle.trim().length > 0) {
+      toast.error("Ticket Title must not be blank.");
+      return;
+    }
     console.log({
       ticketTitle: ticketTitle,
-      ticketRaisedBy: "userId",
+      ticketRaisedBy: user.id,
       ticketAssignee: ticketAssignee,
-      ticketCreatedOn: new Date(ticketCreatedOn),
-      ticketDueDate: new Date(ticketDueDate),
+      ticketCreatedOn: formatInputDate(ticketCreatedOn),
+      ticketDueDate: formatInputDate(ticketDueDate),
       ticketTag: ticketTag.label,
       ticketBlockedBy: ticketBlockedBy,
       ticketPriority: ticketPriority,
@@ -89,7 +103,7 @@ function AddTicketCard(props) {
     // TODO: set information to backend
     // setTicketAssignee(null);
     // setContent("");
-    props.setAddTicket(false);
+    setAddTicket(false);
   };
 
   return (
@@ -120,12 +134,12 @@ function AddTicketCard(props) {
 
             <div className="flex items-center input input-sm bg-white border-1 border-base-200 rounded-lg">
               <img
-                src={jordan}
+                src={user.profilePicture}
                 alt=""
                 className="h-4 w-4 rounded-full object-cover flex-shrink-0"
               />
               <span className="ml-2 text-xs font-semibold truncate">
-                Jaelyn Teo
+                {user.firstName} {user.lastName}
               </span>
             </div>
 
@@ -138,7 +152,7 @@ function AddTicketCard(props) {
             <div className="">
               <UserSelector
                 data={users}
-                id={"ticket-selector"}
+                id={"user-selector"}
                 open={isUserSelectorOpen}
                 onToggle={() => setIsUserSelectorOpen(!isUserSelectorOpen)}
                 onChange={setTicketAssignee}
@@ -160,6 +174,7 @@ function AddTicketCard(props) {
                 type="date"
                 className="cursor-pointer font-semibold bg-white border-base-200 text-xs input input-sm w-full rounded-lg text-center"
                 defaultValue={ticketCreatedOn}
+                disabled
                 onChange={(e) => setTicketCreatedOn(e.target.value)}
               />
             </div>
@@ -189,12 +204,12 @@ function AddTicketCard(props) {
               <Creatable
                 isClearable
                 className="font-semibold text-xs cursor-pointer"
-                options={tagDefaultOptions}
+                options={allTicketTags}
                 value={ticketTag}
                 onChange={handleChangeTag}
                 onCreateOption={(input) => handleCreateTag(input)}
                 styles={colourStyles}
-                placeholder=""
+                placeholder="Search..."
               />
             </div>
 
@@ -274,7 +289,7 @@ function AddTicketCard(props) {
         </button>
         <button
           className="btn btn-base-100 btn-sm normal-case mt-2"
-          onClick={() => props.setAddTicket(false)}
+          onClick={() => setAddTicket(false)}
         >
           Cancel
         </button>

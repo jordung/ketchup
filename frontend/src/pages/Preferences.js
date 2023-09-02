@@ -6,7 +6,6 @@ import { toast } from "react-toastify";
 import Select from "react-select";
 import { colourStyles, timeIntervals } from "../utils/selectSettings";
 import { useNavigate } from "react-router-dom";
-import jordan from "../assets/landing/jordan.jpeg";
 import UserListCard from "../components/UserListCard";
 import InvitedUserCard from "../components/InvitedUserCard";
 
@@ -18,22 +17,10 @@ function Preferences() {
 
   const [dailyKetchupTime, setDailyKetchupTime] = useState("");
   const [organisationId, setOrganisationId] = useState();
+  const [userList, setUserList] = useState([]);
+  const [inviteList, setInviteList] = useState([]);
+  const [isInviting, setIsInviting] = useState(false);
   const [inviteeEmail, setInviteeEmail] = useState("");
-
-  const users = [
-    {
-      id: 1,
-      name: "Jordan Ang",
-      email: "jordanahahahahhahahahyd@gmail.com",
-    },
-    {
-      id: 2,
-      name: "Jaelyn Teo",
-      email: "jteohn@gmail.com",
-    },
-    { id: 3, name: "Sam", email: "sam@sam.com" },
-    { id: 4, name: "Foong", email: "foong@foong.com" },
-  ];
 
   useEffect(() => {
     const getOrganisationPreferences = async () => {
@@ -41,11 +28,14 @@ function Preferences() {
         const response = await axios.get(
           `${process.env.REACT_APP_DB_API}/admin/${user.organisationId}`
         );
+        console.log(response);
         setDailyKetchupTime({
-          value: response.data.data.time,
-          label: response.data.data.time.slice(0, 5),
+          value: response.data.data.invitees.time,
+          label: response.data.data.invitees.time.slice(0, 5),
         });
-        setOrganisationId(response.data.data.id);
+        setOrganisationId(response.data.data.invitees.id);
+        setUserList(response.data.data.usersWithAdminStatus);
+        setInviteList(response.data.data.invitees.invitations);
       } catch (error) {
         toast.error(error.response.data.msg);
       } finally {
@@ -82,14 +72,37 @@ function Preferences() {
   };
 
   const handleInvite = async () => {
-    // TODO: send email & ?? to BE
     if (inviteeEmail === "") {
       toast.error("Invitee email is empty");
       return;
     }
-    console.log(inviteeEmail);
-    setInviteeEmail("");
-    toast.success("Invite sent!");
+    const accessToken = localStorage.getItem("accessToken");
+    try {
+      setIsInviting(true);
+      const response = await axios.post(
+        `${process.env.REACT_APP_DB_API}/invite`,
+        {
+          userId: user.id,
+          inviteeEmail: inviteeEmail,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      console.log(response);
+      setInviteList(response.data.data.invitations);
+      toast.success(response.data.msg);
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.msg);
+    } finally {
+      setInviteeEmail("");
+      setIsInviting(false);
+    }
+
+    // toast.success("Invite sent!");
   };
 
   const handleLogout = async () => {
@@ -167,12 +180,17 @@ function Preferences() {
             <div className="flex flex-col gap-2 min-w-full lg:min-w-0">
               <h3 className="text-lg font-semibold">Users List</h3>
               {/* User List Card */}
-              {users.map((user) => (
+              {userList.map((user) => (
                 <UserListCard
                   key={user.id}
-                  profilePicture={jordan}
-                  name={user.name}
+                  userId={user.id}
+                  profilePicture={user.profilePicture}
+                  firstName={user.firstName}
+                  lastName={user.lastName}
                   email={user.email}
+                  isAdmin={user.isAdmin}
+                  organisationId={organisationId}
+                  userList={userList}
                 />
               ))}
             </div>
@@ -189,19 +207,30 @@ function Preferences() {
                   className="input input-sm text-sm w-full rounded-xl"
                   value={inviteeEmail}
                   onChange={(e) => setInviteeEmail(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleInvite();
+                    }
+                  }}
                 />
                 <button
                   className="btn btn-neutral normal-case rounded-xl btn-sm"
                   onClick={handleInvite}
+                  disabled={isInviting}
                 >
                   Invite
                 </button>
               </div>
             </div>
             <h3 className="text-sm font-semibold">Invited</h3>
-            {/* Pending User Card */}
-            {users.map((user) => (
-              <InvitedUserCard key={user.id} email={user.email} />
+            {/* Invited User Card */}
+            {inviteList.map((user, index) => (
+              <InvitedUserCard
+                key={index}
+                email={user.inviteeEmail}
+                date={user.createdAt}
+                status={user.isConfirmed}
+              />
             ))}
           </div>
         </motion.div>

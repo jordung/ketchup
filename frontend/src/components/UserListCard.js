@@ -1,29 +1,77 @@
 import Select from "react-select";
 import { colourStyles, userPermissions } from "../utils/selectSettings";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { UserContext } from "../App";
 
 function UserListCard(props) {
-  const [userStatus, setUserStatus] = useState({ value: true, label: "Admin" });
+  const {
+    userId,
+    profilePicture,
+    firstName,
+    lastName,
+    email,
+    isAdmin,
+    organisationId,
+    userList,
+  } = props;
+  const { user } = useContext(UserContext);
+  const [userStatus, setUserStatus] = useState({
+    value: isAdmin,
+    label: isAdmin ? "Admin" : "Member",
+  });
+  const navigate = useNavigate();
 
-  const handleUpdateUserStatus = async (value) => {
-    setUserStatus(value);
-    toast.success(
-      `${props.name} has been successfully updated to ${value.label}`
-    );
+  const isCurrentUserAdmin = !userList.find(
+    (organisationUser) => organisationUser.id === user.id
+  ).isAdmin;
+
+  const handleUpdateUserStatus = async () => {
+    const accessToken = localStorage.getItem("accessToken");
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_DB_API}/admin`,
+        {
+          userId: userId,
+          organisationId: organisationId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      const currentUser = response.data.data.find((user) => user.id === userId);
+      setUserStatus({
+        value: currentUser.isAdmin,
+        label: currentUser.isAdmin ? "Admin" : "Member",
+      });
+      toast.success(`${response.data.msg}`);
+    } catch (error) {
+      toast.error("There was an error in updating user's status");
+    }
   };
 
   return (
     <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
+      <div
+        className="flex items-center gap-2 group cursor-pointer"
+        onClick={() => navigate(`/profile/${userId}`)}
+      >
         <img
-          src={props.profilePicture}
+          src={profilePicture}
           alt=""
-          className="w-8 h-8 object-cover rounded-full flex-shrink-0"
+          className="w-8 h-8 object-cover rounded-full flex-shrink-0 group-hover:opacity-75 transition-all duration-300"
         />
         <div className="flex flex-col justify-start w-32 md:w-full">
-          <p className="text-sm font-semibold">{props.name}</p>
-          <p className="text-gray-500 text-xs truncate">{props.email}</p>
+          <p className="text-sm font-semibold group-hover:text-base-300 transition-all duration-300">
+            {firstName} {lastName}
+          </p>
+          <p className="text-gray-500 text-xs truncate group-hover:text-base-300 transition-all duration-300">
+            {email}
+          </p>
         </div>
       </div>
       <Select
@@ -32,6 +80,7 @@ function UserListCard(props) {
         value={userStatus}
         onChange={handleUpdateUserStatus}
         className="text-xs font-semibold w-28 md:w-40"
+        isDisabled={isCurrentUserAdmin || userId === user.id}
       />
     </div>
   );

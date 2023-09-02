@@ -1,11 +1,13 @@
 import axios from "axios";
+import { deleteObject, ref } from "firebase/storage";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { storage } from "../firebase";
 
 function DeleteUserModal(props) {
   const navigate = useNavigate();
-  const { userId, firstName, lastName } = props;
+  const { userId, firstName, lastName, profilePicture } = props;
 
   const [deleteInput, setDeleteInput] = useState("");
   const [disableDeleteButton, setDisableDeleteButton] = useState(true);
@@ -19,6 +21,13 @@ function DeleteUserModal(props) {
 
   const handleDeleteUser = async () => {
     try {
+      // delete old picture first
+      const oldProfilePictureRef = ref(storage, profilePicture);
+      try {
+        deleteObject(oldProfilePictureRef);
+      } catch (error) {
+        console.log(error);
+      }
       const response = await axios.delete(
         `${process.env.REACT_APP_DB_API}/auth/${userId}`,
         {
