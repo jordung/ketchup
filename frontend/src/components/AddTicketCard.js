@@ -119,6 +119,8 @@ function AddTicketCard(props) {
         setAllTickets(response.data.data.allTickets);
       } catch (error) {
         toast.error(`${error.response.data.msg}`);
+      } finally {
+        setAddTicket(false);
       }
     }
     setTicketTitle("");
@@ -128,7 +130,6 @@ function AddTicketCard(props) {
     setTicketBlockedBy(null);
     setTicketPriority(null);
     setTicketContent("");
-    // setAddTicket(false);
   };
 
   return (

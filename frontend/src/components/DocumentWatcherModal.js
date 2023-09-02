@@ -2,8 +2,8 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-function WatcherModal(props) {
-  const { watcherList, setWatcherList, userId, ticketId } = props;
+function DocumentWatcherModal(props) {
+  const { watcherList, setWatcherList, userId, documentId } = props;
   const accessToken = localStorage.getItem("accessToken");
   const [isWatching, setIsWatching] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -16,10 +16,10 @@ function WatcherModal(props) {
     try {
       setIsSending(true);
       const response = await axios.post(
-        `${process.env.REACT_APP_DB_API}/watch/ticket`,
+        `${process.env.REACT_APP_DB_API}/watch/document`,
         {
           userId: userId,
-          ticketId: parseInt(ticketId),
+          documentId: parseInt(documentId),
         },
         {
           headers: {
@@ -40,14 +40,14 @@ function WatcherModal(props) {
     try {
       setIsSending(true);
       const response = await axios.delete(
-        `${process.env.REACT_APP_DB_API}/watch/ticket`,
+        `${process.env.REACT_APP_DB_API}/watch/document`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
           data: {
             userId: userId,
-            ticketId: parseInt(ticketId),
+            documentId: parseInt(documentId),
           },
         }
       );
@@ -61,7 +61,7 @@ function WatcherModal(props) {
   };
 
   return (
-    <dialog id="watcherModal" className="modal backdrop-blur-sm">
+    <dialog id="documentWatcherModal" className="modal backdrop-blur-sm">
       <form method="dialog" className="modal-box bg-white max-w-xs">
         <button className="btn btn-sm btn-circle btn-ghost outline-none absolute right-2 top-2">
           ✕
@@ -99,4 +99,4 @@ function WatcherModal(props) {
   );
 }
 
-export default WatcherModal;
+export default DocumentWatcherModal;
