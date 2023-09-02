@@ -23,11 +23,10 @@ import Spinner from "../components/Spinner";
 import moment from "moment";
 import { formatOneTag, formatTags } from "../utils/formatTags";
 import { UserContext } from "../App";
-import WatcherModal from "../components/WatcherModal";
+import TicketWatcherModal from "../components/TicketWatcherModal";
 import DeleteTicketModal from "../components/DeleteTicketModal";
 
 function Ticket() {
-  //TODO: add in Edit functionality
   const { ticketId } = useParams();
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
@@ -180,6 +179,11 @@ function Ticket() {
   ]);
 
   const handleSaveTicket = async (e) => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (ticketTitle.trim() === "") {
+      toast.error("Ticket Title must not be empty!");
+      return;
+    }
     try {
       setLoading(true);
       const response = await axios.post(
@@ -193,6 +197,11 @@ function Ticket() {
           dependencyId: ticketBlockedBy,
           body: ticketContent,
           dueDate: ticketDueDate,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         }
       );
       setOriginalTicket(response.data.data.ticket);
@@ -501,13 +510,15 @@ function Ticket() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <div className="avatar-group -space-x-2 group">
+                      <div
+                        className="avatar-group -space-x-2 group"
+                        onClick={() => window.ticketWatcherModal.showModal()}
+                      >
                         {watcherList.length >= 3
                           ? watcherList.slice(0, 3).map((user) => (
                               <div
                                 className="avatar border-none group-hover:opacity-50 transition-all duration-300 cursor-pointer"
                                 key={user.user.id}
-                                onClick={() => window.watcherModal.showModal()}
                               >
                                 <div className="w-8">
                                   <img
@@ -521,7 +532,6 @@ function Ticket() {
                               <div
                                 className="avatar border-none group-hover:opacity-50 transition-all duration-300 cursor-pointer"
                                 key={user.user.id}
-                                onClick={() => window.watcherModal.showModal()}
                               >
                                 <div className="w-8">
                                   <img
@@ -532,10 +542,7 @@ function Ticket() {
                               </div>
                             ))}
                         {watcherList.length - 3 > 0 ? (
-                          <div
-                            className="avatar placeholder border-none"
-                            onClick={() => window.watcherModal.showModal()}
-                          >
+                          <div className="avatar placeholder border-none">
                             <div className="w-8 bg-base-100 text-neutral">
                               <span className="text-xs font-semibold">
                                 {watcherList.length - 3}
@@ -546,7 +553,7 @@ function Ticket() {
                           <></>
                         )}
                       </div>
-                      <WatcherModal
+                      <TicketWatcherModal
                         watcherList={watcherList}
                         setWatcherList={setWatcherList}
                         userId={user.id}

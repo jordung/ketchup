@@ -1,31 +1,21 @@
+import { useEffect, useState } from "react";
 import DocumentsTableItem from "./DocumentsTableItem";
 
-function DocumentsTable() {
-  const data = [
-    {
-      documentId: 1,
-      documentTitle: "Frontend Setup Docs",
-      documentCreatedBy: "Alice Spring",
-      documentCreatedOn: "28/08/2023",
-      documentRelatedTicket: {
-        ticketId: 2,
-        ticketTitle: "Feature Request",
-      },
-      documentTag: "setup",
-    },
-    {
-      documentId: 2,
-      documentTitle: "API Documentation",
-      documentCreatedBy: "Bob Bob",
-      documentCreatedOn: "28/08/2023",
-      documentRelatedTicket: {
-        ticketId: 3,
-        ticketTitle: "UI Enhancement",
-      },
-      documentTag: "api",
-    },
-    // Add more objects as needed
-  ];
+function DocumentsTable(props) {
+  const { allDocuments } = props;
+  const [searchedDocuments, setSearchedDocuments] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    if (searchQuery.length > 0) {
+      const filteredDocuments = allDocuments.filter((document) =>
+        document.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setSearchedDocuments(filteredDocuments);
+    } else {
+      setSearchedDocuments(allDocuments);
+    }
+  }, [searchQuery, allDocuments]);
 
   return (
     <div className="w-full rounded-lg shadow-xl">
@@ -34,6 +24,8 @@ function DocumentsTable() {
           type="text"
           className="input w-full text-sm font-semibold input-sm"
           placeholder="Search document"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
         <div className="overflow-x-auto">
           <table className="table mt-4">
@@ -49,15 +41,15 @@ function DocumentsTable() {
             </thead>
             <tbody>
               {/* row 1 */}
-              {data.map((item) => (
+              {searchedDocuments.map((document) => (
                 <DocumentsTableItem
-                  key={item.documentId}
-                  documentId={item.documentId}
-                  documentTitle={item.documentTitle}
-                  documentCreatedBy={item.documentCreatedBy}
-                  documentCreatedOn={item.documentCreatedOn}
-                  documentRelatedTicket={item.documentRelatedTicket}
-                  documentTag={item.documentTag}
+                  key={document.id}
+                  documentId={document.id}
+                  documentTitle={document.name}
+                  documentCreatedBy={document.creator}
+                  documentCreatedOn={document.createdAt}
+                  documentRelatedTicket={document?.document_tickets[0]}
+                  documentTag={document.tag}
                 />
               ))}
             </tbody>
