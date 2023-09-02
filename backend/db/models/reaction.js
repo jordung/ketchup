@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       this.hasMany(models.ketchup, {
         as: "mood",
-        foreignKey: "reaction_id",
+        foreignKey: "reactionId",
       });
 
       this.hasMany(models.post_reaction);

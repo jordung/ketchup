@@ -11,6 +11,8 @@ const AuthRouter = require("./routers/authRouter");
 const InvitationRouter = require("./routers/invitationRouter");
 const HomeRouter = require("./routers/homeRouter");
 const AdminRouter = require("./routers/adminRouter");
+const TicketRouter = require("./routers/ticketRouter");
+const WatchlistRouter = require("./routers/watchlistRouter");
 
 // importing Controllers
 const UserProfileController = require("./controllers/userProfileController");
@@ -18,6 +20,8 @@ const AuthController = require("./controllers/authController");
 const InvitationController = require("./controllers/invitationController");
 const HomeController = require("./controllers/homeController");
 const AdminController = require("./controllers/adminController");
+const TicketController = require("./controllers/ticketController");
+const WatchlistController = require("./controllers/watchlistController");
 
 // importing DB
 const db = require("./db/models/index");
@@ -26,12 +30,13 @@ const {
   organisation,
   invitation,
   organisation_admin,
-  // priority,
+  priority,
   flag,
   reaction,
-  // tag,
+  tag,
+  status,
   ticket,
-  // ticket_dependency,
+  ticket_dependency,
   document,
   // document_ticket,
   watcher,
@@ -43,7 +48,7 @@ const {
   ketchup_agenda,
   update,
   ketchup_update,
-  // notification,
+  notification,
 } = db;
 
 // initialising controllers -> note the lowercase for the first word
@@ -60,6 +65,7 @@ const authController = new AuthController({
   organisation,
   invitation,
   organisation_admin,
+  watcher,
 });
 
 const adminController = new AdminController({
@@ -93,6 +99,27 @@ const homeController = new HomeController({
   ketchup_update,
 });
 
+const ticketController = new TicketController({
+  user,
+  organisation,
+  organisation_admin,
+  tag,
+  priority,
+  status,
+  ticket,
+  ticket_dependency,
+  document,
+  watcher,
+});
+
+const watchlistController = new WatchlistController({
+  user,
+  ticket,
+  document,
+  watcher,
+  notification,
+});
+
 // initialising routers
 //TODO: rmb to pass jwtAuth in protected routes
 const userProfileRouter = new UserProfileRouter(
@@ -104,6 +131,8 @@ const authRouter = new AuthRouter(authController).routes();
 const adminRouter = new AdminRouter(adminController).routes();
 const invitationRouter = new InvitationRouter(invitationController).routes();
 const homeRouter = new HomeRouter(homeController).routes();
+const ticketRouter = new TicketRouter(ticketController).routes();
+const watchlistRouter = new WatchlistRouter(watchlistController).routes();
 
 const PORT = process.env.PORT;
 const app = express();
@@ -120,6 +149,8 @@ app.use("/auth", authRouter);
 app.use("/admin", adminRouter);
 app.use("/invite", invitationRouter);
 app.use("/home", homeRouter);
+app.use("/tickets", ticketRouter);
+app.use("/watch", watchlistRouter);
 
 app.listen(PORT, () => {
   console.log(`Express app listening on port ${PORT}!`);

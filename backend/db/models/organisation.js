@@ -6,13 +6,15 @@ module.exports = (sequelize, DataTypes) => {
       this.hasMany(models.user);
 
       this.hasMany(models.organisation_admin, {
-        foreignKey: "organisation_id",
+        foreignKey: "organisationId",
       });
 
       this.hasMany(models.invitation);
       this.hasMany(models.tag);
       this.hasMany(models.post);
       this.hasMany(models.ketchup);
+      this.hasMany(models.ticket);
+      this.hasMany(models.document);
       this.hasMany(models.notification);
     }
   }

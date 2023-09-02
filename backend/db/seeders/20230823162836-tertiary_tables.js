@@ -15,6 +15,7 @@ module.exports = {
     // ===== 2: TICKETS ===== //
     await queryInterface.bulkInsert("tickets", [
       {
+        organisation_id: 1,
         creator_id: 1,
         assignee_id: 2,
         tag_id: 1,
@@ -26,6 +27,7 @@ module.exports = {
         updated_at: new Date().toISOString(),
       },
       {
+        organisation_id: 1,
         creator_id: 1,
         assignee_id: 2,
         tag_id: 1,
@@ -36,6 +38,7 @@ module.exports = {
         updated_at: new Date().toISOString(),
       },
       {
+        organisation_id: 1,
         creator_id: 1,
         assignee_id: 3,
         tag_id: 2,
@@ -47,6 +50,7 @@ module.exports = {
         updated_at: new Date().toISOString(),
       },
       {
+        organisation_id: 1,
         creator_id: 1,
         assignee_id: 3,
         tag_id: 2,
@@ -59,6 +63,7 @@ module.exports = {
         updated_at: new Date().toISOString(),
       },
       {
+        organisation_id: 1,
         creator_id: 2,
         assignee_id: 3,
         tag_id: 2,
@@ -89,6 +94,7 @@ module.exports = {
     // ===== 4: DOCUMENTS ===== //
     await queryInterface.bulkInsert("documents", [
       {
+        organisation_id: 1,
         user_id: 3,
         tag_id: 2,
         name: "User Profile API Documentation",

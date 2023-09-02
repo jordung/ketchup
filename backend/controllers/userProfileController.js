@@ -10,7 +10,7 @@ class UserProfileController extends BaseController {
     this.watcher = watcher;
   }
 
-  // ====== Get User Profile ====== //
+  // =================== GET USER PROFILE =================== //
   getOneUser = async (req, res) => {
     const { userId } = req.params;
 
@@ -52,7 +52,8 @@ class UserProfileController extends BaseController {
     }
   };
 
-  // ====== Update User Profile ====== //
+  //TODO: slack integration
+  // =================== UPDATE USER PROFILE =================== //
   updateProfilePicture = async (req, res) => {
     const { userId } = req.params;
     const {
@@ -67,10 +68,45 @@ class UserProfileController extends BaseController {
     try {
       if (control === 1) {
         // update user model to integrate with slack
-        //TODO: slack integration
+
+        await this.model.update(
+          {
+            slackUserId: slackUserId,
+            slackAccessToken: slackAccessToken,
+          },
+          { where: { id: userId } }
+        );
+
+        const updatedUser = await this.model.findByPk(userId, {
+          include: [
+            {
+              model: this.organisation,
+              attributes: ["id", "name"],
+            },
+            {
+              model: this.watcher,
+              attributes: ["userId"],
+              include: [
+                {
+                  model: this.ticket,
+                  attributes: ["id", "name"],
+                },
+                {
+                  model: this.document,
+                  attributes: ["id", "name"],
+                },
+              ],
+            },
+          ],
+        });
+        return res.status(200).json({
+          success: true,
+          data: updatedUser,
+          msg: "Success: BUT Slack integration is not ready yet!!!!", //TODO
+        });
       } else if (control === 2) {
         // 2 = update user information
-        const user = await this.model.update(
+        await this.model.update(
           {
             firstName: firstName,
             lastName: lastName,
@@ -78,17 +114,40 @@ class UserProfileController extends BaseController {
           },
           { where: { id: userId } }
         );
-      }
 
-      return res.status(200).json({
-        success: true,
-        data: user,
-        msg: "Success: Your profile has been updated!", //TODO
-      });
+        const updatedUser = await this.model.findByPk(userId, {
+          include: [
+            {
+              model: this.organisation,
+              attributes: ["id", "name"],
+            },
+            {
+              model: this.watcher,
+              attributes: ["userId"],
+              include: [
+                {
+                  model: this.ticket,
+                  attributes: ["id", "name"],
+                },
+                {
+                  model: this.document,
+                  attributes: ["id", "name"],
+                },
+              ],
+            },
+          ],
+        });
+
+        return res.status(200).json({
+          success: true,
+          data: updatedUser,
+          msg: "Success: Your profile has been updated!",
+        });
+      }
     } catch (error) {
       return res.status(400).json({
         error: true,
-        msg: "Error: logout unsuccessful.", //TODO
+        msg: "Error: We encountered an error while handling your request. Please try again.",
       });
     }
   };

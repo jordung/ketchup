@@ -3,10 +3,11 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Ticket extends Model {
     static associate(models) {
-      this.belongsTo(models.user, { as: "creator", foreignKey: "creator_id" });
+      this.belongsTo(models.organisation);
+      this.belongsTo(models.user, { as: "creator", foreignKey: "creatorId" });
       this.belongsTo(models.user, {
         as: "assignee",
-        foreignKey: "assignee_id",
+        foreignKey: "assigneeId",
       });
 
       this.belongsTo(models.tag);
@@ -21,12 +22,12 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsToMany(models.ticket, {
         through: models.ticket_dependency,
         as: "ticket",
-        foreignKey: "ticket_id",
+        foreignKey: "ticketId",
       });
       this.belongsToMany(models.ticket, {
         through: models.ticket_dependency,
         as: "dependency",
-        foreignKey: "dependency_id",
+        foreignKey: "dependencyId",
       });
 
       this.hasMany(models.document_ticket);
@@ -41,6 +42,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   Ticket.init(
     {
+      organisationId: DataTypes.INTEGER,
       creatorId: DataTypes.INTEGER,
       assigneeId: DataTypes.INTEGER,
       tagId: DataTypes.INTEGER,
