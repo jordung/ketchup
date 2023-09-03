@@ -22,26 +22,22 @@ class UserProfileController extends BaseController {
             model: this.organisation,
             attributes: ["id", "name"],
           },
-          {
-            model: this.watcher,
-            attributes: ["userId"],
-            include: [
-              {
-                model: this.ticket,
-                attributes: ["id", "name"],
-              },
-              {
-                model: this.document,
-                attributes: ["id", "name"],
-              },
-            ],
-          },
         ],
+      });
+
+      const userWatchlist = await this.watcher.findAll({
+        where: { userId },
+        include: [
+          { model: this.ticket, attributes: ["id", "name"] },
+          { model: this.document, attributes: ["id", "name"] },
+        ],
+        attributes: ["userId", "ticketId", "documentId"],
+        order: [["id", "DESC"]],
       });
 
       return res.status(200).json({
         success: true,
-        data: user,
+        data: { user, userWatchlist },
         msg: "Success: Retrieved user information!",
       });
     } catch (error) {
@@ -83,25 +79,22 @@ class UserProfileController extends BaseController {
               model: this.organisation,
               attributes: ["id", "name"],
             },
-            {
-              model: this.watcher,
-              attributes: ["userId"],
-              include: [
-                {
-                  model: this.ticket,
-                  attributes: ["id", "name"],
-                },
-                {
-                  model: this.document,
-                  attributes: ["id", "name"],
-                },
-              ],
-            },
           ],
         });
+
+        const userWatchlist = await this.watcher.findAll({
+          where: { userId },
+          include: [
+            { model: this.ticket, attributes: ["id", "name"] },
+            { model: this.document, attributes: ["id", "name"] },
+          ],
+          attributes: ["userId", "ticketId", "documentId"],
+          order: [["id", "DESC"]],
+        });
+
         return res.status(200).json({
           success: true,
-          data: updatedUser,
+          data: { updatedUser, userWatchlist },
           msg: "Success: BUT Slack integration is not ready yet!!!!", //TODO
         });
       } else if (control === 2) {
@@ -121,26 +114,22 @@ class UserProfileController extends BaseController {
               model: this.organisation,
               attributes: ["id", "name"],
             },
-            {
-              model: this.watcher,
-              attributes: ["userId"],
-              include: [
-                {
-                  model: this.ticket,
-                  attributes: ["id", "name"],
-                },
-                {
-                  model: this.document,
-                  attributes: ["id", "name"],
-                },
-              ],
-            },
           ],
+        });
+
+        const userWatchlist = await this.watcher.findAll({
+          where: { userId },
+          include: [
+            { model: this.ticket, attributes: ["id", "name"] },
+            { model: this.document, attributes: ["id", "name"] },
+          ],
+          attributes: ["userId", "ticketId", "documentId"],
+          order: [["id", "DESC"]],
         });
 
         return res.status(200).json({
           success: true,
-          data: updatedUser,
+          data: { updatedUser, userWatchlist },
           msg: "Success: Your profile has been updated!",
         });
       }

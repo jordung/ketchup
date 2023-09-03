@@ -3,20 +3,17 @@
 // object: [ {"icon": "unicode", "userId": [1, 2,3]} ]
 const getAllReactions = (items, table) => {
   const reactionsWithItems = [];
-  console.log("1: reactionsWithItems", reactionsWithItems);
+  // console.log("1: reactionsWithItems", reactionsWithItems);
 
   items.forEach((item) => {
-    const itemId = item.dataValues.id;
-    console.log("2: itemId", itemId);
+    // const itemId = item.dataValues.id;
+    // console.log("2: itemId", itemId);
     const groupedReactions = [];
-    console.log("3: groupedReactions", groupedReactions);
+    // console.log("3: groupedReactions", groupedReactions);
 
     item[table].forEach((model) => {
       const icon = model.dataValues.reaction.icon;
       const userId = model.dataValues.userId;
-      console.log("4: icon", icon);
-      console.log("5: userId", userId);
-      console.log("6. model", model);
 
       const newReaction = {
         icon: icon,
@@ -34,7 +31,7 @@ const getAllReactions = (items, table) => {
         groupedReactions.push(newReaction);
       }
     });
-    console.log("8: groupedReactions", groupedReactions);
+    // console.log("8: groupedReactions", groupedReactions);
 
     reactionsWithItems.push({
       ...item.toJSON(),

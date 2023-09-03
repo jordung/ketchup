@@ -8,9 +8,11 @@ const jwtAuth = require("./middlewares/jwtAuth");
 // importing routers
 const UserProfileRouter = require("./routers/userProfileRouter");
 const AuthRouter = require("./routers/authRouter");
+const AdminRouter = require("./routers/adminRouter");
 const InvitationRouter = require("./routers/invitationRouter");
 const HomeRouter = require("./routers/homeRouter");
-const AdminRouter = require("./routers/adminRouter");
+const DailyKetchupRouter = require("./routers/dailyKetchupRouter");
+const AllKetchupsRouter = require("./routers/allKetchupsRouter");
 const TicketRouter = require("./routers/ticketRouter");
 const DocumentRouter = require("./routers/documentRouter");
 const WatchlistRouter = require("./routers/watchlistRouter");
@@ -18,9 +20,11 @@ const WatchlistRouter = require("./routers/watchlistRouter");
 // importing Controllers
 const UserProfileController = require("./controllers/userProfileController");
 const AuthController = require("./controllers/authController");
+const AdminController = require("./controllers/adminController");
 const InvitationController = require("./controllers/invitationController");
 const HomeController = require("./controllers/homeController");
-const AdminController = require("./controllers/adminController");
+const DailyKetchupController = require("./controllers/dailyKetchupController");
+const AllKetchupsController = require("./controllers/allKetchupsController");
 const TicketController = require("./controllers/ticketController");
 const DocumentController = require("./controllers/documentController");
 const WatchlistController = require("./controllers/watchlistController");
@@ -101,6 +105,39 @@ const homeController = new HomeController({
   ketchup_update,
 });
 
+const dailyKetchupController = new DailyKetchupController({
+  user,
+  organisation,
+  flag,
+  reaction,
+  ticket,
+  document,
+  post,
+  post_reaction,
+  ketchup,
+  ketchup_reaction,
+  agenda,
+  ketchup_agenda,
+  update,
+  ketchup_update,
+});
+
+const allketchupsController = new AllKetchupsController({
+  user,
+  organisation,
+  flag,
+  reaction,
+  ticket,
+  document,
+  ketchup,
+  ketchup_reaction,
+  agenda,
+  ketchup_agenda,
+  update,
+  ketchup_update,
+  notification,
+});
+
 const ticketController = new TicketController({
   user,
   organisation,
@@ -110,7 +147,12 @@ const ticketController = new TicketController({
   ticket,
   ticket_dependency,
   document,
+  document_ticket,
+  post,
   watcher,
+  agenda,
+  update,
+  notification,
 });
 
 const documentController = new DocumentController({
@@ -121,6 +163,9 @@ const documentController = new DocumentController({
   document,
   document_ticket,
   watcher,
+  agenda,
+  update,
+  notification,
 });
 
 const watchlistController = new WatchlistController({
@@ -142,6 +187,10 @@ const authRouter = new AuthRouter(authController).routes();
 const adminRouter = new AdminRouter(adminController).routes();
 const invitationRouter = new InvitationRouter(invitationController).routes();
 const homeRouter = new HomeRouter(homeController).routes();
+const dailyKetchupRouter = new DailyKetchupRouter(
+  dailyKetchupController
+).routes();
+const allketchupsRouter = new AllKetchupsRouter(allketchupsController).routes();
 const ticketRouter = new TicketRouter(ticketController).routes();
 const documentRouter = new DocumentRouter(documentController).routes();
 const watchlistRouter = new WatchlistRouter(watchlistController).routes();
@@ -161,6 +210,8 @@ app.use("/auth", authRouter);
 app.use("/admin", adminRouter);
 app.use("/invite", invitationRouter);
 app.use("/home", homeRouter);
+app.use("/daily", dailyKetchupRouter);
+app.use("/ketchups", allketchupsRouter);
 app.use("/tickets", ticketRouter);
 app.use("/documents", documentRouter);
 app.use("/watch", watchlistRouter);

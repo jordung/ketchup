@@ -10,6 +10,9 @@ class DocumentController extends BaseController {
     document,
     document_ticket,
     watcher,
+    agenda,
+    update,
+    notification,
   }) {
     super(document);
     this.user = user;
@@ -19,6 +22,9 @@ class DocumentController extends BaseController {
     this.document = document;
     this.document_ticket = document_ticket;
     this.watcher = watcher;
+    this.agenda = agenda;
+    this.update = update;
+    this.notification = notification;
   }
 
   // =================== GET ALL DOCUMENTS =================== //
@@ -211,6 +217,16 @@ class DocumentController extends BaseController {
         documentId: newDocument.id,
       });
 
+      //TODO: SOCKET?
+      // 4. add creator to notifications table
+      await this.notification.create({
+        organisationId,
+        userId: creatorId,
+        documentId: newDocument.id,
+        type: "document",
+        message: "New document added!",
+      });
+
       const allDocuments = await this.model.findAll({
         where: { organisationId },
         include: [
@@ -269,6 +285,7 @@ class DocumentController extends BaseController {
 
   // =================== UPDATE DOCUMENT =================== //
   // Note: organisationId and creatorId cannot be changed.
+  //TODO: SOCKET?
 
   updateDocument = async (req, res) => {
     const { documentId } = req.params;
@@ -319,6 +336,12 @@ class DocumentController extends BaseController {
           where: { id: updatedDocument.document_tickets[0].dataValues.id },
         });
       }
+
+      // await this.notification.update({
+      //   documentId,
+      //   type: "document",
+      //   message: "An update has been added to a document you're following!",
+      // });
 
       const document = await this.model.findByPk(documentId, {
         include: [
@@ -435,6 +458,15 @@ class DocumentController extends BaseController {
           {
             model: this.watcher,
           },
+          {
+            model: this.agenda,
+          },
+          {
+            model: this.update,
+          },
+          {
+            model: this.notification,
+          },
         ],
       });
 
@@ -456,6 +488,7 @@ class DocumentController extends BaseController {
         });
       }
 
+      // remove document from associated tickets
       const hasRelatedTicket = document.document_tickets.some(
         (ticket) => ticket.dataValues.id !== null
       );
@@ -465,6 +498,51 @@ class DocumentController extends BaseController {
           where: { documentId },
         });
       }
+
+      // remove document association from agenda
+      const hasAgenda = document.agendas.some(
+        (agenda) => agenda.dataValues.id !== null
+      );
+      console.log("hasAgenda?", hasAgenda);
+
+      if (hasAgenda) {
+        await this.agenda.update(
+          {
+            documentId: null,
+          },
+          { where: { documentId } }
+        );
+      }
+      console.log("agenda updated to null!");
+
+      // remove document association from update
+      const hasUpdates = document.updates.some(
+        (update) => update.dataValues.id !== null
+      );
+      console.log("hasUpdates", hasUpdates);
+
+      if (hasUpdates) {
+        await this.update.update(
+          {
+            documentId: null,
+          },
+          { where: { documentId } }
+        );
+      }
+      console.log("update updated to null!");
+
+      // remove document from notifications
+      const hasNotifications = document.notifications.some(
+        (notification) => notification.dataValues.id !== null
+      );
+      console.log("hasNotifications", hasNotifications);
+
+      if (hasNotifications) {
+        await this.notification.destroy({
+          where: { documentId },
+        });
+      }
+      console.log("notification deleted!");
 
       await this.model.destroy({
         where: { id: documentId },
