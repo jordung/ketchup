@@ -6,7 +6,7 @@ function TicketCard(props) {
   const { ticketId, ticketName } = props;
   return (
     <button
-      className="btn btn-sm justify-center bg-base-100 border-0 normal-case p-1 rounded-lg mt-1"
+      className="btn btn-sm justify-start bg-base-100 border-0 normal-case p-1 rounded-lg mt-1"
       onClick={() => navigate(`/tickets/${ticketId}`)}
     >
       <p className="flex items-center gap-1 font-semibold text-neutral px-1">

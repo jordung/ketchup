@@ -10,6 +10,7 @@ import { UserContext } from "../App";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { convertTextToLink } from "../utils/convertTextToLink";
+import slack from "../assets/ketchupcard/slack.png";
 
 function PostCard(props) {
   const navigate = useNavigate();
@@ -146,7 +147,15 @@ function PostCard(props) {
             <TicketCard ticketId={ticket.id} ticketName={ticket.name} />
           </div>
         )}
-
+        <div className="flex gap-2 my-1">
+          <a
+            className="btn btn-xs bg-base-100 border-0 normal-case"
+            href="slack://user?team=TNYFQH8G5&id=U057R0367TM"
+          >
+            <img src={slack} alt="slack" className="w-3 h-3 object-contain" />
+            <span className="text-xs">Slack</span>
+          </a>
+        </div>
         <div className="flex gap-2 flex-wrap mt-1">
           <div className="relative">
             <button

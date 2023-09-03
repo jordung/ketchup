@@ -3,7 +3,7 @@ import logo from "../assets/ketchup-logo-bottle.png";
 import {
   PiPencilBold,
   PiHouseBold,
-  PiNewspaperClippingBold,
+  PiArchiveBold,
   PiTicketBold,
   PiFilesBold,
   PiGearBold,
@@ -12,7 +12,7 @@ import {
   PiBellRingingBold,
 } from "react-icons/pi";
 import { AnimatePresence, motion } from "framer-motion";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../App";
 import VerifyEmailOverlay from "./VerifyEmailOverlay";
 import NotificationsModal from "./NotificationsModal";
@@ -22,6 +22,10 @@ function Sidebar() {
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    setShowMore(false);
+  }, [location.key]);
 
   return (
     <AnimatePresence>
@@ -176,45 +180,10 @@ function Sidebar() {
                         }`}
                       >
                         <span>Home</span>
-                        <p className="text-xs text-gray-400 max-w-[7rem] xl:max-w-[8rem] truncate">
-                          Handshake
+                        <p className="text-xs text-gray-400 max-w-[7rem] xl:max-w-[8rem] truncate group-hover:text-primary">
+                          {user?.organisation?.name}
                         </p>
                       </motion.div>
-                    )}
-                  </button>
-                </li>
-                <li className="w-full group">
-                  <button
-                    className={`flex flex-row items-center justify-start px-0 lg:px-3 rounded-xl w-full btn btn-ghost ${
-                      location.pathname === "/allketchups"
-                        ? "bg-neutral group-hover:bg-neutral"
-                        : "group-hover:bg-accent"
-                    }`}
-                    onClick={() => navigate("/allketchups")}
-                  >
-                    <motion.span layout="position">
-                      <PiNewspaperClippingBold
-                        className={`h-10 w-10 p-2 text-lg rounded-full text-neutral ${
-                          location.pathname === "/allketchups"
-                            ? "text-white"
-                            : "text-neutral group-hover:text-primary"
-                        }`}
-                      />
-                    </motion.span>
-                    {showMore && (
-                      <motion.span
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.5, delay: 0.5 }}
-                        className={`ml-3 text-sm font-semibold normal-case ${
-                          location.pathname === "/allketchups"
-                            ? "text-white"
-                            : "text-neutral group-hover:text-primary"
-                        }`}
-                      >
-                        All Ketchups
-                      </motion.span>
                     )}
                   </button>
                 </li>
@@ -284,6 +253,41 @@ function Sidebar() {
                         }`}
                       >
                         Documents
+                      </motion.span>
+                    )}
+                  </button>
+                </li>
+                <li className="w-full group">
+                  <button
+                    className={`flex flex-row items-center justify-start px-0 lg:px-3 rounded-xl w-full btn btn-ghost ${
+                      location.pathname === "/allketchups"
+                        ? "bg-neutral group-hover:bg-neutral"
+                        : "group-hover:bg-accent"
+                    }`}
+                    onClick={() => navigate("/allketchups")}
+                  >
+                    <motion.span layout="position">
+                      <PiArchiveBold
+                        className={`h-10 w-10 p-2 text-lg rounded-full text-neutral ${
+                          location.pathname === "/allketchups"
+                            ? "text-white"
+                            : "text-neutral group-hover:text-primary"
+                        }`}
+                      />
+                    </motion.span>
+                    {showMore && (
+                      <motion.span
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5, delay: 0.5 }}
+                        className={`ml-3 text-sm font-semibold normal-case ${
+                          location.pathname === "/allketchups"
+                            ? "text-white"
+                            : "text-neutral group-hover:text-primary"
+                        }`}
+                      >
+                        All Ketchups
                       </motion.span>
                     )}
                   </button>
