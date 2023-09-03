@@ -11,7 +11,12 @@ class TicketController extends BaseController {
     ticket,
     ticket_dependency,
     document,
+    document_ticket,
     watcher,
+    post,
+    agenda,
+    update,
+    notification,
   }) {
     super(ticket);
     this.user = user;
@@ -22,7 +27,12 @@ class TicketController extends BaseController {
     this.ticket = ticket;
     this.ticket_dependency = ticket_dependency;
     this.document = document;
+    this.document_ticket = document_ticket;
     this.watcher = watcher;
+    this.post = post;
+    this.agenda = agenda;
+    this.update = update;
+    this.notification = notification;
   }
 
   // =================== GET ALL TICKETS =================== //
@@ -317,6 +327,16 @@ class TicketController extends BaseController {
           userId: creatorId,
           ticketId: newTicket.id,
         });
+
+        //TODO: SOCKET?
+        // 4. add creator to notifications table
+        await this.notification.create({
+          organisationId,
+          userId: creatorId,
+          documentId: newTicket.id,
+          type: "document",
+          message: "New ticket added!",
+        });
       }
 
       if (assigneeId) {
@@ -391,6 +411,7 @@ class TicketController extends BaseController {
 
   // =================== UPDATE TICKET =================== //
   // Note: organisationId and creatorId cannot be changed.
+  //TODO: Socket?
 
   updateTicket = async (req, res) => {
     const { ticketId } = req.params;
@@ -588,7 +609,22 @@ class TicketController extends BaseController {
             model: this.ticket_dependency,
           },
           {
+            model: this.document_ticket,
+          },
+          {
             model: this.watcher,
+          },
+          {
+            model: this.post,
+          },
+          {
+            model: this.agenda,
+          },
+          {
+            model: this.update,
+          },
+          {
+            model: this.notification,
           },
         ],
       });
@@ -600,21 +636,85 @@ class TicketController extends BaseController {
         });
       }
 
+      // remove ticket association from ticket_dependency
+      const dependencyTicket = await this.ticket_dependency.findOne({
+        where: { dependencyId: ticketId },
+      });
+
+      if (dependencyTicket) {
+        await this.ticket_dependency.destroy({
+          where: { dependencyId: ticketId },
+        });
+      }
+
       // remove ticket from all users' watching lists
-      if (ticket.watcher !== null) {
+      const hasWatcher = ticket.watchers.some(
+        (user) => user.dataValues.id !== null
+      );
+
+      if (hasWatcher) {
         await this.watcher.destroy({
           where: { ticketId },
         });
       }
 
-      const hasDependency = ticket.ticket_dependencies.some(
-        (dependency) => dependency.dataValues.id !== null
+      // remove ticket from all users' watching lists
+      const hasDocument = ticket.document_tickets.some(
+        (document) => document.dataValues.id !== null
       );
-      // console.log("ticket hasDependency?", hasDependency);
 
-      if (hasDependency) {
-        // console.log("the ticket has dependency, removing now");
-        await this.ticket_dependency.destroy({
+      if (hasDocument) {
+        await this.document_ticket.destroy({
+          where: { ticketId },
+        });
+      }
+
+      // remove ticket association from agenda
+      const hasAgenda = ticket.agendas.some(
+        (agenda) => agenda.dataValues.id !== null
+      );
+
+      if (hasAgenda) {
+        await this.agenda.update(
+          {
+            ticketId: null,
+          },
+          { where: { ticketId } }
+        );
+      }
+
+      // remove ticket association from update
+      const hasUpdates = ticket.updates.some(
+        (update) => update.dataValues.id !== null
+      );
+
+      if (hasUpdates) {
+        await this.update.update(
+          {
+            ticketId: null,
+          },
+          { where: { ticketId } }
+        );
+      }
+
+      const hasPosts = ticket.posts.some((post) => post.dataValues.id !== null);
+
+      if (hasPosts) {
+        await this.post.update(
+          {
+            ticketId: null,
+          },
+          { where: { ticketId } }
+        );
+      }
+
+      // remove ticket from notifications
+      const hasNotifications = ticket.notifications.some(
+        (notification) => notification.dataValues.id !== null
+      );
+
+      if (hasNotifications) {
+        await this.notification.destroy({
           where: { ticketId },
         });
       }

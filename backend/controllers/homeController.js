@@ -96,17 +96,30 @@ class HomeController extends BaseController {
                 ],
               },
             ],
+            order: [["id", "DESC"]],
+          },
+          {
+            model: this.ketchup_update,
+            attributes: ["id"],
+            include: [
+              {
+                model: this.update,
+                attributes: ["content"],
+                include: [
+                  { model: this.ticket, attributes: ["id", "name"] },
+                  { model: this.document, attributes: ["id", "name"] },
+                  { model: this.flag, attributes: ["id", "name"] },
+                ],
+              },
+            ],
+            order: [["id", "DESC"]],
           },
           {
             model: this.ketchup_reaction,
             separate: true,
             attributes: ["userId", "ketchupId", "reactionId", "createdAt"],
-            include: [
-              {
-                model: this.reaction,
-                attributes: ["icon"],
-              },
-            ],
+            include: [{ model: this.reaction, attributes: ["icon"] }],
+            order: [["id", "DESC"]],
           },
         ],
         where: {
