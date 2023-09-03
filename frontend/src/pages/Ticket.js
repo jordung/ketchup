@@ -110,12 +110,11 @@ function Ticket() {
       } finally {
         setTimeout(() => {
           setLoading(false);
-        }, 1000);
+        }, 800);
       }
     };
     getTicketInformation();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [ticketId]);
 
   const handleChangeTag = (value) => {
     setTicketTag(value);

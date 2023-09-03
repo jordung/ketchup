@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 
 function Documents() {
   const { user } = useContext(UserContext);
+
   const [addDocument, setAddDocument] = useState(false);
   const [loading, setLoading] = useState(true);
   const [allDocuments, setAllDocuments] = useState([]);
@@ -17,6 +18,7 @@ function Documents() {
 
   useEffect(() => {
     const getAllDocuments = async () => {
+      setLoading(true);
       try {
         const response = await axios.get(
           `${process.env.REACT_APP_DB_API}/documents/${user.organisationId}`
@@ -27,12 +29,13 @@ function Documents() {
       } catch (error) {
         toast.error(error.response.data.msg);
       } finally {
-        setLoading(false);
+        setTimeout(() => {
+          setLoading(false);
+        }, 800);
       }
     };
     getAllDocuments();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user]);
 
   return (
     <>
