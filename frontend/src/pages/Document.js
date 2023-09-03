@@ -46,6 +46,7 @@ function Document() {
 
   useEffect(() => {
     const getDocumentInformation = async () => {
+      setLoading(true);
       try {
         const response = await axios.get(
           `${process.env.REACT_APP_DB_API}/documents/view/${documentId}`
@@ -84,12 +85,11 @@ function Document() {
       } finally {
         setTimeout(() => {
           setLoading(false);
-        }, 1000);
+        }, 800);
       }
     };
     getDocumentInformation();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [documentId]);
 
   const handleChangeTag = (value) => {
     setDocumentTag(value);

@@ -17,7 +17,7 @@ function Tickets() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(false);
+    setLoading(true);
     const getAllTickets = async () => {
       try {
         const response = await axios.get(
@@ -32,13 +32,12 @@ function Tickets() {
       } finally {
         setTimeout(() => {
           setLoading(false);
-        }, 500);
+        }, 800);
       }
     };
 
     getAllTickets();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user]);
 
   return (
     <>
