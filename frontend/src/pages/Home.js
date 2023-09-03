@@ -46,7 +46,7 @@ function Home() {
   return (
     <>
       {loading && <Spinner />}
-      <div className="h-screen mt-4 mx-4 min-w-[calc(100vw_-_5rem)] lg:min-w-[calc(100vw_-_9rem)]">
+      <div className="h-screen pt-4 mx-4 min-w-[calc(100vw_-_5rem)] lg:min-w-[calc(100vw_-_9rem)]">
         {/* Header */}
         <div className="border-b border-base-100 flex items-center justify-between py-2 overflow-hidden">
           <h2 className="text-2xl font-bold">Home</h2>

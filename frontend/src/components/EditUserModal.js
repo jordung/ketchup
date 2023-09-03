@@ -89,11 +89,13 @@ function EditUserModal(props) {
                     slackAccessToken: "",
                   }
                 );
-                setUser(response.data.data);
-                setUserProfile(response.data.data);
-                setProfilePicture(response.data.data.profilePicture);
-                setFirstName(response.data.data.firstName);
-                setLastName(response.data.data.lastName);
+                setUser(response.data.data.updatedUser);
+                setUserProfile(response.data.data.updatedUser);
+                setProfilePicture(
+                  response.data.data.updatedUser.profilePicture
+                );
+                setFirstName(response.data.data.updatedUser.firstName);
+                setLastName(response.data.data.updatedUser.lastName);
                 setIsUpdateAvatar(false);
                 setUpdatedProfilePictureFile(null);
                 toast.success(`${response.data.msg}`);
@@ -148,11 +150,13 @@ function EditUserModal(props) {
                     slackAccessToken: "",
                   }
                 );
-                setUser(response.data.data);
-                setUserProfile(response.data.data);
-                setProfilePicture(response.data.data.profilePicture);
-                setFirstName(response.data.data.firstName);
-                setLastName(response.data.data.lastName);
+                setUser(response.data.data.updatedUser);
+                setUserProfile(response.data.data.updatedUser);
+                setProfilePicture(
+                  response.data.data.updatedUser.profilePicture
+                );
+                setFirstName(response.data.data.updatedUser.firstName);
+                setLastName(response.data.data.updatedUser.lastName);
                 setIsUpdateAvatar(false);
                 setUpdatedProfilePictureFile(null);
                 toast.success(`${response.data.msg}`);
@@ -181,11 +185,11 @@ function EditUserModal(props) {
               slackAccessToken: "",
             }
           );
-          setUser(response.data.data);
-          setUserProfile(response.data.data);
-          setProfilePicture(response.data.data.profilePicture);
-          setFirstName(response.data.data.firstName);
-          setLastName(response.data.data.lastName);
+          setUser(response.data.data.updatedUser);
+          setUserProfile(response.data.data.updatedUser);
+          setProfilePicture(response.data.data.updatedUser.profilePicture);
+          setFirstName(response.data.data.updatedUser.firstName);
+          setLastName(response.data.data.updatedUser.lastName);
           setIsUpdateAvatar(false);
           setUpdatedProfilePictureFile(null);
           toast.success(`${response.data.msg}`);

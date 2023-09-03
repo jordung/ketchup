@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { UserContext } from "../App";
+import DocumentCard from "./DocumentCard";
 
 function KetchupCard(props) {
   const {
@@ -20,6 +21,7 @@ function KetchupCard(props) {
     lastName,
     createdDate,
     agendas,
+    updates,
     groupedReactions,
     mood,
   } = props;
@@ -156,13 +158,16 @@ function KetchupCard(props) {
           </p>
         </div>
         {/* Agenda Card */}
+        {/* <p className="text-xs uppercase font-semibold text-gray-400">Agendas</p> */}
         <div className="flex flex-col gap-3">
           {agendas &&
-            agendas.map((agenda) => (
+            agendas.map((agenda, index) => (
               <div className="max-w-full" key={agenda.id}>
                 <div>
-                  <p className="text-sm break-words">
-                    {agenda.agenda.content}{" "}
+                  <div className="flex gap-2 items-center mb-1">
+                    <span className="badge bg-base-300 text-white border-0 text-xs font-semibold">
+                      agenda #{index + 1}
+                    </span>
                     <span
                       className={`badge font-semibold text-xs ${
                         (agenda.agenda.flag.id === 1 &&
@@ -177,19 +182,81 @@ function KetchupCard(props) {
                     >
                       {agenda.agenda.flag.name}
                     </span>
-                  </p>
+                  </div>
+                  <p className="text-sm break-words">{agenda.agenda.content}</p>
                 </div>
-                {agenda.agenda.ticket && (
-                  <TicketCard
-                    ticketId={agenda.agenda.ticket.id}
-                    ticketName={agenda.agenda.ticket.name}
-                  />
-                )}
+                <div>
+                  {agenda.agenda.ticket && (
+                    <TicketCard
+                      ticketId={agenda.agenda.ticket.id}
+                      ticketName={agenda.agenda.ticket.name}
+                    />
+                  )}
+                </div>
+                <div>
+                  {agenda.agenda.document && (
+                    <DocumentCard
+                      documentId={agenda.agenda.document.id}
+                      documentName={agenda.agenda.document.name}
+                    />
+                  )}
+                </div>
+              </div>
+            ))}
+        </div>
+        {/* Update Card */}
+        {/* {updates?.length > 0 && (
+          <p className="text-xs uppercase font-semibold text-gray-400">
+            Updates
+          </p>
+        )} */}
+        <div className="flex flex-col gap-3 mt-3">
+          {updates &&
+            updates.map((update, index) => (
+              <div className="max-w-full" key={update.id}>
+                <div>
+                  <div className="flex gap-2 items-center mb-1">
+                    <span className="badge bg-base-300 text-white border-0 text-xs font-semibold">
+                      update #{index + 1}
+                    </span>
+                    <span
+                      className={`badge font-semibold text-xs ${
+                        (update.update.flag.id === 1 &&
+                          "badge-warning text-orange-800") ||
+                        (update.update.flag.id === 2 &&
+                          "badge-success text-green-800") ||
+                        (update.update.flag.id === 3 &&
+                          "badge-info text-blue-800") ||
+                        (update.update.flag.id === 4 &&
+                          "badge-error text-red-800")
+                      }`}
+                    >
+                      {update.update.flag.name}
+                    </span>
+                  </div>
+                  <p className="text-sm break-words">{update.update.content}</p>
+                </div>
+                <div>
+                  {update.update.ticket && (
+                    <TicketCard
+                      ticketId={update.update.ticket.id}
+                      ticketName={update.update.ticket.name}
+                    />
+                  )}
+                </div>
+                <div>
+                  {update.update.document && (
+                    <DocumentCard
+                      documentId={update.update.document.id}
+                      documentName={update.update.document.name}
+                    />
+                  )}
+                </div>
               </div>
             ))}
         </div>
         <div className="flex gap-2 my-1">
-          <button className="btn btn-sm bg-base-100 border-0 normal-case">
+          <button className="btn btn-xs bg-base-100 border-0 normal-case">
             <img src={slack} alt="slack" className="w-3 h-3 object-contain" />
             <span className="text-xs">Slack</span>
           </button>
