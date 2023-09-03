@@ -28,9 +28,9 @@ function Profile() {
         const response = await axios.get(
           `${process.env.REACT_APP_DB_API}/users/${userId}`
         );
-        setUserProfile(response.data.data);
-        setWatchlist(response.data.data.watchers);
-        setUpdatedWatchlist(response.data.data.watchers);
+        setUserProfile(response.data.data.user);
+        setWatchlist(response.data.data.userWatchlist);
+        setUpdatedWatchlist(response.data.data.userWatchlist);
       } catch (error) {
         toast.error(error.response.data.msg);
       } finally {
