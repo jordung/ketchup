@@ -6,12 +6,14 @@ function TicketCard(props) {
   const { ticketId, ticketName } = props;
   return (
     <button
-      className="btn btn-sm justify-start bg-base-100 border-0 normal-case p-1 rounded-lg mt-1 w-40"
+      className="btn btn-sm justify-center bg-base-100 border-0 normal-case p-1 rounded-lg mt-1"
       onClick={() => navigate(`/tickets/${ticketId}`)}
     >
-      <p className="flex items-center gap-1 font-semibold text-secondary px-1 max-w-full">
+      <p className="flex items-center gap-1 font-semibold text-neutral px-1">
         <PiTicketBold className="h-4 w-4 flex-shrink-0" />
-        <span className="truncate text-xs">{ticketName}</span>
+        <span className="text-xs overflow-x-hidden line-clamp-1 text-start">
+          {ticketName}
+        </span>
       </p>
     </button>
   );

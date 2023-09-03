@@ -141,7 +141,11 @@ function PostCard(props) {
         <div>
           <p className="text-sm break-words">{convertTextToLink(content)}</p>
         </div>
-        {ticket && <TicketCard ticketId={ticket.id} ticketName={ticket.name} />}
+        {ticket && (
+          <div>
+            <TicketCard ticketId={ticket.id} ticketName={ticket.name} />
+          </div>
+        )}
 
         <div className="flex gap-2 flex-wrap mt-1">
           <div className="relative">
