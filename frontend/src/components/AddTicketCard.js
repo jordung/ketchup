@@ -117,6 +117,7 @@ function AddTicketCard(props) {
         setAllUsers(response.data.data.allUsers);
         setAllTags(response.data.data.allTags);
         setAllTickets(response.data.data.allTickets);
+        toast.success(response.data.msg);
       } catch (error) {
         toast.error(`${error.response.data.msg}`);
       } finally {
