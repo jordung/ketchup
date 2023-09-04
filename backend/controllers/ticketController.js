@@ -328,15 +328,15 @@ class TicketController extends BaseController {
           ticketId: newTicket.id,
         });
 
-        //TODO: SOCKET?
+        //TODO: SOCKET? code is not working - to check!!!!
         // 4. add creator to notifications table
-        await this.notification.create({
-          organisationId,
-          userId: creatorId,
-          documentId: newTicket.id,
-          type: "document",
-          message: "New ticket added!",
-        });
+        // await this.notification.create({
+        //   organisationId,
+        //   userId: creatorId,
+        //   ticketId: newTicket.id,
+        //   type: "ticket",
+        //   message: "New ticket added!",
+        // });
       }
 
       if (assigneeId) {

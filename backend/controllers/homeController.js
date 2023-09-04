@@ -2,6 +2,7 @@ const BaseController = require("./baseController");
 const { Op } = require("sequelize");
 const { startDate, endDate } = require("../utils/getDates");
 const { getAllReactions } = require("../utils/reactionsCounter");
+const { adjustTimestamps } = require("../utils/adjustTimestamps");
 
 class HomeController extends BaseController {
   constructor({
@@ -125,13 +126,15 @@ class HomeController extends BaseController {
         where: {
           organisationId: organisation,
           createdAt: {
-            [Op.gte]: startDate(),
-            [Op.lt]: endDate(),
+            [Op.gte]: new Date(startDate().getTime() - 8 * 60 * 60 * 1000),
+            [Op.lt]: new Date(endDate().getTime() - 8 * 60 * 60 * 1000),
           },
         },
         attributes: ["id", "organisationId", "createdAt", "updatedAt"],
         order: [["id", "DESC"]],
       });
+
+      // adjustTimestamps(dailyKetchups);
 
       // fetch all users within the organisation
       const allUsers = await this.user.findAll({
@@ -193,9 +196,11 @@ class HomeController extends BaseController {
         where: {
           organisationId: organisation,
         },
-        attributes: ["id", "content", "createdAt"],
+        attributes: ["id", "content", "createdAt", "updatedAt"],
         order: [["id", "DESC"]],
       });
+
+      // adjustTimestamps(allPosts);
 
       const getKetchupReactions = getAllReactions(
         dailyKetchups,
