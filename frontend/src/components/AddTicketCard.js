@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import {
@@ -19,6 +19,7 @@ import { formatInputDate } from "../utils/formatInputDate";
 import { UserContext } from "../App";
 import { formatOneTag, formatTags } from "../utils/formatTags";
 import axios from "axios";
+import { socket } from "../utils/socket-client";
 
 function AddTicketCard(props) {
   const {
@@ -88,6 +89,17 @@ function AddTicketCard(props) {
     }
   };
 
+  useEffect(() => {
+    socket.connect();
+    socket.on("show_notification", function (data) {
+      toast.success(data.title);
+    });
+
+    return () => {
+      socket.off("show_notification");
+    };
+  }, []);
+
   const handleAddTicket = async (e) => {
     if (!ticketTitle.trim().length > 0) {
       toast.error("Ticket Title must not be blank.");
@@ -118,6 +130,10 @@ function AddTicketCard(props) {
         setAllTags(response.data.data.allTags);
         setAllTickets(response.data.data.allTickets);
         toast.success(response.data.msg);
+        socket.emit("assignee", {
+          target: ticketAssignee,
+          title: `You have been assigned a new ticket: ${ticketTitle}!`,
+        });
       } catch (error) {
         toast.error(`${error.response.data.msg}`);
       } finally {
