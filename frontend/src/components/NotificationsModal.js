@@ -13,7 +13,7 @@ function NotificationsModal(props) {
         <h3 className="font-bold text-lg">Notifications</h3>
         <div className="max-h-[70vw] min-h-max overflow-y-auto flex flex-col gap-2 mt-2">
           {deleteMe.map((item) => (
-            <>
+            <div key={item}>
               {/* Notification Card */}
               <div className="flex gap-2 border-b pb-2">
                 <div className="bg-base-100 rounded-full h-8 w-8 flex-shrink-0" />
@@ -31,7 +31,7 @@ function NotificationsModal(props) {
                   <p className="text-xs">2h ago</p>
                 </div>
               </div>
-            </>
+            </div>
           ))}
         </div>
       </form>

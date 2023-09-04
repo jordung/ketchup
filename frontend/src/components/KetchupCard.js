@@ -210,10 +210,10 @@ function KetchupCard(props) {
             Updates
           </p>
         )} */}
-        <div className="flex flex-col gap-3 mt-3">
+        <div className="flex flex-col gap-3">
           {updates &&
             updates.map((update, index) => (
-              <div className="max-w-full" key={update.id}>
+              <div className="max-w-full mt-3" key={update.id}>
                 <div>
                   <div className="flex gap-2 items-center mb-1">
                     <span className="badge bg-base-300 text-white border-0 text-xs font-semibold">

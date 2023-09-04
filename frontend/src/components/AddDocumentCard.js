@@ -88,9 +88,9 @@ function AddDocumentCard(props) {
             },
           }
         );
-        console.log(response);
         setAllDocuments(response.data.data.allDocuments);
         setAllTags(response.data.data.allTags);
+        toast.success(response.data.msg);
       } catch (error) {
         toast.error(error.response.data.msg);
       } finally {
