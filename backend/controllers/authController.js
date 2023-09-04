@@ -11,7 +11,9 @@ const transporter = require("../config/email");
 const nodemailer = require("nodemailer");
 const generateEmailToken = require("../utils/emailToken");
 const { verification } = require("../utils/emailTemplates");
+// const { socketIO } = require("../index");
 
+//TODO: add notification table!!!!!
 class AuthController extends BaseController {
   constructor({ user, organisation, invitation, organisation_admin, watcher }) {
     super(user);
@@ -354,6 +356,32 @@ class AuthController extends BaseController {
 
         // return true if the user is an admin
         const isAdmin = currentUser.organisation_admin !== null;
+
+        console.log("userid", user.id);
+        console.log("orgid", user.organisationId);
+
+        // connecting w socket io
+        // const organisationNamespace = socketIO.of(
+        //   `/organisation_${user.organisationId}`
+        // );
+        // organisationNamespace.on("connection", (socket) => {
+        //   console.log(`user ${user.id} connected to organisation namespace`);
+
+        //   socket.join(`user_${user.id}`);
+        //   socket.emit("organisation", "This is the Organisation Channel!");
+
+        //   // handle userChannel event
+        //   socket.on("userChannel", (data) => {
+        //     console.log(
+        //       `Received userChannel event from user ${user.id}: ${data}`
+        //     );
+
+        //     // broadcast the event to all connected clients in the organisation namespace
+        //     socketIO.to(`user_${user.id}`).emit("userChannel", data);
+        //   });
+        // });
+
+        // socketIO.to(`user_${user.id}`).emit("userChannel", "User Channel");
 
         // step 6: pass access token in res for FE to retrieve
         return res.status(200).json({

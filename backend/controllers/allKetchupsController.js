@@ -106,8 +106,8 @@ class AllKetchupsController extends BaseController {
         where: {
           organisationId,
           createdAt: {
-            [Op.gte]: startDate(),
-            [Op.lt]: endDate(),
+            [Op.gte]: new Date(startDate().getTime() - 8 * 60 * 60 * 1000),
+            [Op.lt]: new Date(endDate().getTime() - 8 * 60 * 60 * 1000),
           },
         },
         attributes: ["id", "organisationId", "createdAt", "updatedAt"],
@@ -218,8 +218,13 @@ class AllKetchupsController extends BaseController {
       );
 
       // initialise accumulator with {}, iterates through each ketchup in 'allKetchups' array and convert createdAt to date string. Check if 'ketchupDate' already exists in accumulator {}, if yes then push ketchup to getKetchupReactions, else, initialise an empty object.
-      // TODO: check with jordan if he wanna include today's ketchups
       const today = new Date();
+      console.log("new Date", today);
+
+      today.setUTCHours(-8, 0, 0, 0);
+      today.setHours(today.getHours() + 8);
+      console.log("set hours to GMT", today);
+
       const lastThirtyDays = new Date(today);
       lastThirtyDays.setDate(today.getDate() - 30);
 
@@ -246,10 +251,12 @@ class AllKetchupsController extends BaseController {
       });
 
       getAllKetchupsReactions.forEach((ketchup) => {
-        const ketchupDate = new Date(ketchup.createdAt).toDateString();
+        const ketchupDate = new Date(
+          ketchup.createdAt.getTime() + 8 * 60 * 60 * 1000
+        );
 
         const hasKetchup = groupKetchupsByDate.find(
-          (entry) => entry.date === ketchupDate
+          (entry) => entry.date === ketchupDate.toDateString()
         );
         if (hasKetchup) {
           hasKetchup.getKetchupReactions.push(ketchup);
@@ -259,14 +266,16 @@ class AllKetchupsController extends BaseController {
       allUsers.forEach((user) => {
         // iterate over the dates and check if user has posted a ketchup for that particular date, .some() will evaluate to true/false
         Object.keys(groupKetchupsByDate).forEach((date) => {
+          const ketchupDate = new Date(date);
+
           const hasKetchup = groupKetchupsByDate[date].getKetchupReactions.some(
             (ketchup) => ketchup.creator.id === user.id
           );
-          // console.log("date", date);
-          // console.log("user.id", user.id);
+          // console.log("date", groupKetchupsByDate[date]);
+          // console.log("user.id", user.firstName);
           // console.log("hasKetchup", hasKetchup);
 
-          if (!hasKetchup) {
+          if (!hasKetchup && user.createdAt <= ketchupDate) {
             groupKetchupsByDate[date].usersWithoutKetchups.push(user);
           }
         });

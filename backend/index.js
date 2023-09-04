@@ -197,6 +197,37 @@ const watchlistRouter = new WatchlistRouter(watchlistController).routes();
 
 const PORT = process.env.PORT;
 const app = express();
+const http = require("http").Server(app);
+const io = require("socket.io")(http, {
+  cors: {
+    origin: "*",
+  },
+});
+
+io.on("connection", (socket) => {
+  // console.log("connected!");
+  socket.on("initialisation", function (data) {
+    if (data) {
+      console.log("User has subscribed to", `user_${data.userId}`);
+      console.log(
+        "User has subscribed to",
+        `organisation_${data.organisationId}`
+      );
+      socket.join(`user_${data.userId}`);
+      socket.join(`organisation_${data.organisationId}`);
+    }
+  });
+  socket.on("assignee", function (data) {
+    console.log("assigneeId", data);
+    // console.log(data.title.data.message);
+    io.to(`user_${data.target}`).emit("show_notification", {
+      title: data.title,
+    });
+  });
+  socket.on("disconnect", () => {
+    console.log("Client disconnected");
+  });
+});
 
 // enable CORS access to this server
 app.use(cors());
@@ -216,6 +247,12 @@ app.use("/tickets", ticketRouter);
 app.use("/documents", documentRouter);
 app.use("/watch", watchlistRouter);
 
-app.listen(PORT, () => {
+http.listen(PORT, () => {
   console.log(`Express app listening on port ${PORT}!`);
 });
+
+// app.listen(PORT, () => {
+//   console.log(`Express app listening on port ${PORT}!`);
+// });
+
+module.exports = { io };
