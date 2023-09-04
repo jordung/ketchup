@@ -2,7 +2,9 @@ import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { createContext, useEffect, useState } from "react";
 import axios from "axios";
 import { ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { socket } from "./utils/socket-client";
 
 // Components
 import Navbar from "./components/Navbar";
@@ -32,30 +34,6 @@ export const LoadingContext = createContext();
 export const UserContext = createContext();
 export const LoggedInContext = createContext();
 
-// TODO DELETE REQUESTS HAVE TO BE STRUCTURED LIKE THIS
-// const handleDeleteComment = (commentId) => {
-// const deleteComment = async () => {
-//   try {
-//     const updatedCommentsList = await axios.delete(
-//       `${process.env.REACT_APP_DB_API}/comments`,
-//       {
-//         headers: {
-//           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-//         },
-//         data: {
-//           userId: selectedComms.userId,
-//           commsId: selectedComms.commsId,
-//           commentId: commentId,
-//         },
-//       }
-//     );
-//     console.log(updatedCommentsList.data.data);
-//     setCommentsList(updatedCommentsList.data.data);
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
-
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -63,6 +41,23 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      socket.emit("initialisation", {
+        userId: user.id,
+        organisationId: user.organisationId,
+      });
+    }
+    // socket.connect();
+    socket.on("show_notification", function (data) {
+      toast.info(data.title);
+    });
+
+    return () => {
+      socket.off("show_notification");
+    };
+  }, [user]);
 
   useEffect(() => {
     setLoading(true);
