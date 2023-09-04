@@ -50,6 +50,27 @@ html::-webkit-scrollbar {
   top: 6px;
 }
 
+.Toastify__toast--info {
+  border-radius: 0.5rem !important;
+  background: #f6f6f6 !important;
+}
+
+.Toastify__toast--info::after {
+  position: absolute;
+  color: #333333;
+  /* font-size: 0.75rem; */
+  /* font-weight: 600; */
+  left: 265px;
+  padding-top: 14px !important;
+}
+
+.Toastify__toast--info::before {
+  position: relative;
+  z-index: 100000;
+  left: 12px;
+  top: 6px;
+}
+
 .Toastify__toast--success {
   border-radius: 0.5rem !important;
   background: #f0f9fa !important;
