@@ -13,15 +13,22 @@ const generateEmailToken = require("../utils/emailToken");
 const { verification } = require("../utils/emailTemplates");
 // const { socketIO } = require("../index");
 
-//TODO: add notification table!!!!!
 class AuthController extends BaseController {
-  constructor({ user, organisation, invitation, organisation_admin, watcher }) {
+  constructor({
+    user,
+    organisation,
+    invitation,
+    organisation_admin,
+    watcher,
+    notification,
+  }) {
     super(user);
     this.user = user;
     this.organisation = organisation;
     this.invitation = invitation;
     this.organisation_admin = organisation_admin;
     this.watcher = watcher;
+    this.notification = notification;
   }
 
   // Note: Signup Through Ketchup Flow:
@@ -94,7 +101,29 @@ class AuthController extends BaseController {
         { where: { id: newUser.id } }
       );
 
+      // step 6: notify organisation members
       const user = await this.model.findByPk(newUser.id);
+
+      if (organisationId) {
+        const organisation = await this.organisation.findByPk(organisationId);
+        const allOrganisationMembers = await this.model.findAll({
+          where: { organisationId },
+        });
+
+        for (const member of allOrganisationMembers) {
+          const memberId = member.dataValues.id;
+          try {
+            await this.notification.create({
+              organisationId,
+              userId: memberId,
+              type: "new joiner",
+              message: `${user.firstName} ${user.lastName} has joined ${organisation.name}.`,
+            });
+          } catch (error) {
+            console.error("Error: Unable to notify all organisation members!");
+          }
+        }
+      }
 
       // step 6: send verification email after user record has been inserted to database
       const emailSent = await this.sendVerificationEmail(user);
@@ -212,9 +241,28 @@ class AuthController extends BaseController {
           { where: { id: newUser.id } }
         );
 
+        // step 6: notify organisation members
         const user = await this.model.findByPk(newUser.id);
+        const organisation = await this.organisation.findByPk(organisationId);
+        const allOrganisationMembers = await this.model.findAll({
+          where: { organisationId },
+        });
 
-        // step 6: send verification email after user record has been inserted to database
+        for (const member of allOrganisationMembers) {
+          const memberId = member.dataValues.id;
+          try {
+            await this.notification.create({
+              organisationId,
+              userId: memberId,
+              type: "new joiner",
+              message: `${user.firstName} ${user.lastName} has joined ${organisation.name}.`,
+            });
+          } catch (error) {
+            console.error("Error: Unable to notify all organisation members!");
+          }
+        }
+
+        // step 7: send verification email after user record has been inserted to database
         const emailSent = await this.sendVerificationEmail(user);
 
         if (emailSent) {
@@ -356,32 +404,6 @@ class AuthController extends BaseController {
 
         // return true if the user is an admin
         const isAdmin = currentUser.organisation_admin !== null;
-
-        console.log("userid", user.id);
-        console.log("orgid", user.organisationId);
-
-        // connecting w socket io
-        // const organisationNamespace = socketIO.of(
-        //   `/organisation_${user.organisationId}`
-        // );
-        // organisationNamespace.on("connection", (socket) => {
-        //   console.log(`user ${user.id} connected to organisation namespace`);
-
-        //   socket.join(`user_${user.id}`);
-        //   socket.emit("organisation", "This is the Organisation Channel!");
-
-        //   // handle userChannel event
-        //   socket.on("userChannel", (data) => {
-        //     console.log(
-        //       `Received userChannel event from user ${user.id}: ${data}`
-        //     );
-
-        //     // broadcast the event to all connected clients in the organisation namespace
-        //     socketIO.to(`user_${user.id}`).emit("userChannel", data);
-        //   });
-        // });
-
-        // socketIO.to(`user_${user.id}`).emit("userChannel", "User Channel");
 
         // step 6: pass access token in res for FE to retrieve
         return res.status(200).json({
@@ -606,6 +628,24 @@ class AuthController extends BaseController {
 
         user = await this.model.findOne({ where: { id: userId } });
         organisation = await this.organisation.findByPk(user.organisationId);
+
+        const allOrganisationMembers = await this.model.findAll({
+          where: { organisationId: user.organisationId },
+        });
+
+        for (const member of allOrganisationMembers) {
+          const memberId = member.dataValues.id;
+          try {
+            await this.notification.create({
+              organisationId: user.organisationId,
+              userId: memberId,
+              type: "new joiner",
+              message: `${user.firstName} ${user.lastName} has joined ${organisation.name}.`,
+            });
+          } catch (error) {
+            console.error("Error: Unable to notify all organisation members!");
+          }
+        }
 
         return res.status(200).json({
           success: true,

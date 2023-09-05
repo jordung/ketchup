@@ -327,22 +327,24 @@ class TicketController extends BaseController {
           userId: creatorId,
           ticketId: newTicket.id,
         });
-
-        //TODO: SOCKET? code is not working - to check!!!!
-        // 4. add creator to notifications table
-        // await this.notification.create({
-        //   organisationId,
-        //   userId: creatorId,
-        //   ticketId: newTicket.id,
-        //   type: "ticket",
-        //   message: "New ticket added!",
-        // });
       }
 
       if (assigneeId) {
         await this.watcher.create({
           userId: assigneeId,
           ticketId: newTicket.id,
+        });
+
+        // retrieve creator's information
+        const creator = await this.user.findByPk(creatorId);
+
+        // add assignee to the notification table
+        await this.notification.create({
+          organisationId: organisationId,
+          userId: assigneeId,
+          ticketId: newTicket.id,
+          type: "ticket",
+          message: `${creator.firstName} ${creator.lastName} has assigned you a new ticket.`,
         });
       }
 
@@ -411,8 +413,6 @@ class TicketController extends BaseController {
 
   // =================== UPDATE TICKET =================== //
   // Note: organisationId and creatorId cannot be changed.
-  //TODO: Socket?
-
   updateTicket = async (req, res) => {
     const { ticketId } = req.params;
     const {
@@ -427,11 +427,7 @@ class TicketController extends BaseController {
     } = req.body;
 
     const getTicket = await this.model.findByPk(ticketId);
-    console.log("getTicket", getTicket);
-    console.log("getTicket.name", getTicket.name);
-
     const includesName = !name ? getTicket.name : name;
-    console.log("includesName", includesName);
 
     try {
       await this.model.update(
@@ -481,6 +477,7 @@ class TicketController extends BaseController {
           where: { id: updatedTicket.ticket_dependencies[0].dataValues.id },
         });
       }
+      //TODO: check ^
 
       const ticket = await this.model.findByPk(ticketId, {
         include: [
@@ -579,9 +576,24 @@ class TicketController extends BaseController {
             ],
           },
         ],
-        attributes: ["id", "ticketId"],
+        attributes: ["id", "ticketId", "userId"],
         order: [["id", "ASC"]],
       });
+
+      // notify all ticket watchers
+      for (const watcher of allWatchers) {
+        const userId = watcher.dataValues.userId;
+        try {
+          await this.notification.create({
+            organisationId: ticket.organisationId,
+            userId,
+            type: "ticket",
+            message: `${ticket.name} has been updated.`,
+          });
+        } catch (error) {
+          console.error("Error: Unable to notify all ticket watchers");
+        }
+      }
 
       return res.status(200).json({
         success: true,
