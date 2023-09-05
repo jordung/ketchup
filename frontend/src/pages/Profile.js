@@ -67,7 +67,7 @@ function Profile() {
 
   const handleSlackAuth = () => {
     // Redirect to your server's Slack OAuth route
-    window.location.href = `${process.env.REACT_APP_DB_API}/slack/oauth`;
+    window.location.href = `${process.env.REACT_APP_DB_API}/users/slack/oauth`;
   };
 
   const renderSlackStatus = (userProfileId, userId, slackUserId) => {
