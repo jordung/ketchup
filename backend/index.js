@@ -196,11 +196,13 @@ const documentRouter = new DocumentRouter(documentController).routes();
 const watchlistRouter = new WatchlistRouter(watchlistController).routes();
 
 const PORT = process.env.PORT;
+const host = "0.0.0.0";
 const app = express();
 const http = require("http").Server(app);
 const io = require("socket.io")(http, {
   cors: {
-    origin: "*",
+    origin: "https://theketchupcorner.netlify.app",
+    allowedHeaders: ["Access-Control-Allow-Origin"],
   },
 });
 
@@ -217,6 +219,7 @@ io.on("connection", (socket) => {
       socket.join(`organisation_${data.organisationId}`);
     }
   });
+
   socket.on("assignee", function (data) {
     console.log("assigneeId", data);
     // console.log(data.title.data.message);
@@ -224,6 +227,15 @@ io.on("connection", (socket) => {
       title: data.title,
     });
   });
+
+  socket.on("new_joiner", function (data) {
+    console.log("data.target", data.target); //BE shld receive orgID
+    console.log("new_joiner", data);
+    socket.to(`organisation_${data.target}`).emit("user_join_notification", {
+      title: data.title,
+    });
+  });
+
   socket.on("disconnect", () => {
     console.log("Client disconnected");
   });
@@ -247,7 +259,11 @@ app.use("/tickets", ticketRouter);
 app.use("/documents", documentRouter);
 app.use("/watch", watchlistRouter);
 
-http.listen(PORT, () => {
+// http.listen(PORT, () => {
+//   console.log(`Express app listening on port ${PORT}!`);
+// });
+
+http.listen(PORT, host, () => {
   console.log(`Express app listening on port ${PORT}!`);
 });
 

@@ -126,8 +126,8 @@ class HomeController extends BaseController {
         where: {
           organisationId: organisation,
           createdAt: {
-            [Op.gte]: new Date(startDate().getTime() - 8 * 60 * 60 * 1000),
-            [Op.lt]: new Date(endDate().getTime() - 8 * 60 * 60 * 1000),
+            [Op.gte]: startDate(),
+            [Op.lt]: endDate(),
           },
         },
         attributes: ["id", "organisationId", "createdAt", "updatedAt"],

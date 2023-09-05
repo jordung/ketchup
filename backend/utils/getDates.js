@@ -1,21 +1,13 @@
+const moment = require("moment-timezone");
+
 const startDate = () => {
-  const today = new Date();
-  // set time to the beginning of the day
-  today.setUTCHours(-8, 0, 0, 0);
-  today.setHours(today.getHours() + 8);
-  console.log("today", today);
-  return today;
+  const today = moment().tz("Asia/Singapore").startOf("day");
+  return today.toDate();
 };
 
 const endDate = () => {
-  const today = new Date();
-  today.setUTCHours(-8, 0, 0, 0);
-  today.setHours(today.getHours() + 8);
-
-  const nextDate = new Date(today);
-  nextDate.setDate(nextDate.getDate() + 1);
-  console.log("nextDate", nextDate);
-  return nextDate;
+  const today = moment().tz("Asia/Singapore").endOf("day");
+  return today.toDate();
 };
 
 module.exports = { startDate, endDate };

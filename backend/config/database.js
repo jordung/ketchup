@@ -7,6 +7,7 @@ module.exports = {
     database: process.env.DB_NAME,
     host: process.env.DB_HOST,
     dialect: process.env.DB_DIALECT,
+    logging: false,
     dialectOptions: {
       useUTC: false,
     },
@@ -18,6 +19,7 @@ module.exports = {
     database: process.env.DATABASE,
     host: process.env.HOST,
     dialect: process.env.DIALECT,
+    logging: false,
     dialectOptions: {
       useUTC: false,
     },
