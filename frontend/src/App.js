@@ -49,14 +49,17 @@ function App() {
         organisationId: user.organisationId,
       });
     }
-    // socket.connect();
+    socket.connect();
     socket.on("show_notification", function (data) {
       toast.info(data.title);
     });
+    socket.on("user_join_notification", function (data) {
+      toast.info(data.title);
+    });
 
-    // return () => {
-    //   socket.off("show_notification");
-    // };
+    return () => {
+      socket.off("show_notification");
+    };
   }, [user]);
 
   useEffect(() => {
