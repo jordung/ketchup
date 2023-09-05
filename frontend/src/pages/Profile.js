@@ -65,11 +65,19 @@ function Profile() {
     }
   }, [searchQuery, watchlist]);
 
+  const handleSlackAuth = () => {
+    // Redirect to your server's Slack OAuth route
+    window.location.href = `${process.env.REACT_APP_DB_API}/slack/oauth`;
+  };
+
   const renderSlackStatus = (userProfileId, userId, slackUserId) => {
     // case 1: own profile + no slack -> return connect button
     if (userProfileId === userId && !slackUserId) {
       return (
-        <button className="btn btn-neutral btn-sm normal-case text-sm">
+        <button
+          className="btn btn-neutral btn-sm normal-case text-sm"
+          onClick={handleSlackAuth}
+        >
           Connect Slack
         </button>
       );
