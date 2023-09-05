@@ -24,6 +24,8 @@ function KetchupCard(props) {
     updates,
     groupedReactions,
     mood,
+    slackUserId,
+    slackTeamId,
   } = props;
 
   const navigate = useNavigate();
@@ -250,10 +252,26 @@ function KetchupCard(props) {
             ))}
         </div>
         <div className="flex gap-2 my-1">
-          <button className="btn btn-xs bg-base-100 border-0 normal-case">
-            <img src={slack} alt="slack" className="w-3 h-3 object-contain" />
-            <span className="text-xs">Slack</span>
-          </button>
+          {slackUserId && slackTeamId ? (
+            <a
+              className="btn btn-xs bg-base-100 border-0 normal-case"
+              href={`slack://user?team=${slackTeamId}&id=${slackUserId}`}
+            >
+              <img src={slack} alt="slack" className="w-3 h-3 object-contain" />
+              <span className="text-xs">Slack</span>
+            </a>
+          ) : (
+            <div className="tooltip before:text-xs" data-tip="Not connected!">
+              <button className="btn btn-xs bg-base-100 border-0 normal-case ">
+                <img
+                  src={slack}
+                  alt="slack"
+                  className="w-3 h-3 object-contain"
+                />
+                <span className="text-xs">Slack</span>
+              </button>
+            </div>
+          )}
         </div>
         <div className="flex gap-2 flex-wrap">
           <div className="relative">

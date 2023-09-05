@@ -52,6 +52,8 @@ function KetchupContainer(props) {
                 profilePicture={ketchup.creator.profilePicture}
                 firstName={ketchup.creator.firstName}
                 lastName={ketchup.creator.lastName}
+                slackUserId={ketchup.creator.slackUserId}
+                slackTeamId={ketchup.creator.slackTeamId}
                 createdDate={ketchup.createdAt}
                 agendas={ketchup.ketchup_agendas}
                 updates={ketchup.ketchup_updates}
