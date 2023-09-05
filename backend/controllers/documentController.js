@@ -217,16 +217,6 @@ class DocumentController extends BaseController {
         documentId: newDocument.id,
       });
 
-      //TODO: SOCKET?
-      // 4. add creator to notifications table
-      await this.notification.create({
-        organisationId,
-        userId: creatorId,
-        documentId: newDocument.id,
-        type: "document",
-        message: "New document added!",
-      });
-
       const allDocuments = await this.model.findAll({
         where: { organisationId },
         include: [
@@ -285,8 +275,6 @@ class DocumentController extends BaseController {
 
   // =================== UPDATE DOCUMENT =================== //
   // Note: organisationId and creatorId cannot be changed.
-  //TODO: SOCKET?
-
   updateDocument = async (req, res) => {
     const { documentId } = req.params;
     const { tagId, name, body, ticketId } = req.body;
@@ -336,12 +324,6 @@ class DocumentController extends BaseController {
           where: { id: updatedDocument.document_tickets[0].dataValues.id },
         });
       }
-
-      // await this.notification.update({
-      //   documentId,
-      //   type: "document",
-      //   message: "An update has been added to a document you're following!",
-      // });
 
       const document = await this.model.findByPk(documentId, {
         include: [
@@ -419,9 +401,23 @@ class DocumentController extends BaseController {
             ],
           },
         ],
-        attributes: ["id", "documentId"],
+        attributes: ["id", "documentId", "userId"],
         order: [["id", "ASC"]],
       });
+
+      for (const watcher of allWatchers) {
+        const userId = watcher.dataValues.userId;
+        try {
+          await this.notification.create({
+            organisationId: document.organisationId,
+            userId,
+            type: "document",
+            message: `${document.name} has been updated.`,
+          });
+        } catch (error) {
+          console.error("Error: Unable to notify all document watchers");
+        }
+      }
 
       return res.status(200).json({
         success: true,
