@@ -106,8 +106,8 @@ class AllKetchupsController extends BaseController {
         where: {
           organisationId,
           createdAt: {
-            [Op.gte]: new Date(startDate().getTime() - 8 * 60 * 60 * 1000),
-            [Op.lt]: new Date(endDate().getTime() - 8 * 60 * 60 * 1000),
+            [Op.gte]: startDate(),
+            [Op.lt]: endDate(),
           },
         },
         attributes: ["id", "organisationId", "createdAt", "updatedAt"],
@@ -125,6 +125,7 @@ class AllKetchupsController extends BaseController {
           "profilePicture",
           "slackUserId",
           "slackAccessToken",
+          "createdAt",
         ],
       });
 
@@ -221,7 +222,7 @@ class AllKetchupsController extends BaseController {
       const today = new Date();
       console.log("new Date", today);
 
-      today.setUTCHours(-8, 0, 0, 0);
+      today.setUTCHours(16, 0, 0, 0);
       today.setHours(today.getHours() + 8);
       console.log("set hours to GMT", today);
 
@@ -265,17 +266,19 @@ class AllKetchupsController extends BaseController {
 
       allUsers.forEach((user) => {
         // iterate over the dates and check if user has posted a ketchup for that particular date, .some() will evaluate to true/false
+
         Object.keys(groupKetchupsByDate).forEach((date) => {
-          const ketchupDate = new Date(date);
+          const ketchupDate = new Date(groupKetchupsByDate[date].date);
+          // console.log("ketchupDate", ketchupDate);
 
           const hasKetchup = groupKetchupsByDate[date].getKetchupReactions.some(
             (ketchup) => ketchup.creator.id === user.id
           );
-          // console.log("date", groupKetchupsByDate[date]);
-          // console.log("user.id", user.firstName);
-          // console.log("hasKetchup", hasKetchup);
 
-          if (!hasKetchup && user.createdAt <= ketchupDate) {
+          const userCreatedAt = new Date(user.dataValues.createdAt);
+          // console.log("userCreatedAt", userCreatedAt);
+
+          if (!hasKetchup && userCreatedAt <= ketchupDate) {
             groupKetchupsByDate[date].usersWithoutKetchups.push(user);
           }
         });
