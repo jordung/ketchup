@@ -158,7 +158,6 @@ function KetchupCard(props) {
           </p>
         </div>
         {/* Agenda Card */}
-        {/* <p className="text-xs uppercase font-semibold text-gray-400">Agendas</p> */}
         <div className="flex flex-col gap-3">
           {agendas &&
             agendas.map((agenda, index) => (
@@ -204,13 +203,8 @@ function KetchupCard(props) {
               </div>
             ))}
         </div>
-        {/* Update Card */}
-        {/* {updates?.length > 0 && (
-          <p className="text-xs uppercase font-semibold text-gray-400">
-            Updates
-          </p>
-        )} */}
-        <div className="flex flex-col gap-3">
+        {/* Updates Card */}
+        <div className="flex flex-col">
           {updates &&
             updates.map((update, index) => (
               <div className="max-w-full mt-3" key={update.id}>

@@ -37,7 +37,6 @@ function VerifyUser() {
         const response = await axios.get(
           `${process.env.REACT_APP_DB_API}/auth/verify?token=${verificationToken}`
         );
-        console.log(response);
         if (response.data.success) {
           setVerifySuccess(true);
           setTimeout(() => {
