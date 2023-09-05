@@ -49,7 +49,7 @@ function App() {
         organisationId: user.organisationId,
       });
     }
-    socket.connect();
+    // socket.connect();
     socket.on("show_notification", function (data) {
       toast.info(data.title);
     });
@@ -59,6 +59,7 @@ function App() {
 
     return () => {
       socket.off("show_notification");
+      socket.off("user_join_notification");
     };
   }, [user]);
 
