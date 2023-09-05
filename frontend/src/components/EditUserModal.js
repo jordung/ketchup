@@ -53,6 +53,7 @@ function EditUserModal(props) {
 
   const handleUpdateUser = async () => {
     const STORAGE_KEY = "profile/";
+    const accessToken = localStorage.getItem("accessToken");
 
     if (updatedProfilePictureFile) {
       // if user has uploaded their own picture
@@ -84,6 +85,11 @@ function EditUserModal(props) {
                     profilePicture: url,
                     firstName: firstName,
                     lastName: lastName,
+                  },
+                  {
+                    headers: {
+                      Authorization: `Bearer ${accessToken}`,
+                    },
                   }
                 );
                 setUser(response.data.data.updatedUser);
@@ -142,6 +148,11 @@ function EditUserModal(props) {
                     profilePicture: url,
                     firstName: firstName,
                     lastName: lastName,
+                  },
+                  {
+                    headers: {
+                      Authorization: `Bearer ${accessToken}`,
+                    },
                   }
                 );
                 setUser(response.data.data.updatedUser);
@@ -174,6 +185,11 @@ function EditUserModal(props) {
               profilePicture: profilePicture,
               firstName: firstName,
               lastName: lastName,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
             }
           );
           setUser(response.data.data.updatedUser);
