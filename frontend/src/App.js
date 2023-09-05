@@ -54,9 +54,9 @@ function App() {
       toast.info(data.title);
     });
 
-    return () => {
-      socket.off("show_notification");
-    };
+    // return () => {
+    //   socket.off("show_notification");
+    // };
   }, [user]);
 
   useEffect(() => {

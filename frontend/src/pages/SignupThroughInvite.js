@@ -21,6 +21,7 @@ import { v4 as uuidv4 } from "uuid";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { socket } from "../utils/socket-client";
 
 function SignupThroughInvite() {
   const { setLoading } = useContext(LoadingContext);
@@ -119,6 +120,11 @@ function SignupThroughInvite() {
                   response.data.data.user.refreshToken
                 );
 
+                socket.emit("new_joiner", {
+                  target: organisationId,
+                  title: `${firstName} ${lastName} has joined ${organisationName}`,
+                });
+
                 setIsLoggedIn(true);
                 toast.success(`${response.data.msg}`);
                 navigate("/home");
@@ -178,6 +184,11 @@ function SignupThroughInvite() {
                   "refreshToken",
                   response.data.data.user.refreshToken
                 );
+
+                socket.emit("new_joiner", {
+                  target: organisationId,
+                  title: `${firstName} ${lastName} has joined ${organisationName}`,
+                });
 
                 setIsLoggedIn(true);
                 toast.success(`${response.data.msg}`);
