@@ -81,12 +81,9 @@ function EditUserModal(props) {
                 const response = await axios.post(
                   `${process.env.REACT_APP_DB_API}/users/${user.id}`,
                   {
-                    control: 2,
                     profilePicture: url,
                     firstName: firstName,
                     lastName: lastName,
-                    slackUserId: "",
-                    slackAccessToken: "",
                   }
                 );
                 setUser(response.data.data.updatedUser);
@@ -142,12 +139,9 @@ function EditUserModal(props) {
                 const response = await axios.post(
                   `${process.env.REACT_APP_DB_API}/users/${user.id}`,
                   {
-                    control: 2,
                     profilePicture: url,
                     firstName: firstName,
                     lastName: lastName,
-                    slackUserId: "",
-                    slackAccessToken: "",
                   }
                 );
                 setUser(response.data.data.updatedUser);
@@ -177,12 +171,9 @@ function EditUserModal(props) {
           const response = await axios.post(
             `${process.env.REACT_APP_DB_API}/users/${user.id}`,
             {
-              control: 2,
               profilePicture: profilePicture,
               firstName: firstName,
               lastName: lastName,
-              slackUserId: "",
-              slackAccessToken: "",
             }
           );
           setUser(response.data.data.updatedUser);
