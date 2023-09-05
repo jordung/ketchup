@@ -16,6 +16,7 @@ const AllKetchupsRouter = require("./routers/allKetchupsRouter");
 const TicketRouter = require("./routers/ticketRouter");
 const DocumentRouter = require("./routers/documentRouter");
 const WatchlistRouter = require("./routers/watchlistRouter");
+const NotificationRouter = require("./routers/notificationRouter");
 
 // importing Controllers
 const UserProfileController = require("./controllers/userProfileController");
@@ -28,6 +29,7 @@ const AllKetchupsController = require("./controllers/allKetchupsController");
 const TicketController = require("./controllers/ticketController");
 const DocumentController = require("./controllers/documentController");
 const WatchlistController = require("./controllers/watchlistController");
+const NotificationController = require("./controllers/notificationController");
 
 // importing DB
 const db = require("./db/models/index");
@@ -72,6 +74,7 @@ const authController = new AuthController({
   invitation,
   organisation_admin,
   watcher,
+  notification,
 });
 
 const adminController = new AdminController({
@@ -176,6 +179,14 @@ const watchlistController = new WatchlistController({
   notification,
 });
 
+const notificationController = new NotificationController({
+  user,
+  organisation,
+  ticket,
+  document,
+  notification,
+});
+
 // initialising routers
 //TODO: rmb to pass jwtAuth in protected routes
 const userProfileRouter = new UserProfileRouter(
@@ -194,6 +205,9 @@ const allketchupsRouter = new AllKetchupsRouter(allketchupsController).routes();
 const ticketRouter = new TicketRouter(ticketController).routes();
 const documentRouter = new DocumentRouter(documentController).routes();
 const watchlistRouter = new WatchlistRouter(watchlistController).routes();
+const notificationRouter = new NotificationRouter(
+  notificationController
+).routes();
 
 const PORT = process.env.PORT;
 const host = "0.0.0.0";
@@ -258,6 +272,7 @@ app.use("/ketchups", allketchupsRouter);
 app.use("/tickets", ticketRouter);
 app.use("/documents", documentRouter);
 app.use("/watch", watchlistRouter);
+app.use("/notifications", notificationRouter);
 
 // http.listen(PORT, () => {
 //   console.log(`Express app listening on port ${PORT}!`);
