@@ -93,11 +93,7 @@ function Profile() {
 
       // case 2: own profile + slack -> return disconnect button
     } else if (userProfileId === userId && slackUserId) {
-      return (
-        <button className="btn btn-neutral btn-sm normal-case text-sm">
-          Disconnect Slack
-        </button>
-      );
+      return <p className="text-sm">Connected</p>;
 
       // case 3: others' profile + no slack -> return "Not connected"
     } else if (userProfileId !== userId && !slackUserId) {
