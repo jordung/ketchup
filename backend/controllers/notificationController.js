@@ -18,6 +18,18 @@ class NotificationController extends BaseController {
     try {
       const allNotifications = await this.model.findAll({
         where: { userId },
+        attributes: [
+          "id",
+          "organisationId",
+          "userId",
+          "ketchupId",
+          "ticketId",
+          "documentId",
+          "type",
+          "message",
+          "createdAt",
+          "updatedAt",
+        ],
         order: [["createdAt", "DESC"]],
       });
       return res.status(200).json({
