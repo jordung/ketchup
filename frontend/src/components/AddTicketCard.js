@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import {
@@ -88,17 +88,6 @@ function AddTicketCard(props) {
       toast.error(`${error.response.data.msg}`);
     }
   };
-
-  useEffect(() => {
-    socket.connect();
-    socket.on("show_notification", function (data) {
-      toast.success(data.title);
-    });
-
-    return () => {
-      socket.off("show_notification");
-    };
-  }, []);
 
   const handleAddTicket = async (e) => {
     if (!ticketTitle.trim().length > 0) {
