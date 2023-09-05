@@ -81,7 +81,7 @@ function Profile() {
         //   Connect Slack
         // </button>
         <a
-          href={`https://slack.com/oauth/v2/authorize?scope=team%3Aread%2Cusers%3Aread&amp;user_scope=&amp;redirect_uri=https%3A%2F%2Fketchup.fly.dev%2Fusers%2Fslack%2Foauth%2Fcallback&amp;client_id=${process.env.REACT_APP_SLACK_CLIENT_ID}&state=${user.id}`}
+          href={`https://slack.com/oauth/v2/authorize?scope=team%3Aread%2Cusers%3Aread&amp;user_scope=&amp;redirect_uri=https%3A%2F%2Fketchup.fly.dev%2Fusers%2Fslack%2Foauth%2Fcallback&amp;client_id=780534586549.5861369223377&amp;state=${user.id}`}
           className="btn btn-neutral btn-sm normal-case text-sm"
         >
           Add to Slack
