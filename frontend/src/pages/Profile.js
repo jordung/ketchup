@@ -82,8 +82,8 @@ function Profile() {
         // </button>
         <a
           href={
-            "https://slack.com/oauth/v2/authorize?scope=users%3Aread%2Cteam%3Aread&amp;user_scope=&amp;redirect_uri=https%3A%2F%2Fketchup.fly.dev%2Fusers%2Fslack%2Foauth%2Fcallback&amp;client_id=780534586549.5861369223377" +
-            `&amp;state=${user.id.toString()}`
+            "https://slack.com/oauth/v2/authorize?scope=users:read,team:read&redirect_uri=https://ketchup.fly.dev/users/slack/oauth/callback&client_id=780534586549.5861369223377" +
+            `&state=${user.id.toString()}`
           }
           className="btn btn-neutral btn-sm normal-case text-sm"
         >
