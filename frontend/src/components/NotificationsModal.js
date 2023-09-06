@@ -36,12 +36,12 @@ function NotificationsModal() {
       case "document":
         return (
           <div className="flex gap-2 border-b pb-2">
-            <div className="bg-accent h-8 w-8 rounded-full flex-shrink-0 p-2 flex items-center justify-center">
+            <div className="bg-amber-100 h-8 w-8 rounded-full flex-shrink-0 p-2 flex items-center justify-center">
               <PiFileTextBold />
             </div>
             <div className="flex flex-col items-start">
               <p
-                className="text-sm"
+                className="text-xs font-semibold"
                 onClick={() => {
                   window.notificationsModal.close();
                   navigate(`/documents/${item.documentId}`);
@@ -59,12 +59,12 @@ function NotificationsModal() {
       case "ticket":
         return (
           <div className="flex gap-2 border-b pb-2">
-            <div className="bg-accent h-8 w-8 rounded-full flex-shrink-0 p-2 flex items-center justify-center">
+            <div className="bg-sky-100 h-8 w-8 rounded-full flex-shrink-0 p-2 flex items-center justify-center">
               <PiTicketBold />
             </div>
             <div className="flex flex-col items-start">
               <p
-                className="text-sm"
+                className="text-xs font-semibold"
                 onClick={() => {
                   window.notificationsModal.close();
                   navigate(`/tickets/${item.ticketId}`);
@@ -86,7 +86,7 @@ function NotificationsModal() {
               <PiBabyBold />
             </div>
             <div className="flex flex-col items-start">
-              <p className="text-sm">
+              <p className="text-xs font-semibold">
                 <span className="hover:text-base-300 transition-all duration-300 cursor-pointer">
                   {item.message}
                 </span>
@@ -103,7 +103,7 @@ function NotificationsModal() {
 
   return (
     <dialog id="notificationsModal" className="modal backdrop-blur-sm">
-      <form method="dialog" className="modal-box bg-white max-w-xs">
+      <form method="dialog" className="modal-box bg-white max-w-md">
         <button className="btn btn-sm btn-circle btn-ghost outline-none absolute right-2 top-2">
           ✕
         </button>
