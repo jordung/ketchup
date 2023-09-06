@@ -219,47 +219,8 @@ const PORT = process.env.PORT;
 const host = "0.0.0.0";
 const app = express();
 const http = require("http").Server(app);
-const io = require("socket.io")(http, {
-  cors: {
-    origin: "https://theketchupcorner.netlify.app",
-    allowedHeaders: ["Access-Control-Allow-Origin"],
-  },
-});
-
-io.on("connection", (socket) => {
-  // console.log("connected!");
-  socket.on("initialisation", function (data) {
-    if (data) {
-      console.log("User has subscribed to", `user_${data.userId}`);
-      console.log(
-        "User has subscribed to",
-        `organisation_${data.organisationId}`
-      );
-      socket.join(`user_${data.userId}`);
-      socket.join(`organisation_${data.organisationId}`);
-    }
-  });
-
-  socket.on("assignee", function (data) {
-    console.log("assigneeId", data);
-    // console.log(data.title.data.message);
-    io.to(`user_${data.target}`).emit("show_notification", {
-      title: data.title,
-    });
-  });
-
-  socket.on("new_joiner", function (data) {
-    console.log("data.target", data.target);
-    console.log("new_joiner", data);
-    socket.to(`organisation_${data.target}`).emit("user_join_notification", {
-      title: data.title,
-    });
-  });
-
-  socket.on("disconnect", () => {
-    console.log("Client disconnected");
-  });
-});
+const socket = require("./utils/socket");
+const io = socket(http);
 
 // enable CORS access to this server
 app.use(cors());
