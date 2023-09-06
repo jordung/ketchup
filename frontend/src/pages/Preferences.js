@@ -3,8 +3,8 @@ import { useContext, useEffect, useState } from "react";
 import { LoggedInContext, UserContext } from "../App";
 import axios from "axios";
 import { toast } from "react-toastify";
-import Select from "react-select";
-import { colourStyles, timeIntervals } from "../utils/selectSettings";
+// import Select from "react-select";
+// import { colourStyles, timeIntervals } from "../utils/selectSettings";
 import { useNavigate } from "react-router-dom";
 import UserListCard from "../components/UserListCard";
 import InvitedUserCard from "../components/InvitedUserCard";
@@ -15,7 +15,7 @@ function Preferences() {
   const { setIsLoggedIn } = useContext(LoggedInContext);
   const navigate = useNavigate();
 
-  const [dailyKetchupTime, setDailyKetchupTime] = useState("");
+  // const [dailyKetchupTime, setDailyKetchupTime] = useState("");
   const [organisationId, setOrganisationId] = useState();
   const [userList, setUserList] = useState([]);
   const [inviteList, setInviteList] = useState([]);
@@ -29,10 +29,10 @@ function Preferences() {
         const response = await axios.get(
           `${process.env.REACT_APP_DB_API}/admin/${user.organisationId}`
         );
-        setDailyKetchupTime({
-          value: response.data.data.invitees.time,
-          label: response.data.data.invitees.time.slice(0, 5),
-        });
+        // setDailyKetchupTime({
+        //   value: response.data.data.invitees.time,
+        //   label: response.data.data.invitees.time.slice(0, 5),
+        // });
         setOrganisationId(response.data.data.invitees.id);
         setUserList(response.data.data.usersWithAdminStatus);
         setInviteList(response.data.data.invitees.invitations);
@@ -49,29 +49,30 @@ function Preferences() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleUpdateDailyKetchupTime = async (value) => {
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-      const response = await axios.put(
-        `${process.env.REACT_APP_DB_API}/admin/${organisationId}`,
-        {
-          time: value.value.slice(0, 5),
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      setDailyKetchupTime({
-        value: response.data.data.time,
-        label: response.data.data.time.slice(0, 5),
-      });
-      toast.success("Successfully updated Daily Ketchup Timing");
-    } catch (error) {
-      toast.error(error.response.data.msg);
-    }
-  };
+  // * for future implementation
+  // const handleUpdateDailyKetchupTime = async (value) => {
+  //   try {
+  //     const accessToken = localStorage.getItem("accessToken");
+  //     const response = await axios.put(
+  //       `${process.env.REACT_APP_DB_API}/admin/${organisationId}`,
+  //       {
+  //         time: value.value.slice(0, 5),
+  //       },
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${accessToken}`,
+  //         },
+  //       }
+  //     );
+  //     setDailyKetchupTime({
+  //       value: response.data.data.time,
+  //       label: response.data.data.time.slice(0, 5),
+  //     });
+  //     toast.success("Successfully updated Daily Ketchup Timing");
+  //   } catch (error) {
+  //     toast.error(error.response.data.msg);
+  //   }
+  // };
 
   const handleInvite = async () => {
     if (inviteeEmail === "") {
@@ -169,16 +170,19 @@ function Preferences() {
           >
             {/* Organisation Standup Time Preferences - for Admin */}
             <div className="flex flex-col gap-2 shadow-lg px-2 pt-2 pb-4 lg:px-4 rounded-lg min-w-full lg:min-w-[50%] lg:max-w-min">
-              <div className="min-w-full lg:min-w-0 lg:mx-">
+              <div className="min-w-full lg:min-w-0">
                 <h3 className="text-lg font-semibold">Daily Ketchup Timing</h3>
-                <Select
+                {/* <Select
                   className="font-semibold text-xs cursor-pointer"
                   styles={colourStyles}
                   options={timeIntervals}
                   onChange={handleUpdateDailyKetchupTime}
                   value={dailyKetchupTime}
                   placeholder="Select a timing..."
-                />
+                /> */}
+                <p className="bg-base-100 text-xs font-semibold w-full p-2 rounded-xl">
+                  10:00
+                </p>
               </div>
 
               {/* User List */}
