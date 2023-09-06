@@ -220,10 +220,11 @@ const host = "0.0.0.0";
 const app = express();
 const http = require("http").Server(app);
 const { socket } = require("./utils/socket");
+const io = socket(http);
+
 const {
   scheduleOrganisationCronJobs,
 } = require("./utils/organisationScheduler");
-const io = socket(http);
 
 scheduleOrganisationCronJobs(adminController);
 

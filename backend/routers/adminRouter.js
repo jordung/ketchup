@@ -9,11 +9,11 @@ class AdminRouter {
   routes() {
     router.get("/organisations", this.controller.getAllOrganisationTimings);
     router.get("/:organisationId", this.controller.getOrganisation);
-    router.put(
-      "/:organisationId",
-      this.jwtAuth,
-      this.controller.updateOrganisationTiming
-    );
+    // router.put(
+    //   "/:organisationId",
+    //   this.jwtAuth,
+    //   this.controller.updateOrganisationTiming
+    // );
     router.post("/", this.controller.updateMemberStatus); //TODO
     return router;
   }

@@ -7,11 +7,11 @@ async function scheduleOrganisationCronJobs(adminController) {
   if (organisationsData.success && organisationsData.data) {
     const organisations = organisationsData.data;
     for (const organisation of organisations) {
-      const { id, time, name } = organisation.dataValues;
-      //   console.log(id, time, name);
-      const [hours, minutes, seconds] = time.split(":").map(Number);
-      const cronExpression = `${seconds} ${minutes} ${hours} * * *`;
-      cron.schedule(cronExpression, () => {
+      const { id } = organisation.dataValues;
+      // const [hours, minutes, seconds] = time.split(":").map(Number);
+      // const cronExpression = `${seconds} ${minutes} ${hours} * * *`;
+      const cronExpression = "0 10 * * *";
+      cron.schedule(cronExpression, async () => {
         console.log(
           `Cron job for organisation ${id} executed at ${new Date()}`
         );

@@ -51,6 +51,17 @@ class InvitationController extends BaseController {
 
     const organisationName = inviter.organisation.name;
 
+    const existingEmail = await this.invitation.findOne({
+      where: { inviteeEmail },
+    });
+
+    if (existingEmail) {
+      return res.status(403).json({
+        error: true,
+        msg: `Error: ${inviteeEmail} has already been invited to join ${organisationName}.`,
+      });
+    }
+
     try {
       // generate invitation code
       const invitationCode = generateEmailToken();
