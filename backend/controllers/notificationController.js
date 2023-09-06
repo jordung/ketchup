@@ -10,7 +10,6 @@ class NotificationController extends BaseController {
     this.notification = notification;
   }
 
-  // ALL FOR THE USER IN ONE, SORTED BY TIME (userId)
   // =================== GET NOTIFICATIONS =================== //
   getAllNotification = async (req, res) => {
     const { userId } = req.params;
@@ -18,6 +17,18 @@ class NotificationController extends BaseController {
     try {
       const allNotifications = await this.model.findAll({
         where: { userId },
+        attributes: [
+          "id",
+          "organisationId",
+          "userId",
+          "ketchupId",
+          "ticketId",
+          "documentId",
+          "type",
+          "message",
+          "createdAt",
+          "updatedAt",
+        ],
         order: [["createdAt", "DESC"]],
       });
       return res.status(200).json({

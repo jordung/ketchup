@@ -56,8 +56,8 @@ class AllKetchupsController extends BaseController {
               "lastName",
               "email",
               "profilePicture",
+              "slackTeamId",
               "slackUserId",
-              "slackAccessToken",
             ],
           },
           {
@@ -123,8 +123,8 @@ class AllKetchupsController extends BaseController {
           "lastName",
           "email",
           "profilePicture",
+          "slackTeamId",
           "slackUserId",
-          "slackAccessToken",
           "createdAt",
         ],
       });
@@ -158,8 +158,8 @@ class AllKetchupsController extends BaseController {
               "lastName",
               "email",
               "profilePicture",
+              "slackTeamId",
               "slackUserId",
-              "slackAccessToken",
             ],
           },
           {
@@ -219,6 +219,7 @@ class AllKetchupsController extends BaseController {
       );
 
       // initialise accumulator with {}, iterates through each ketchup in 'allKetchups' array and convert createdAt to date string. Check if 'ketchupDate' already exists in accumulator {}, if yes then push ketchup to getKetchupReactions, else, initialise an empty object.
+      //TODO: refactor code here?
       const today = new Date();
       console.log("new Date", today);
 
@@ -266,17 +267,14 @@ class AllKetchupsController extends BaseController {
 
       allUsers.forEach((user) => {
         // iterate over the dates and check if user has posted a ketchup for that particular date, .some() will evaluate to true/false
-
         Object.keys(groupKetchupsByDate).forEach((date) => {
           const ketchupDate = new Date(groupKetchupsByDate[date].date);
-          // console.log("ketchupDate", ketchupDate);
 
           const hasKetchup = groupKetchupsByDate[date].getKetchupReactions.some(
             (ketchup) => ketchup.creator.id === user.id
           );
 
           const userCreatedAt = new Date(user.dataValues.createdAt);
-          // console.log("userCreatedAt", userCreatedAt);
 
           if (!hasKetchup && userCreatedAt <= ketchupDate) {
             groupKetchupsByDate[date].usersWithoutKetchups.push(user);

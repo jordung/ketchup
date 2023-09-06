@@ -1,4 +1,5 @@
 const BaseController = require("./baseController");
+const axios = require("axios");
 
 class UserProfileController extends BaseController {
   constructor({ user, organisation, ticket, document, watcher }) {
@@ -48,91 +49,86 @@ class UserProfileController extends BaseController {
     }
   };
 
-  //TODO: slack integration
+  slackAuthCallback = async (req, res) => {
+    const code = req.query.code;
+    const state = req.query.state;
+    const userId = state;
+    console.log("userId", userId);
+    console.log("code", code);
+    try {
+      const response = await axios.post(
+        "https://slack.com/api/oauth.v2.access",
+        {
+          client_id: process.env.SLACK_CLIENT_ID,
+          client_secret: process.env.SLACK_CLIENT_SECRETS,
+          code,
+        },
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+          },
+        }
+      );
+      console.log("response", response.data);
+
+      await this.model.update(
+        {
+          slackTeamId: response.data.team.id,
+          slackUserId: response.data.authed_user.id,
+          slackAccessToken: response.data.access_token,
+        },
+        {
+          where: { id: userId },
+        }
+      );
+      res.redirect(process.env.REDIRECT_HOME);
+    } catch (error) {
+      return res.status(400).json({
+        error: true,
+        msg: "Error: We encountered an error while handling your request. Please try again.",
+      });
+    }
+  };
+
   // =================== UPDATE USER PROFILE =================== //
   updateProfilePicture = async (req, res) => {
     const { userId } = req.params;
-    const {
-      control,
-      profilePicture,
-      firstName,
-      lastName,
-      slackUserId,
-      slackAccessToken,
-    } = req.body;
+    const { profilePicture, firstName, lastName } = req.body;
 
     try {
-      if (control === 1) {
-        // update user model to integrate with slack
+      await this.model.update(
+        {
+          firstName: firstName,
+          lastName: lastName,
+          profilePicture: profilePicture,
+        },
+        { where: { id: userId } }
+      );
 
-        await this.model.update(
+      const updatedUser = await this.model.findByPk(userId, {
+        include: [
           {
-            slackUserId: slackUserId,
-            slackAccessToken: slackAccessToken,
+            model: this.organisation,
+            attributes: ["id", "name"],
           },
-          { where: { id: userId } }
-        );
+        ],
+      });
 
-        const updatedUser = await this.model.findByPk(userId, {
-          include: [
-            {
-              model: this.organisation,
-              attributes: ["id", "name"],
-            },
-          ],
-        });
+      const userWatchlist = await this.watcher.findAll({
+        where: { userId },
+        include: [
+          { model: this.ticket, attributes: ["id", "name"] },
+          { model: this.document, attributes: ["id", "name"] },
+        ],
+        attributes: ["userId", "ticketId", "documentId"],
+        order: [["id", "DESC"]],
+      });
 
-        const userWatchlist = await this.watcher.findAll({
-          where: { userId },
-          include: [
-            { model: this.ticket, attributes: ["id", "name"] },
-            { model: this.document, attributes: ["id", "name"] },
-          ],
-          attributes: ["userId", "ticketId", "documentId"],
-          order: [["id", "DESC"]],
-        });
-
-        return res.status(200).json({
-          success: true,
-          data: { updatedUser, userWatchlist },
-          msg: "Success: BUT Slack integration is not ready yet!!!!", //TODO
-        });
-      } else if (control === 2) {
-        // 2 = update user information
-        await this.model.update(
-          {
-            firstName: firstName,
-            lastName: lastName,
-            profilePicture: profilePicture,
-          },
-          { where: { id: userId } }
-        );
-
-        const updatedUser = await this.model.findByPk(userId, {
-          include: [
-            {
-              model: this.organisation,
-              attributes: ["id", "name"],
-            },
-          ],
-        });
-
-        const userWatchlist = await this.watcher.findAll({
-          where: { userId },
-          include: [
-            { model: this.ticket, attributes: ["id", "name"] },
-            { model: this.document, attributes: ["id", "name"] },
-          ],
-          attributes: ["userId", "ticketId", "documentId"],
-          order: [["id", "DESC"]],
-        });
-
-        return res.status(200).json({
-          success: true,
-          data: { updatedUser, userWatchlist },
-          msg: "Success: Your profile has been updated!",
-        });
-      }
+      return res.status(200).json({
+        success: true,
+        data: { updatedUser, userWatchlist },
+        msg: "Success: Your profile has been updated!",
+      });
     } catch (error) {
       return res.status(400).json({
         error: true,

@@ -9,11 +9,11 @@ class TicketRouter {
   routes() {
     router.get("/:organisationId", this.controller.getAllTickets);
     router.get("/view/:ticketId", this.controller.getOneTicket);
-    router.post("/", this.controller.addOneTicket);
-    router.post("/view/:ticketId", this.controller.updateTicket);
-    router.delete("/:ticketId", this.controller.deleteOneTicket);
+    router.post("/", this.jwtAuth, this.controller.addOneTicket);
+    router.post("/view/:ticketId", this.jwtAuth, this.controller.updateTicket);
+    router.delete("/:ticketId", this.jwtAuth, this.controller.deleteOneTicket);
 
-    router.post("/tag", this.controller.addNewTag);
+    router.post("/tag", this.jwtAuth, this.controller.addNewTag);
     return router;
   }
 }

@@ -7,12 +7,20 @@ class WatchlistRouter {
     this.jwtAuth = jwtAuth;
   }
   routes() {
-    router.post("/ticket", this.controller.addTicketToWatchlist);
-    router.delete("/ticket", this.controller.stopWatchingTicket);
-    router.post("/document", this.controller.addDocumentToWatchlist);
-    router.delete("/document", this.controller.stopWatchingDocument);
+    router.post("/ticket", this.jwtAuth, this.controller.addTicketToWatchlist);
+    router.delete("/ticket", this.jwtAuth, this.controller.stopWatchingTicket);
+    router.post(
+      "/document",
+      this.jwtAuth,
+      this.controller.addDocumentToWatchlist
+    );
+    router.delete(
+      "/document",
+      this.jwtAuth,
+      this.controller.stopWatchingDocument
+    );
 
-    // for testing purposes
+    // FOR TESTING ONLY
     router.get("/tickets/:organisationId", this.controller.allTicketsWatchers);
     router.get(
       "/documents/:organisationId",
