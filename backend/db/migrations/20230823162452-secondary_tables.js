@@ -51,6 +51,10 @@ module.exports = {
         allowNull: true, //nullable
         type: Sequelize.TEXT,
       },
+      slack_team_id: {
+        allowNull: true, //nullable
+        type: Sequelize.STRING,
+      },
       slack_user_id: {
         allowNull: true, //nullable
         type: Sequelize.STRING,

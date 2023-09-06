@@ -2,9 +2,8 @@ const express = require("express");
 const router = express.Router();
 
 class AllKetchupsRouter {
-  constructor(controller, jwtAuth) {
+  constructor(controller) {
     this.controller = controller;
-    this.jwtAuth = jwtAuth;
   }
   routes() {
     router.get("/:organisationId", this.controller.getAllKetchups);

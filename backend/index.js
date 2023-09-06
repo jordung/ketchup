@@ -188,25 +188,31 @@ const notificationController = new NotificationController({
 });
 
 // initialising routers
-//TODO: rmb to pass jwtAuth in protected routes
+const authRouter = new AuthRouter(authController, jwtAuth).routes();
+const adminRouter = new AdminRouter(adminController, jwtAuth).routes();
+const invitationRouter = new InvitationRouter(
+  invitationController,
+  jwtAuth
+).routes();
 const userProfileRouter = new UserProfileRouter(
   userProfileController,
   jwtAuth
 ).routes();
-
-const authRouter = new AuthRouter(authController).routes();
-const adminRouter = new AdminRouter(adminController).routes();
-const invitationRouter = new InvitationRouter(invitationController).routes();
-const homeRouter = new HomeRouter(homeController).routes();
+const homeRouter = new HomeRouter(homeController, jwtAuth).routes();
 const dailyKetchupRouter = new DailyKetchupRouter(
-  dailyKetchupController
+  dailyKetchupController,
+  jwtAuth
 ).routes();
 const allketchupsRouter = new AllKetchupsRouter(allketchupsController).routes();
-const ticketRouter = new TicketRouter(ticketController).routes();
-const documentRouter = new DocumentRouter(documentController).routes();
-const watchlistRouter = new WatchlistRouter(watchlistController).routes();
+const ticketRouter = new TicketRouter(ticketController, jwtAuth).routes();
+const documentRouter = new DocumentRouter(documentController, jwtAuth).routes();
+const watchlistRouter = new WatchlistRouter(
+  watchlistController,
+  jwtAuth
+).routes();
 const notificationRouter = new NotificationRouter(
-  notificationController
+  notificationController,
+  jwtAuth
 ).routes();
 
 const PORT = process.env.PORT;
@@ -243,7 +249,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("new_joiner", function (data) {
-    console.log("data.target", data.target); //BE shld receive orgID
+    console.log("data.target", data.target);
     console.log("new_joiner", data);
     socket.to(`organisation_${data.target}`).emit("user_join_notification", {
       title: data.title,
@@ -274,16 +280,8 @@ app.use("/documents", documentRouter);
 app.use("/watch", watchlistRouter);
 app.use("/notifications", notificationRouter);
 
-// http.listen(PORT, () => {
-//   console.log(`Express app listening on port ${PORT}!`);
-// });
-
 http.listen(PORT, host, () => {
   console.log(`Express app listening on port ${PORT}!`);
 });
-
-// app.listen(PORT, () => {
-//   console.log(`Express app listening on port ${PORT}!`);
-// });
 
 module.exports = { io };

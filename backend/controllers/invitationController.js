@@ -181,10 +181,8 @@ class InvitationController extends BaseController {
     try {
       // check if user exists
       const user = await this.model.findByPk(userId);
-      console.log("1");
 
       if (user) {
-        console.log("2");
         // update user row to remove organisation id
         await this.model.update(
           {
@@ -192,10 +190,8 @@ class InvitationController extends BaseController {
           },
           { where: { id: userId } }
         );
-        console.log("3");
         // delete associated records from the children tables
         await this.invitation.destroy({ where: { inviteeEmail: user.email } });
-        console.log("4");
       } else {
         return res.status(404).json({
           error: true,

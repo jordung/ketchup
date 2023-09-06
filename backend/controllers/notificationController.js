@@ -10,7 +10,6 @@ class NotificationController extends BaseController {
     this.notification = notification;
   }
 
-  // ALL FOR THE USER IN ONE, SORTED BY TIME (userId)
   // =================== GET NOTIFICATIONS =================== //
   getAllNotification = async (req, res) => {
     const { userId } = req.params;

@@ -68,6 +68,7 @@ module.exports = (sequelize, DataTypes) => {
       emailVerified: DataTypes.BOOLEAN,
       verificationToken: DataTypes.TEXT,
       refreshToken: DataTypes.TEXT,
+      slackTeamId: DataTypes.STRING,
       slackUserId: DataTypes.STRING,
       slackAccessToken: DataTypes.TEXT,
     },

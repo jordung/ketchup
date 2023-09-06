@@ -11,8 +11,6 @@ const transporter = require("../config/email");
 const nodemailer = require("nodemailer");
 const generateEmailToken = require("../utils/emailToken");
 const { verification } = require("../utils/emailTemplates");
-// const { socketIO } = require("../index");
-
 class AuthController extends BaseController {
   constructor({
     user,
@@ -232,6 +230,7 @@ class AuthController extends BaseController {
         const accessToken = generateAuthToken(payload);
         const refreshToken = generateAuthToken(payload, true);
         const verificationToken = generateEmailToken();
+
         // step 5: update user info to include refresh token
         await this.model.update(
           {
@@ -288,7 +287,6 @@ class AuthController extends BaseController {
 
   // =================== VERIFY EMAIL =================== //
   verifyEmail = async (req, res) => {
-    // receive token from query parameter in the URL
     const { token } = req.query;
 
     if (!token) {
@@ -405,7 +403,6 @@ class AuthController extends BaseController {
         // return true if the user is an admin
         const isAdmin = currentUser.organisation_admin !== null;
 
-        // step 6: pass access token in res for FE to retrieve
         return res.status(200).json({
           success: true,
           data: { currentUser, is_admin: isAdmin, accessToken },
@@ -475,7 +472,6 @@ class AuthController extends BaseController {
         });
       }
 
-      // step 5: pass user information in res for FE to retrieve
       return res.status(200).json({
         success: true,
         data: user,
@@ -528,7 +524,6 @@ class AuthController extends BaseController {
         email: user.email,
       });
 
-      // step 5: pass access token in res for FE to retrieve
       return res.status(200).json({
         success: true,
         data: { user, accessToken },
@@ -626,6 +621,7 @@ class AuthController extends BaseController {
           { where: { inviteeEmail: email } }
         );
 
+        // step 4: notify organisation members
         user = await this.model.findOne({ where: { id: userId } });
         organisation = await this.organisation.findByPk(user.organisationId);
 
@@ -690,6 +686,8 @@ class AuthController extends BaseController {
 
       // delete associated records from the children tables
       await this.watcher.destroy({ where: { userId: userId } });
+
+      //TODO: onDelete set null?
 
       if (user.organisation_admin !== null) {
         await this.organisation_admin.destroy({

@@ -9,9 +9,17 @@ class DocumentRouter {
   routes() {
     router.get("/:organisationId", this.controller.getAllDocuments);
     router.get("/view/:documentId", this.controller.getOneDocument);
-    router.post("/view/:documentId", this.controller.updateDocument);
-    router.post("/", this.controller.addOneDocument);
-    router.delete("/:documentId", this.controller.deleteOneDocument);
+    router.post(
+      "/view/:documentId",
+      this.jwtAuth,
+      this.controller.updateDocument
+    );
+    router.post("/", this.jwtAuth, this.controller.addOneDocument);
+    router.delete(
+      "/:documentId",
+      this.jwtAuth,
+      this.controller.deleteOneDocument
+    );
     return router;
   }
 }

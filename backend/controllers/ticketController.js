@@ -453,31 +453,26 @@ class TicketController extends BaseController {
       });
       // console.log("updatedTicket", updatedTicket);
 
-      // use .some() to get boolean and prevent the code from erroring out if 'id' is not found
-      const hasDependency = updatedTicket.ticket_dependencies.some(
-        (dependency) => dependency.dataValues.id !== null
-      );
-      // console.log("hasDependency", hasDependency);
+      const hasDependency = updatedTicket.ticket_dependencies.length > 0;
 
-      if (dependencyId !== null && !hasDependency) {
+      if (dependencyId && !hasDependency) {
         // console.log("first scenario");
         await this.ticket_dependency.create({
           ticketId,
           dependencyId,
         });
-      } else if (dependencyId !== null && hasDependency) {
+      } else if (dependencyId && hasDependency) {
         // console.log("second scenario");
         await this.ticket_dependency.update(
           { dependencyId },
           { where: { ticketId } }
         );
-      } else if (dependencyId === null && hasDependency) {
+      } else if (!dependencyId && hasDependency) {
         // console.log("third scenario");
         await this.ticket_dependency.destroy({
           where: { id: updatedTicket.ticket_dependencies[0].dataValues.id },
         });
       }
-      //TODO: check ^
 
       const ticket = await this.model.findByPk(ticketId, {
         include: [
