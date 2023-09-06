@@ -18,6 +18,8 @@ function PostContainer(props) {
             profilePicture={post.user.profilePicture}
             firstName={post.user.firstName}
             lastName={post.user.lastName}
+            slackUserId={post.user.slackUserId}
+            slackTeamId={post.user.slackTeamId}
             date={post.createdAt}
             content={post.content}
             ticket={post.ticket}

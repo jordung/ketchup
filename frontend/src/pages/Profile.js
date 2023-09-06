@@ -65,22 +65,35 @@ function Profile() {
     }
   }, [searchQuery, watchlist]);
 
+  // const handleSlackAuth = () => {
+  //   // Redirect to your server's Slack OAuth route
+  //   window.location.href = `${process.env.REACT_APP_DB_API}/users/slack/oauth`;
+  // };
+
   const renderSlackStatus = (userProfileId, userId, slackUserId) => {
     // case 1: own profile + no slack -> return connect button
     if (userProfileId === userId && !slackUserId) {
       return (
-        <button className="btn btn-neutral btn-sm normal-case text-sm">
-          Connect Slack
-        </button>
+        // <button
+        //   className="btn btn-neutral btn-sm normal-case text-sm"
+        //   onClick={handleSlackAuth}
+        // >
+        //   Connect Slack
+        // </button>
+        <a
+          href={
+            "https://slack.com/oauth/v2/authorize?scope=users:read,team:read&redirect_uri=https://ketchup.fly.dev/users/slack/oauth/callback&client_id=780534586549.5861369223377" +
+            `&state=${user.id.toString()}`
+          }
+          className="btn btn-neutral btn-sm normal-case text-sm"
+        >
+          Add to Slack
+        </a>
       );
 
       // case 2: own profile + slack -> return disconnect button
     } else if (userProfileId === userId && slackUserId) {
-      return (
-        <button className="btn btn-neutral btn-sm normal-case text-sm">
-          Disconnect Slack
-        </button>
-      );
+      return <p className="text-sm">Connected</p>;
 
       // case 3: others' profile + no slack -> return "Not connected"
     } else if (userProfileId !== userId && !slackUserId) {

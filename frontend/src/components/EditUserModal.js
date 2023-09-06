@@ -53,6 +53,7 @@ function EditUserModal(props) {
 
   const handleUpdateUser = async () => {
     const STORAGE_KEY = "profile/";
+    const accessToken = localStorage.getItem("accessToken");
 
     if (updatedProfilePictureFile) {
       // if user has uploaded their own picture
@@ -81,12 +82,14 @@ function EditUserModal(props) {
                 const response = await axios.post(
                   `${process.env.REACT_APP_DB_API}/users/${user.id}`,
                   {
-                    control: 2,
                     profilePicture: url,
                     firstName: firstName,
                     lastName: lastName,
-                    slackUserId: "",
-                    slackAccessToken: "",
+                  },
+                  {
+                    headers: {
+                      Authorization: `Bearer ${accessToken}`,
+                    },
                   }
                 );
                 setUser(response.data.data.updatedUser);
@@ -142,12 +145,14 @@ function EditUserModal(props) {
                 const response = await axios.post(
                   `${process.env.REACT_APP_DB_API}/users/${user.id}`,
                   {
-                    control: 2,
                     profilePicture: url,
                     firstName: firstName,
                     lastName: lastName,
-                    slackUserId: "",
-                    slackAccessToken: "",
+                  },
+                  {
+                    headers: {
+                      Authorization: `Bearer ${accessToken}`,
+                    },
                   }
                 );
                 setUser(response.data.data.updatedUser);
@@ -177,12 +182,14 @@ function EditUserModal(props) {
           const response = await axios.post(
             `${process.env.REACT_APP_DB_API}/users/${user.id}`,
             {
-              control: 2,
               profilePicture: profilePicture,
               firstName: firstName,
               lastName: lastName,
-              slackUserId: "",
-              slackAccessToken: "",
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
             }
           );
           setUser(response.data.data.updatedUser);
