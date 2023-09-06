@@ -195,7 +195,7 @@ function Ticket() {
           statusId: ticketStatus,
           dependencyId: ticketBlockedBy,
           body: ticketContent,
-          dueDate: ticketDueDate,
+          dueDate: ticketDueDate === "" ? null : ticketDueDate,
         },
         {
           headers: {
