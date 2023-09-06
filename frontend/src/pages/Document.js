@@ -256,7 +256,7 @@ function Document() {
                   <div className="grid grid-cols-2 gap-x-0 gap-y-2 xl:gap-4 max-w-lg">
                     <input
                       type="text"
-                      placeholder="Ticket Title"
+                      placeholder="Document Title"
                       className="input input-md text-lg font-semibold col-span-2"
                       value={documentTitle}
                       onChange={(e) => setDocumentTitle(e.target.value)}
