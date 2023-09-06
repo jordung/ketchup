@@ -118,8 +118,6 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // TODO: need to think about how to check accessToken silently
-
   return (
     <LoadingContext.Provider value={{ loading, setLoading }}>
       <UserContext.Provider value={{ user, setUser }}>

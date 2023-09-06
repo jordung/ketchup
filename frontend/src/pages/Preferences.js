@@ -93,7 +93,6 @@ function Preferences() {
           },
         }
       );
-      console.log(response);
       setInviteList(response.data.data.invitations);
       toast.success(response.data.msg);
     } catch (error) {

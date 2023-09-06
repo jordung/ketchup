@@ -35,7 +35,7 @@ function Sidebar() {
           layout
           className={`${
             showMore ? "w-48 lg:w-64" : "w-12 lg:w-24"
-          } fixed h-screen bg-base-100 text-neutral z-50`}
+          } fixed h-screen bg-base-100 text-neutral z-40`}
         >
           {/* button to expand sidebar */}
           <motion.span
