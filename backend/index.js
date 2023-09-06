@@ -219,8 +219,13 @@ const PORT = process.env.PORT;
 const host = "0.0.0.0";
 const app = express();
 const http = require("http").Server(app);
-const socket = require("./utils/socket");
+const { socket } = require("./utils/socket");
+const {
+  scheduleOrganisationCronJobs,
+} = require("./utils/organisationScheduler");
 const io = socket(http);
+
+scheduleOrganisationCronJobs(adminController);
 
 // enable CORS access to this server
 app.use(cors());
