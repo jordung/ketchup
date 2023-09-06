@@ -8,7 +8,7 @@ class DailyKetchupRouter {
   }
   routes() {
     router.get("/:organisationId", this.controller.getInformation);
-    router.post("/", this.controller.addNewKetchup);
+    router.post("/", this.jwtAuth, this.controller.addNewKetchup);
     return router;
   }
 }

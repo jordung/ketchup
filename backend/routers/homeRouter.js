@@ -4,13 +4,13 @@ const router = express.Router();
 class HomeRouter {
   constructor(controller, jwtAuth) {
     this.controller = controller;
-    // this.jwtAuth = jwtAuth;
+    this.jwtAuth = jwtAuth;
   }
   routes() {
     router.get("/:userId", this.controller.getDailyKetchups);
-    router.post("/", this.controller.addOneReaction);
-    router.post("/post", this.controller.addNewPost);
-    router.delete("/", this.controller.removeOneReaction);
+    router.post("/", this.jwtAuth, this.controller.addOneReaction);
+    router.post("/post", this.jwtAuth, this.controller.addNewPost);
+    router.delete("/", this.jwtAuth, this.controller.removeOneReaction);
     return router;
   }
 }

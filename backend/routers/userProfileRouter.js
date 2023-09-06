@@ -9,7 +9,9 @@ class UserProfileRouter {
   routes() {
     router.get("/all", this.controller.getAllUsers);
     router.get("/:userId", this.controller.getOneUser);
-    router.post("/:userId", this.controller.updateProfilePicture);
+    router.post("/:userId", this.jwtAuth, this.controller.updateProfilePicture);
+
+    router.get("/slack/oauth/callback", this.controller.slackAuthCallback);
 
     return router;
   }

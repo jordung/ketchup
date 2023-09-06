@@ -2,7 +2,6 @@ const BaseController = require("./baseController");
 const { Op } = require("sequelize");
 const { startDate, endDate } = require("../utils/getDates");
 const { getAllReactions } = require("../utils/reactionsCounter");
-const { adjustTimestamps } = require("../utils/adjustTimestamps");
 
 class HomeController extends BaseController {
   constructor({
@@ -74,8 +73,8 @@ class HomeController extends BaseController {
               "lastName",
               "email",
               "profilePicture",
+              "slackTeamId",
               "slackUserId",
-              "slackAccessToken",
             ],
           },
           {
@@ -134,8 +133,6 @@ class HomeController extends BaseController {
         order: [["id", "DESC"]],
       });
 
-      // adjustTimestamps(dailyKetchups);
-
       // fetch all users within the organisation
       const allUsers = await this.user.findAll({
         where: { organisationId: organisation },
@@ -146,8 +143,8 @@ class HomeController extends BaseController {
           "lastName",
           "email",
           "profilePicture",
+          "slackTeamId",
           "slackUserId",
-          "slackAccessToken",
         ],
       });
 
@@ -173,8 +170,8 @@ class HomeController extends BaseController {
               "lastName",
               "email",
               "profilePicture",
+              "slackTeamId",
               "slackUserId",
-              "slackAccessToken",
             ],
           },
           {
@@ -199,8 +196,6 @@ class HomeController extends BaseController {
         attributes: ["id", "content", "createdAt", "updatedAt"],
         order: [["id", "DESC"]],
       });
-
-      // adjustTimestamps(allPosts);
 
       const getKetchupReactions = getAllReactions(
         dailyKetchups,
@@ -505,8 +500,8 @@ class HomeController extends BaseController {
               "lastName",
               "email",
               "profilePicture",
+              "slackTeamId",
               "slackUserId",
-              "slackAccessToken",
             ],
           },
           {

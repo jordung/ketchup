@@ -53,7 +53,7 @@ module.exports = {
         },
       },
       creator_id: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.INTEGER,
         references: {
           model: "users",
@@ -195,7 +195,7 @@ module.exports = {
         },
       },
       user_id: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.INTEGER,
         references: {
           model: "users", //alias = creator
@@ -321,7 +321,7 @@ module.exports = {
         },
       },
       user_id: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.INTEGER,
         references: {
           model: "users",
@@ -367,7 +367,7 @@ module.exports = {
         },
       },
       user_id: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.INTEGER,
         references: {
           model: "users", //alias = creator
@@ -485,7 +485,7 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       user_id: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.INTEGER,
         references: {
           model: "users", //alias = creator
@@ -565,7 +565,6 @@ module.exports = {
     });
 
     // TERTIARY TABLE FOR UPDATES
-    // TODO: to align w jordan - FE to check if content === null before submitting POST request!
     await queryInterface.createTable("updates", {
       id: {
         allowNull: false,
@@ -574,7 +573,7 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       user_id: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.INTEGER,
         references: {
           model: "users", //alias = creator

@@ -2,8 +2,9 @@ const express = require("express");
 const router = express.Router();
 
 class AuthRouter {
-  constructor(controller) {
+  constructor(controller, jwtAuth) {
     this.controller = controller;
+    this.jwtAuth = jwtAuth;
   }
   routes() {
     // use POST when there's change of state (e.g. from authenticated to unauthenticated)
@@ -17,7 +18,7 @@ class AuthRouter {
     router.post("/renew", this.controller.renewAccessToken);
     router.post("/refresh", this.controller.validateRefreshToken);
 
-    router.delete("/:userId", this.controller.deleteOneUser);
+    router.delete("/:userId", this.jwtAuth, this.controller.deleteOneUser);
 
     return router;
   }

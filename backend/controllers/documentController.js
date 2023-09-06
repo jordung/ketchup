@@ -280,11 +280,7 @@ class DocumentController extends BaseController {
     const { tagId, name, body, ticketId } = req.body;
 
     const getDocument = await this.model.findByPk(documentId);
-    // console.log("getDocument", getDocument);
-    // console.log("getDocument.name", getDocument.name);
-
     const includesName = !name ? getDocument.name : name;
-    // console.log("includesName", includesName);
 
     try {
       await this.model.update(
@@ -304,21 +300,24 @@ class DocumentController extends BaseController {
       const updatedDocument = await this.model.findByPk(documentId, {
         include: [{ model: this.document_ticket, attributes: ["id"] }],
       });
+      console.log("updatedDocument", updatedDocument);
 
-      const hasTaggedTicket = updatedDocument.document_tickets.some(
-        (ticket) => ticket.dataValues.id !== null
-      );
+      // const hasTaggedTicket = updatedDocument.document_tickets.some(
+      //   (ticket) => ticket.dataValues.id !== null
+      // );
 
-      if (ticketId !== null && !hasTaggedTicket) {
+      const hasTaggedTicket = updatedDocument.document_tickets.length > 0;
+
+      if (ticketId && !hasTaggedTicket) {
         // console.log("first scenario");
         await this.document_ticket.create({ ticketId, documentId });
-      } else if (ticketId !== null && hasTaggedTicket) {
+      } else if (ticketId && hasTaggedTicket) {
         // console.log("second scenario");
         await this.document_ticket.update(
           { ticketId },
           { where: { documentId } }
         );
-      } else if (ticketId === null && hasTaggedTicket) {
+      } else if (!ticketId && hasTaggedTicket) {
         // console.log("third scenario");
         await this.document_ticket.destroy({
           where: { id: updatedDocument.document_tickets[0].dataValues.id },
@@ -405,6 +404,7 @@ class DocumentController extends BaseController {
         order: [["id", "ASC"]],
       });
 
+      // send notification to all document watchers
       for (const watcher of allWatchers) {
         const userId = watcher.dataValues.userId;
         try {

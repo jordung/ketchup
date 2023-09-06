@@ -97,7 +97,7 @@ class AdminController extends BaseController {
   };
 
   // =================== UPDATE ORGANISATION PREFERENCES (ASSIGN USER ROLE) =================== //
-  // Note: The 'updateMemberStatus' API allows FE to execute both ADMIN and MEMBER (aka non-admin) roles on user //
+  // Note: The 'updateMemberStatus' API allows FE to execute both ADMIN and MEMBER (aka non-admin) roles on user
 
   updateMemberStatus = async (req, res) => {
     const { userId, organisationId } = req.body;
