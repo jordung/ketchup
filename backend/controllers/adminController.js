@@ -9,6 +9,24 @@ class AdminController extends BaseController {
     this.organisation_admin = organisation_admin;
   }
 
+  // =================== GET ALL ORGANISATION TIMING (FOR CRON SCHEDULE) =================== //
+  getAllOrganisationTimings = async (req, res) => {
+    try {
+      const organisations = await this.organisation.findAll();
+
+      return {
+        success: true,
+        data: organisations,
+        msg: "Success: Retrieved all organisation timings!",
+      };
+    } catch (error) {
+      return {
+        error: true,
+        msg: "Error: There was an issue retrieving organisation timings!",
+      };
+    }
+  };
+
   // =================== GET ORGANISATION INFORMATION =================== //
   getOrganisation = async (req, res) => {
     const { organisationId } = req.params;

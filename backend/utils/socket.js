@@ -1,7 +1,9 @@
 const socketIO = require("socket.io");
 
+let io;
+
 function socket(server) {
-  const io = socketIO(server, {
+  io = socketIO(server, {
     cors: {
       origin: "https://theketchupcorner.netlify.app",
       allowedHeaders: ["Access-Control-Allow-Origin"],
@@ -43,4 +45,11 @@ function socket(server) {
   return io;
 }
 
-module.exports = socket;
+function getIO() {
+  if (!io) {
+    throw new Error("Socket.io has not been initialised");
+  }
+  return io;
+}
+
+module.exports = { socket, getIO };

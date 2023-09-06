@@ -7,6 +7,7 @@ class AdminRouter {
     this.jwtAuth = jwtAuth;
   }
   routes() {
+    router.get("/organisations", this.controller.getAllOrganisationTimings);
     router.get("/:organisationId", this.controller.getOrganisation);
     router.put(
       "/:organisationId",
