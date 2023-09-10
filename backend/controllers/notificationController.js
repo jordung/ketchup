@@ -43,6 +43,28 @@ class NotificationController extends BaseController {
       });
     }
   };
+
+  // =================== FOR TESTING ONLY: DELETE PAST NOTIFICATIONS =================== //
+  deleteOneNotification = async (req, res) => {
+    const { userId, notificationId } = req.body;
+
+    try {
+      // console.log("deleting notification now");
+      await this.notification.destroy({
+        where: { id: notificationId, userId },
+      });
+      // console.log("ok deleted!");
+      return res.status(200).json({
+        success: true,
+        msg: "Success: Notification deleted!",
+      });
+    } catch (error) {
+      return res.status(400)({
+        error: true,
+        msg: "Error: We encountered an error while handling your request. Please try again.",
+      });
+    }
+  };
 }
 
 module.exports = NotificationController;

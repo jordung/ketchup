@@ -1,5 +1,6 @@
 const BaseController = require("./baseController");
 const { Op } = require("sequelize");
+const moment = require("moment-timezone");
 
 class DailyKetchupController extends BaseController {
   constructor({
@@ -15,7 +16,6 @@ class DailyKetchupController extends BaseController {
     ketchup_agenda,
     update,
     ketchup_update,
-    notification,
   }) {
     super(ketchup);
     this.user = user;
@@ -30,7 +30,6 @@ class DailyKetchupController extends BaseController {
     this.ketchup_agenda = ketchup_agenda;
     this.update = update;
     this.ketchup_update = ketchup_update;
-    this.notification = notification;
   }
 
   // =================== GET ALL TICKETS AND DOCUMENTS =================== //
@@ -72,14 +71,17 @@ class DailyKetchupController extends BaseController {
     }
 
     try {
-      const today = new Date();
-      console.log("today", today);
+      // current date in SGT + set time to 12AM
+      const startDate = moment().tz("Asia/Singapore").startOf("day");
+      const endDate = moment().tz("Asia/Singapore").endOf("day");
+      // console.log("start date", startDate.format());
+      // console.log("end date", endDate.format());
 
-      const startDate = new Date(today);
-      startDate.setHours(0, 0, 0, 0);
-
-      const endDate = new Date(today);
-      endDate.setHours(23, 59, 59, 999);
+      // note: for testing use only:
+      // Set the start date to September 7th, 12:00 AM (SGT)
+      // Set the end date to September 7th, 11:59:59 PM (SGT)
+      // const startDate = moment("2023-09-07T13:00:00").utcOffset(8);
+      // const endDate = moment("2023-09-07T23:59:59").utcOffset(8);
 
       const isFirstKetchup = await this.model.findOne({
         where: {
@@ -89,6 +91,7 @@ class DailyKetchupController extends BaseController {
       });
 
       if (!isFirstKetchup) {
+        // console.log("first scenario: user posted his first ketchup!");
         try {
           // 1. create a new ketchup
           const newKetchup = await this.model.create({
@@ -98,6 +101,7 @@ class DailyKetchupController extends BaseController {
           });
 
           try {
+            // console.log("first scenario: ok adding agenda now!");
             // 2. add agenda(s) to ketchup
             // step 1: iterate through the array
             for (const agenda of agendas) {
@@ -126,6 +130,7 @@ class DailyKetchupController extends BaseController {
             }
 
             try {
+              // console.log("first scenario: ok adding updates now!");
               // 3. add update(s) to ketchup, if any.
               // step 1: check if user has added updates
               if (!updates || updates.length === 0) {
@@ -172,12 +177,33 @@ class DailyKetchupController extends BaseController {
           console.error("Error adding updates:", error);
         }
       } else {
+        // console.log("second scenario: user posted a second ketchup!");
         // user has already posted a ketchup
+        const retrievedKetchupReactions = await this.ketchup_reaction.findAll({
+          where: { ketchupId: isFirstKetchup.id },
+        });
+        // console.log("retrievedKetchupReactions", retrievedKetchupReactions);
+
+        const deleteReactions = async (ketchupReactions) => {
+          // console.log("removing reactions");
+          for (const ketchup of ketchupReactions) {
+            const ketchupId = ketchup.dataValues.ketchupId;
+
+            await this.ketchup_reaction.destroy({
+              where: {
+                ketchupId: ketchupId,
+              },
+            });
+          }
+        };
+        deleteReactions(retrievedKetchupReactions);
+
         const retrievedSubmittedAgendas = await this.ketchup_agenda.findAll({
           where: { ketchupId: isFirstKetchup.id },
         });
 
         const deleteAgendas = async (ketchupAgendas) => {
+          // console.log("second scenario: deleting agendas now!");
           for (const agenda of ketchupAgendas) {
             const agendaId = agenda.dataValues.agendaId;
 
@@ -191,6 +217,7 @@ class DailyKetchupController extends BaseController {
               await this.agenda.destroy({
                 where: { id: agendaId },
               });
+              console.log(`Agenda with ID ${agendaId} deleted successfully.`);
             } catch (error) {
               console.error(
                 `Error deleting agendaId ${agendaId}: ${error.message}`
@@ -205,6 +232,7 @@ class DailyKetchupController extends BaseController {
         });
 
         const deleteUpdates = async (ketchupUpdates) => {
+          // console.log("second scenario: deleting updates now!");
           for (const update of ketchupUpdates) {
             const updateId = update.dataValues.updateId;
 
@@ -234,8 +262,10 @@ class DailyKetchupController extends BaseController {
             userId: userId,
           },
         });
+        // console.log("ketchup deleted!");
 
         try {
+          // console.log("second scenario: now we are creating a new ketchup!");
           // 1. create a new ketchup
           const newKetchup = await this.model.create({
             organisationId,
@@ -247,6 +277,7 @@ class DailyKetchupController extends BaseController {
             // 2. add agenda(s) to ketchup
             // step 1: count the number of objects in the agendas array
             for (const agenda of agendas) {
+              // console.log("second scenario: adding agendas!");
               // step 2: iterate through the array
               const { ticketId, documentId, flagId, content } = agenda;
 
@@ -278,6 +309,7 @@ class DailyKetchupController extends BaseController {
               if (!updates || updates.length === 0) {
                 console.log("user did not include any updates!");
               } else {
+                // console.log("second scenario: adding updates!");
                 // step 2: iterate through the array
                 for (const update of updates) {
                   const { ticketId, documentId, flagId, content } = update;
@@ -302,6 +334,7 @@ class DailyKetchupController extends BaseController {
                     ketchupId: newKetchup.id,
                     updateId: newUpdate.id,
                   });
+                  // console.log("donezo!");
                 }
               }
             } catch (error) {

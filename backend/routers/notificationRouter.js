@@ -7,6 +7,9 @@ class NotificationRouter {
   }
   routes() {
     router.get("/:userId", this.controller.getAllNotification);
+
+    // FOR TESTING ONLY
+    router.delete("/", this.controller.deleteOneNotification);
     return router;
   }
 }

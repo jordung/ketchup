@@ -17,7 +17,19 @@ class AuthController extends BaseController {
     organisation,
     invitation,
     organisation_admin,
+    ticket,
+    ticket_dependency,
+    document,
+    document_ticket,
     watcher,
+    post,
+    post_reaction,
+    ketchup,
+    ketchup_reaction,
+    agenda,
+    ketchup_agenda,
+    update,
+    ketchup_update,
     notification,
   }) {
     super(user);
@@ -25,7 +37,19 @@ class AuthController extends BaseController {
     this.organisation = organisation;
     this.invitation = invitation;
     this.organisation_admin = organisation_admin;
+    this.ticket = ticket;
+    this.ticket_dependency = ticket_dependency;
+    this.document = document;
+    this.document_ticket = document_ticket;
     this.watcher = watcher;
+    this.post = post;
+    this.post_reaction = post_reaction;
+    this.ketchup = ketchup;
+    this.ketchup_reaction = ketchup_reaction;
+    this.agenda = agenda;
+    this.ketchup_agenda = ketchup_agenda;
+    this.update = update;
+    this.ketchup_update = ketchup_update;
     this.notification = notification;
   }
 
@@ -472,9 +496,15 @@ class AuthController extends BaseController {
         });
       }
 
+      // step 4: issue new access token
+      const accessToken = generateAuthToken({
+        id: user.id,
+        email: user.email,
+      });
+
       return res.status(200).json({
         success: true,
-        data: user,
+        data: { user, accessToken },
         msg: "Success: You are now logged into your account.",
       });
     } catch (error) {
@@ -646,7 +676,7 @@ class AuthController extends BaseController {
         return res.status(200).json({
           success: true,
           data: user,
-          msg: `Success: Success: You have joined ${organisation.name}!`,
+          msg: `Success: You have joined ${organisation.name}!`,
         });
       } else {
         return res.status(400).json({
@@ -666,16 +696,54 @@ class AuthController extends BaseController {
   deleteOneUser = async (req, res) => {
     const { userId } = req.params;
     const transaction = await sequelize.transaction();
-
     try {
       // check if user exists
       const user = await this.model.findByPk(userId, {
         include: [
           {
-            model: this.organisation_admin,
+            model: this.notification,
+          },
+          {
+            model: this.watcher,
+          },
+          {
+            model: this.update,
+            as: "update_creator",
+            include: [{ model: this.ketchup_update }],
+          },
+          {
+            model: this.agenda,
+            as: "agenda_creator",
+            include: [{ model: this.ketchup_agenda }],
+          },
+          {
+            model: this.post_reaction,
+          },
+          {
+            model: this.post,
+          },
+          {
+            model: this.ketchup_reaction,
+          },
+          {
+            model: this.ketchup,
+            as: "ketchup_creator",
+          },
+          {
+            model: this.document,
+            as: "document_creator",
+          },
+          {
+            model: this.ticket,
+            as: "ticket_creator",
+          },
+          {
+            model: this.ticket,
+            as: "assignee",
           },
         ],
       });
+      // console.log("user", user);
 
       if (!user) {
         return res.status(404).json({
@@ -684,21 +752,177 @@ class AuthController extends BaseController {
         });
       }
 
-      // delete associated records from the children tables
-      await this.watcher.destroy({ where: { userId: userId } });
+      console.log("user", user);
 
-      //TODO: onDelete set null?
-
-      if (user.organisation_admin !== null) {
-        await this.organisation_admin.destroy({
-          where: { userId: userId },
-        });
-      } else {
-        // delete associated record from 'users' (parent) table
-        await this.model.destroy({
-          where: { id: userId },
-        });
+      // remove notifications
+      if (user.notifications.length > 0) {
+        await this.notification.destroy({ where: { userId } });
       }
+
+      // remove user's watching list
+      if (user.watchers.length > 0) {
+        await this.watcher.destroy({ where: { userId } });
+      }
+
+      // remove all updates added by the user
+      if (user.update_creator.length > 0) {
+        for (const update of user.update_creator) {
+          const updateId = update.dataValues.id;
+          await this.ketchup_update.destroy({ where: { updateId } });
+          await this.update.destroy({ where: { id: updateId } });
+        }
+      }
+
+      // remove all agendas added by the user
+      if (user.agenda_creator.length > 0) {
+        for (const agenda of user.agenda_creator) {
+          const agendaId = agenda.dataValues.id;
+          await this.ketchup_agenda.destroy({ where: { agendaId } });
+          await this.agenda.destroy({ where: { id: agendaId } });
+        }
+      }
+
+      // remove all post reactions added by the user
+      if (user.post_reactions.length > 0) {
+        for (const postReaction of user.post_reactions) {
+          const userId = postReaction.dataValues.userId;
+          await this.post_reaction.destroy({ where: { userId } });
+        }
+      }
+
+      const userPosts = await this.post.findAll({
+        where: { userId },
+      });
+
+      // remove all posts added by the user
+      if (userPosts.length > 0) {
+        for (const post of userPosts) {
+          const postId = post.dataValues.id;
+          await this.post_reaction.destroy({ where: { postId } });
+          await this.post.destroy({ where: { id: postId } });
+        }
+      }
+
+      // remove all documents added by the user
+      // for ketchup v2, the user icon/tooltip will display "deactivated"
+      if (user.document_creator.length > 0) {
+        for (const document of user.document_creator) {
+          const documentId = document.dataValues.id;
+          await this.notification.destroy({ where: { documentId } });
+          await this.watcher.destroy({ where: { documentId } });
+          await this.document_ticket.destroy({
+            where: { documentId },
+          });
+          await this.document.destroy({ where: { id: documentId } });
+        }
+      }
+
+      // remove all tickets created by the user
+      if (user.ticket_creator.length > 0) {
+        for (const ticket of user.ticket_creator) {
+          const ticketId = ticket.dataValues.id;
+          const creatorId = ticket.dataValues.creatorId;
+          const assigneeId = ticket.dataValues.assigneeId;
+
+          if (assigneeId !== null) {
+            if (assigneeId === creatorId) {
+              // console.log(
+              //   "assignee id and creator id are the same so ticket will be deleted"
+              // );
+              await this.notification.destroy({
+                where: { ticketId },
+              });
+              await this.watcher.destroy({ where: { ticketId } });
+              await this.ticket_dependency.destroy({
+                where: { dependencyId: ticketId },
+              });
+              await this.ticket_dependency.destroy({
+                where: { ticketId },
+              });
+              await this.document_ticket.destroy({
+                where: { ticketId },
+              });
+
+              await this.ticket.destroy({ where: { id: ticketId } });
+            } else {
+              // console.log("reassigning ticket to assignee");
+              await this.ticket.update(
+                { creatorId: assigneeId },
+                { where: { id: ticketId } }
+              );
+            }
+          } else {
+            // console.log("no assignee so ticket will be deleted");
+            await this.notification.destroy({ where: { ticketId } });
+            await this.watcher.destroy({ where: { ticketId } });
+            await this.ticket_dependency.destroy({
+              where: { dependencyId: ticketId },
+            });
+            await this.ticket_dependency.destroy({
+              where: { ticketId: ticketId },
+            });
+            await this.document_ticket.destroy({
+              where: { ticketId: ticketId },
+            });
+            await this.ticket.destroy({ where: { id: ticketId } });
+          }
+        }
+      }
+
+      if (user.assignee.length > 0) {
+        // console.log("removing user from the assigned tickets");
+        for (const ticket of user.assignee) {
+          const ticketId = ticket.dataValues.id;
+          // const assigneeId = ticket.dataValues.assigneeId;
+          await this.ticket.update(
+            { assigneeId: null },
+            { where: { id: ticketId } }
+          );
+        }
+      }
+      // remove all ketchup reactions added by the user
+      if (user.ketchup_reactions.length > 0) {
+        for (const ketchupReaction of user.ketchup_reactions) {
+          const userId = ketchupReaction.dataValues.userId;
+          await this.ketchup_reaction.destroy({ where: { userId } });
+        }
+      }
+
+      // remove all ketchups added by the user
+      if (user.ketchup_creator.length > 0) {
+        for (const ketchup of user.ketchup_creator) {
+          const ketchupId = ketchup.dataValues.id;
+          await this.ketchup_reaction.destroy({ where: { ketchupId } });
+          await this.notification.destroy({
+            where: { ketchupId },
+          });
+          await this.ketchup.destroy({ where: { id: ketchupId } });
+        }
+      }
+
+      // check if user has been assigned as admin
+      const isAdmin = await this.organisation_admin.findOne({
+        where: { userId },
+      });
+
+      if (isAdmin !== null) {
+        // console.log("removing user from organisation admin!");
+        await this.organisation_admin.destroy({ where: { userId } });
+      }
+
+      // remove user from invitation
+      const findInvitation = await this.invitation.findOne({
+        where: { inviteeEmail: user.email },
+      });
+
+      if (findInvitation !== null) {
+        // console.log("removing email invitation!");
+        await this.invitation.destroy({ where: { inviteeEmail: user.email } });
+      }
+
+      await this.model.destroy({
+        where: { id: userId },
+      });
 
       await transaction.commit();
       return res.status(200).json({

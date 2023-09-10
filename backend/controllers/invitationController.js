@@ -81,12 +81,7 @@ class InvitationController extends BaseController {
         from: process.env.NODEMAILER_EMAIL,
         to: inviteeEmail,
         subject: "You have been invited to join Ketchup!",
-        html: invitation(
-          invitationLink,
-          inviteeEmail,
-          organisationName,
-          invitationCode
-        ),
+        html: invitation(invitationLink, organisationName, invitationCode),
         attachments: [
           {
             filename: "ketchup-logo.png",

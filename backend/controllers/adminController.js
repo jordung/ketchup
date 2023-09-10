@@ -43,8 +43,6 @@ class AdminController extends BaseController {
         attributes: ["id", "firstName", "lastName", "email", "profilePicture"],
       });
 
-      console.log("users", users);
-
       // return if user isAdmin in boolean
       const usersWithAdminStatus = users.map((user) => {
         return {
@@ -78,42 +76,6 @@ class AdminController extends BaseController {
       });
     }
   };
-
-  // =================== UPDATE ORGANISATION PREFERENCES (TIMING) =================== //
-  // * NOTE: for future implementation :)
-  // updateOrganisationTiming = async (req, res) => {
-  //   const { organisationId } = req.params;
-  //   const { time } = req.body;
-
-  //   try {
-  //     await this.model.update(
-  //       {
-  //         time: time,
-  //       },
-  //       { where: { id: organisationId } }
-  //     );
-
-  //     const organisation = await this.model.findByPk(organisationId, {
-  //       include: [
-  //         {
-  //           model: this.organisation_admin,
-  //           attributes: ["userId", "organisationId"],
-  //         },
-  //       ],
-  //     });
-
-  //     return res.status(200).json({
-  //       success: true,
-  //       data: organisation,
-  //       msg: "Success: Organisation timing has been updated!",
-  //     });
-  //   } catch (error) {
-  //     return res.status(400).json({
-  //       error: true,
-  //       msg: "Error: We encountered an error while handling your request. Please try again.",
-  //     });
-  //   }
-  // };
 
   // =================== UPDATE ORGANISATION PREFERENCES (ASSIGN USER ROLE) =================== //
   // Note: The 'updateMemberStatus' API allows FE to execute both ADMIN and MEMBER (aka non-admin) roles on user
@@ -211,6 +173,42 @@ class AdminController extends BaseController {
       });
     }
   };
+
+  // =================== UPDATE ORGANISATION PREFERENCES (TIMING) =================== //
+  // * NOTE: for future implementation :)
+  // updateOrganisationTiming = async (req, res) => {
+  //   const { organisationId } = req.params;
+  //   const { time } = req.body;
+
+  //   try {
+  //     await this.model.update(
+  //       {
+  //         time: time,
+  //       },
+  //       { where: { id: organisationId } }
+  //     );
+
+  //     const organisation = await this.model.findByPk(organisationId, {
+  //       include: [
+  //         {
+  //           model: this.organisation_admin,
+  //           attributes: ["userId", "organisationId"],
+  //         },
+  //       ],
+  //     });
+
+  //     return res.status(200).json({
+  //       success: true,
+  //       data: organisation,
+  //       msg: "Success: Organisation timing has been updated!",
+  //     });
+  //   } catch (error) {
+  //     return res.status(400).json({
+  //       error: true,
+  //       msg: "Error: We encountered an error while handling your request. Please try again.",
+  //     });
+  //   }
+  // };
 }
 
 module.exports = AdminController;

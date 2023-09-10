@@ -300,11 +300,7 @@ class DocumentController extends BaseController {
       const updatedDocument = await this.model.findByPk(documentId, {
         include: [{ model: this.document_ticket, attributes: ["id"] }],
       });
-      console.log("updatedDocument", updatedDocument);
-
-      // const hasTaggedTicket = updatedDocument.document_tickets.some(
-      //   (ticket) => ticket.dataValues.id !== null
-      // );
+      // console.log("updatedDocument", updatedDocument);
 
       const hasTaggedTicket = updatedDocument.document_tickets.length > 0;
 
@@ -408,9 +404,27 @@ class DocumentController extends BaseController {
       for (const watcher of allWatchers) {
         const userId = watcher.dataValues.userId;
         try {
+          const existingNotification = await this.notification.findAll({
+            where: { userId, documentId },
+          });
+
+          if (existingNotification !== null) {
+            for (const notification of existingNotification) {
+              const notificationDocumentId = notification.dataValues.documentId;
+              const notificationUserId = notification.dataValues.userId;
+
+              await this.notification.destroy({
+                where: {
+                  userId: notificationUserId,
+                  documentId: notificationDocumentId,
+                },
+              });
+            }
+          }
           await this.notification.create({
             organisationId: document.organisationId,
             userId,
+            documentId: documentId,
             type: "document",
             message: `${document.name} has been updated.`,
           });
@@ -499,7 +513,7 @@ class DocumentController extends BaseController {
       const hasAgenda = document.agendas.some(
         (agenda) => agenda.dataValues.id !== null
       );
-      console.log("hasAgenda?", hasAgenda);
+      // console.log("hasAgenda?", hasAgenda);
 
       if (hasAgenda) {
         await this.agenda.update(
@@ -509,13 +523,13 @@ class DocumentController extends BaseController {
           { where: { documentId } }
         );
       }
-      console.log("agenda updated to null!");
+      // console.log("agenda updated to null!");
 
       // remove document association from update
       const hasUpdates = document.updates.some(
         (update) => update.dataValues.id !== null
       );
-      console.log("hasUpdates", hasUpdates);
+      // console.log("hasUpdates", hasUpdates);
 
       if (hasUpdates) {
         await this.update.update(
@@ -525,20 +539,20 @@ class DocumentController extends BaseController {
           { where: { documentId } }
         );
       }
-      console.log("update updated to null!");
+      // console.log("update updated to null!");
 
       // remove document from notifications
       const hasNotifications = document.notifications.some(
         (notification) => notification.dataValues.id !== null
       );
-      console.log("hasNotifications", hasNotifications);
+      // console.log("hasNotifications", hasNotifications);
 
       if (hasNotifications) {
         await this.notification.destroy({
           where: { documentId },
         });
       }
-      console.log("notification deleted!");
+      // console.log("notification deleted!");
 
       await this.model.destroy({
         where: { id: documentId },
