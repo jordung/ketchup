@@ -53,8 +53,6 @@ class UserProfileController extends BaseController {
     const code = req.query.code;
     const state = req.query.state;
     const userId = state;
-    console.log("userId", userId);
-    console.log("code", code);
     try {
       const response = await axios.post(
         "https://slack.com/api/oauth.v2.access",
@@ -69,7 +67,6 @@ class UserProfileController extends BaseController {
           },
         }
       );
-      console.log("response", response.data);
 
       await this.model.update(
         {

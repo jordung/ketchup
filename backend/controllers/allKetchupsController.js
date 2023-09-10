@@ -2,6 +2,7 @@ const BaseController = require("./baseController");
 const { Op } = require("sequelize");
 const { startDate, endDate } = require("../utils/getDates");
 const { getAllReactions } = require("../utils/reactionsCounter");
+const moment = require("moment-timezone");
 
 class AllKetchupsController extends BaseController {
   constructor({
@@ -219,30 +220,25 @@ class AllKetchupsController extends BaseController {
       );
 
       // initialise accumulator with {}, iterates through each ketchup in 'allKetchups' array and convert createdAt to date string. Check if 'ketchupDate' already exists in accumulator {}, if yes then push ketchup to getKetchupReactions, else, initialise an empty object.
-      //TODO: refactor code here?
-      const today = new Date();
-      console.log("new Date", today);
+      const today = moment().tz("Asia/Singapore").startOf("day");
+      const tomorrow = today.clone().add(1, "days");
+      console.log("tomorrow", tomorrow.format());
 
-      today.setUTCHours(16, 0, 0, 0);
-      today.setHours(today.getHours() + 8);
-      console.log("set hours to GMT", today);
-
-      const lastThirtyDays = new Date(today);
-      lastThirtyDays.setDate(today.getDate() - 30);
+      const lastThirtyDays = today.clone().subtract(30, "days");
 
       const groupKetchupsByDate = [];
-      let currentDate = new Date(lastThirtyDays);
+      let currentDate = lastThirtyDays.clone();
 
       // initialise an array of objects for each date in the last 30 days
-      while (currentDate < today) {
-        const formattedDate = currentDate.toDateString();
+      while (currentDate < tomorrow) {
+        const formattedDate = currentDate.toDate();
         groupKetchupsByDate.push({
-          date: formattedDate,
+          date: formattedDate.toDateString(),
           getKetchupReactions: [],
           usersWithoutKetchups: [],
         });
         // increase date by 1
-        currentDate.setDate(currentDate.getDate() + 1);
+        currentDate.add(1, "days");
       }
 
       // sort date in array by descending order

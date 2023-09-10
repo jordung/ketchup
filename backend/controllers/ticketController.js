@@ -1,5 +1,6 @@
 const BaseController = require("./baseController");
 const { sequelize } = require("../db/models/index");
+const { getIO } = require("../utils/socket");
 
 class TicketController extends BaseController {
   constructor({
@@ -329,7 +330,7 @@ class TicketController extends BaseController {
         });
       }
 
-      if (assigneeId) {
+      if (assigneeId && assigneeId !== creatorId) {
         await this.watcher.create({
           userId: assigneeId,
           ticketId: newTicket.id,
@@ -579,15 +580,43 @@ class TicketController extends BaseController {
       for (const watcher of allWatchers) {
         const userId = watcher.dataValues.userId;
         try {
+          const existingNotification = await this.notification.findAll({
+            where: { userId, ticketId },
+          });
+
+          if (existingNotification !== null) {
+            for (const notification of existingNotification) {
+              const notificationTicketId = notification.dataValues.ticketId;
+              const notificationUserId = notification.dataValues.userId;
+
+              await this.notification.destroy({
+                where: {
+                  userId: notificationUserId,
+                  ticketId: notificationTicketId,
+                },
+              });
+            }
+          }
           await this.notification.create({
             organisationId: ticket.organisationId,
             userId,
+            ticketId: ticketId,
             type: "ticket",
             message: `${ticket.name} has been updated.`,
           });
         } catch (error) {
           console.error("Error: Unable to notify all ticket watchers");
         }
+      }
+
+      // socket.io
+      const io = getIO();
+
+      for (const watcher of allWatchers) {
+        const userId = watcher.dataValues.userId;
+        io.to(`user_${userId}`).emit("show_notification", {
+          title: `${ticket.name} has been updated.`,
+        });
       }
 
       return res.status(200).json({

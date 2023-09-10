@@ -18,7 +18,7 @@ class AuthRouter {
     router.post("/renew", this.controller.renewAccessToken);
     router.post("/refresh", this.controller.validateRefreshToken);
 
-    router.delete("/:userId", this.jwtAuth, this.controller.deleteOneUser);
+    router.delete("/:userId", this.controller.deleteOneUser);
 
     return router;
   }
