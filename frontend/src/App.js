@@ -82,9 +82,10 @@ function App() {
             },
           }
         );
-
-        if (response.data.data && response.data.data.organisationId) {
-          setUser(response.data.data);
+        // user has account + has organisation
+        if (response.data.data.user && response.data.data.user.organisationId) {
+          setUser(response.data.data.user);
+          localStorage.setItem("accessToken", response.data.data.accessToken);
           setIsLoggedIn(true);
           if (
             location.pathname === "/login" ||
@@ -93,11 +94,19 @@ function App() {
           ) {
             navigate("/home");
           }
-        } else if (response.data.data && !response.data.data.organisationId) {
-          setUser(response.data.data);
+
+          // user has account + no organisation
+        } else if (
+          response.data.data.user &&
+          !response.data.data.user.organisationId
+        ) {
+          localStorage.setItem("accessToken", response.data.data.accessToken);
+          setUser(response.data.data.user);
           setIsLoggedIn(true);
           navigate("/setorganisation");
         }
+
+        // user has no organisation
       } catch (error) {
         console.log(error);
         localStorage.removeItem("accessToken");
